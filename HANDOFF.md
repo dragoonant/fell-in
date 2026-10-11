@@ -11,13 +11,13 @@ read only the section a task needs. The source map is `docs/spec/sources/WW-SOUR
   `npx playwright test` (2) pass. Dev server: `.claude/launch.json` entry `fell-dev`, port 5191.
 - Engine core copied from whirr-machine and stripped: geometry, LOS, measure, terrain, rng, types, decider,
   view, pending, setup. `TODO(M2)` stubs in dice, attack, damage, turnflow, movement.
-- **M0 rules spec: possibly unfinished.** An Opus agent in the kickoff session was writing `docs/spec/1x-2x`.
-  Check which of these exist: 10-overview, 11-turn-and-actions, 12-rules-test-checklist, 13-dice-and-tests,
-  14-range-los-cover-terrain, 15-damage-armor-radiation, 16-cards-and-forces, 17-scenarios, 18-ai-system,
-  19-campaign-settlement, 20-data-schema, plus `docs/needs-rules-check.md`. If any are missing or uncommitted,
-  finish them first: one agent on the session model at effort high, same brief (our own words, cite file and
-  page for each section, ~150 checklist IDs, edition-specific numbers kept in data keyed by edition, a short
-  "2nd edition migration" note in 20). Commit as `M0: rules spec`.
+- **M0 rules spec done** (`docs/spec/10`-`20`, 261 checklist IDs, 41 rulings in `docs/needs-rules-check.md`).
+  Edition-specific numbers live under `data/1e/` per spec 20, which ends with a 2nd-edition migration note.
+  Rulers: Orange 2, Yellow 4, Red 6, Green 8, Blue 10, Black 12 inches.
+- **Known source gaps:** the official AI procedure (Campaign Handbook p8-12) and the starter AI, perk, boost and
+  quest card texts are not in any free source. Spec 18 is built from the AI and co-op handbooks, errata and a dev
+  blog. Before M4, ask the owner for photos of their physical AI cards or approval to buy the AI deck/Campaign
+  Book PDF; otherwise use placeholder matrices marked Unsourced. Campaign/settlement (spec 19) has the same gap.
 - Sources: the free 1st-edition PDFs are in gitignored `docs/sources/` (rules of play, Getting Acclimated v1.3,
   AI and Co-op handbooks, errata v10 (overrides the rulebook), wave 9 costs, dice/ruler sheet, 2P cards, Red
   Rocket AI scenario). Extract with PyMuPDF; render pages to PNG when layout garbles text.
@@ -35,13 +35,12 @@ read only the section a task needs. The source map is `docs/spec/sources/WW-SOUR
   except the AI milestone.
 
 ## Next
-1. Finish/commit the M0 spec (above).
-2. **M1 data.** Dry-run the schema in `20-data-schema.md` on every starter-set card, then freeze it. Enter units,
+1. **M1 data.** Dry-run the schema in `20-data-schema.md` on every starter-set card, then freeze it. Enter units,
    weapons, armor, items, perks, chems and AI cards from `docs/sources/2p_cards.pdf` and the BSData repo
    (github.com/BSData/fallout-wasteland-warfare, archived 2020), each record with a `source`. Add `src/data/`,
    `tools/validate-data.ts` and `npm run validate:data`. One or two Sonnet agents with exact file lists.
-3. **M2 engine.** Replace the `TODO(M2)` stubs, tests named by checklist ID, bot-vs-bot sim in `tools/sim.ts`.
-4. **M3 playable.** Rebuild interaction, presentation and the dice tray against the new contracts (whirr-machine
+2. **M2 engine.** Replace the `TODO(M2)` stubs, tests named by checklist ID, bot-vs-bot sim in `tools/sim.ts`.
+3. **M3 playable.** Rebuild interaction, presentation and the dice tray against the new contracts (whirr-machine
    paths in `docs/KNOWLEDGE-BASE.md` section 2.1), hot-seat + random bot, odds previews. Pages deploy, then
    stop for the owner's playtest.
 
