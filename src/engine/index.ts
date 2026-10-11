@@ -1,0 +1,11 @@
+// Public engine surface. Contract files (frozen after M1): types, decider, view, rng, pending.
+export * from './types'
+export * from './geometry'
+export * from './measure'
+export * from './los'
+export * from './terrain'
+export { seedRng, rollDie, rollD20, rollD12, roll, deriveSeed } from './rng'
+export { createRandomDecider, createReplayDecider, type Decider, type DeciderKind } from './decider'
+export { view } from './view'
+export { raise, legalActions } from './pending'
+export { createDemoGame } from './setup'

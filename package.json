@@ -1,0 +1,44 @@
+{
+  "name": "fell-in",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Fell-in: Wasteland Warfair. Unofficial fan-made 3D skirmish game by evilgouki. Not affiliated with Modiphius Entertainment, Bethesda Softworks or ZeniMax.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "sim": "tsx tools/sim.ts",
+    "models:optimize": "node tools/models/optimize.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "^0.186.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "meshoptimizer": "^1.3.0",
+    "sharp": "^0.35.5",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^25.9.6",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.7",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
+  }
+}

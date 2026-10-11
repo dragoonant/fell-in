@@ -1,0 +1,8 @@
+{
+  "_comment": "Starter manifest. All prompts and lines are original wording. Run `npx tsx tools/gen-audio.ts` to generate missing files into public/audio/<id>.mp3 (music into public/audio/music/<id>.mp3). Add items as the sound design lands (M5).",
+  "voice": { "voiceId": "SOYHLrjzK2X1ezoPC6cr", "voiceName": "Harry - Fierce Warrior", "modelId": "eleven_flash_v2_5" },
+  "music": { "endpoint": "/v1/music", "modelId": "music_v1", "forceInstrumental": true, "outputFormat": "mp3_44100_128" },
+  "items": [
+    { "id": "dice-d20", "kind": "sfx", "group": "dice", "prompt": "A single twenty-sided die tumbling and settling on a wooden table, short, dry, no music, no voices", "durationSeconds": 1.2, "promptInfluence": 0.6 }
+  ]
+}
