@@ -16,8 +16,22 @@ read only the section a task needs. The source map is `docs/spec/sources/WW-SOUR
   Rulers: Orange 2, Yellow 4, Red 6, Green 8, Blue 10, Black 12 inches.
 - **Known source gaps:** the official AI procedure (Campaign Handbook p8-12) and the starter AI, perk, boost and
   quest card texts are not in any free source. Spec 18 is built from the AI and co-op handbooks, errata and a dev
-  blog. Before M4, ask the owner for photos of their physical AI cards or approval to buy the AI deck/Campaign
-  Book PDF; otherwise use placeholder matrices marked Unsourced. Campaign/settlement (spec 19) has the same gap.
+  blog; campaign/settlement (spec 19) has the same gap. **Owner decision 2026-10-11: fill these gaps by open-source
+  information gathering, as Dead of Winner did** (see `docs/KNOWLEDGE-BASE.md` section 4.1). Do it before M4, in
+  one research stage (2-3 Sonnet agents, 3-6 fetches each, exact spec sections named). Routes, in order:
+  - Vassal library and Tabletop Simulator workshop: re-check for "Fallout"; a module is a zip of clean card scans.
+  - GitHub fan projects: BSData, aslanator builder, spilth/foww, kairos25, Codsworth, plus a code search for
+    AI card names.
+  - The official companion app (fallout.maloric.com) and its network JSON.
+  - Card photos: BGG image galleries (cf.geekdo-images.com downloads fine), eBay listings of the starter set and
+    AI deck (built-in browser + curl of i.ebayimg.com), Bing image search via curl, and unboxing/review/playthrough
+    blogs, Reddit and YouTube thumbnails, read with the Read tool.
+  - Fan wikis and forums through their APIs with curl and a browser user agent; Fandom and BGG pages once
+    through a real browser into `docs/spec/sources/`.
+  Cite every value in `docs/spec/sources/` and log each choice in `docs/needs-rules-check.md`. Card text is read
+  for mechanics only and written up in our own words. Fall back to placeholder matrices marked Unsourced only
+  after every route above has been tried. Ask the owner only when a source is blocked from here and they can
+  reach it, and give them the exact URLs.
 - Sources: the free 1st-edition PDFs are in gitignored `docs/sources/` (rules of play, Getting Acclimated v1.3,
   AI and Co-op handbooks, errata v10 (overrides the rulebook), wave 9 costs, dice/ruler sheet, 2P cards, Red
   Rocket AI scenario). Extract with PyMuPDF; render pages to PNG when layout garbles text.
