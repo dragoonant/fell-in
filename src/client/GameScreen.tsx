@@ -2,6 +2,7 @@
 // composes the four owners' slots: Board (P, mounts <Figures/> and <InteractionScene/> inside its Canvas),
 // Interaction overlay (I), Hud (U), DiceTray (D).
 import { useEffect, useState } from 'react'
+import { AudioHost } from './audio/AudioHost'
 import { Board } from './board/Board'
 import { bootClient, startLaunch } from './contract'
 import { DiceTray } from './dice/DiceTray'
@@ -43,6 +44,7 @@ export function GameScreen() {
       <Interaction />
       <Hud />
       <DiceTray />
+      <AudioHost />
       {error && <div data-testid="game-error" role="alert" style={{ position: 'absolute', top: 56, left: 12, color: '#e0a080', zIndex: 3 }}>{error}</div>}
     </div>
   )

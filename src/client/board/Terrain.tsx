@@ -6,6 +6,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import type { TerrainInstance } from '../../engine/types'
 import { usePresented } from '../contract'
 import { clearTerrainHover, hoverTerrain } from './terrainHover'
+import { terrainEntryFor, useFittedTerrain, useTerrainManifest } from './terrainGlb'
 
 /** Terrain from the presented state (spell-made pieces appear and vanish with it). */
 export function TerrainPieces() {
@@ -29,6 +30,12 @@ function TerrainPiece({ t }: { t: TerrainInstance }) {
   const { x, z } = t.pos
   const f = t.footprint
   const key = `${t.pieceId} ${t.id}`
+  const entry = terrainEntryFor(useTerrainManifest(), t.pieceId)
+  const fitted = useFittedTerrain(entry, t.id, f, t.rot, t.height)
+  if (fitted) {
+    const turned = !('circle' in f)
+    return <TerrainHit t={t} position={[x, 0, z]} rotation={turned ? [0, t.rot, 0] : undefined} name={`terrain-${t.id}`}><primitive object={fitted} /></TerrainHit>
+  }
   if ('circle' in f) {
     const r = f.circle.r
     return (

@@ -12,6 +12,7 @@ export function EventFeed() {
   useEffect(() => { end.current?.scrollIntoView?.({ block: 'end' }) }, [rows.length])
   return (
     <aside className="rail rail-right" data-testid="rail-right">
+      <span className="rail-tab" aria-hidden="true">Log</span>
       <div className="panel feed" data-testid="event-feed">
         <div className="sect">What happened</div>
         {rows.length === 0 && <p className="dim">Nothing yet.</p>}

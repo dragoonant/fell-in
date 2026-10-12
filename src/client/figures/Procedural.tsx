@@ -2,9 +2,9 @@
 import { PALETTE } from '../theme'
 
 const MM = 25.4
-export interface FigureProps { id: string; x: number; z: number; baseMm: number; color: string; accent: string; heightIn?: number }
+export interface FigureProps { id: string; x: number; z: number; baseMm: number; color: string; accent: string; heightIn?: number; /** omit the built-in weapon bar (weapons are separate models) */ bare?: boolean }
 
-export function ProceduralFigure({ id, x, z, baseMm, color, accent, heightIn }: FigureProps) {
+export function ProceduralFigure({ id, x, z, baseMm, color, accent, heightIn, bare }: FigureProps) {
   const r = baseMm / MM / 2
   // About four and a half heads tall; height grows a little with base size.
   const h = heightIn ?? 1.45 + (baseMm - 25) * 0.045
@@ -29,10 +29,12 @@ export function ProceduralFigure({ id, x, z, baseMm, color, accent, heightIn }: 
         <sphereGeometry args={[head * 0.5, 16, 12]} />
         <meshStandardMaterial color={PALETTE.dust} roughness={0.9} />
       </mesh>
+      {!bare && (
       <mesh position={[r * 0.55, 0.12 + h * 0.6, r * 0.3]} rotation={[0.4, 0, 0]} castShadow>
         <boxGeometry args={[r * 0.14, r * 0.14, h * 0.55]} />
         <meshStandardMaterial color={accent} roughness={0.6} metalness={0.4} />
       </mesh>
+      )}
     </group>
   )
 }

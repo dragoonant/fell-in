@@ -4,9 +4,15 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Group } from 'three'
-import { tweenPosition, useGame, useModelIds, usePresented, usePresentedModel, useTween } from '../contract'
+import { tweenPosition, useBundle, useGame, useModelIds, usePresented, usePresentedModel, useTween } from '../contract'
 import { baseRadius } from '../../engine/geometry'
+import { engagedWith } from '../../engine/attack'
+import { recordOf } from '../../engine/edition'
 import { ProceduralFigure } from './Procedural'
+import { GlbBase, GlbBody, useFittedFigure } from './GlbBody'
+import { Weapon } from './Weapon'
+import { modeOfWeapon, pickEquipped } from './equipped'
+import { figureHeight, socketFor, unitGlbUrl, useManifest, weaponGlbUrl } from './glbModels'
 import { facingYaw, lookOf, pipCounts, pipSlots, tintFor, turnToward } from './view'
 
 const TURN_RATE = 9 // rad/s
@@ -36,6 +42,19 @@ function Ring({ r }: { r: number }) {
   )
 }
 
+/** Generated GLB when listed and loaded, else the bare procedural figure. */
+function FigureBody({ id, slug, baseMm, color, accent }: { id: string; slug: string | undefined; baseMm: number; color: string; accent: string }) {
+  const manifest = useManifest()
+  const group = useFittedFigure(slug ? unitGlbUrl(slug) : undefined, (slug && manifest.units[slug]?.height) || figureHeight(baseMm))
+  if (!group) return <ProceduralFigure id={id} x={0} z={0} baseMm={baseMm} color={color} accent={accent} bare />
+  return (
+    <group name={`model-${id}`} userData={{ id, x: 0, z: 0 }}>
+      <GlbBase baseMm={baseMm} color={color} />
+      <GlbBody group={group} />
+    </group>
+  )
+}
+
 function Figure({ id, seatIndex }: { id: string; seatIndex: number }) {
   const m = usePresentedModel(id)
   const tween = useTween(id)
@@ -45,6 +64,8 @@ function Figure({ id, seatIndex }: { id: string; seatIndex: number }) {
   const body = useRef<Group>(null)
   const yaw = useRef<number | null>(null)
   const tip = useRef(0)
+  const manifest = useManifest()
+  const bundle = useBundle()
 
   useFrame((_, dt) => {
     if (!outer.current || !body.current || !m) return
@@ -67,11 +88,21 @@ function Figure({ id, seatIndex }: { id: string; seatIndex: number }) {
   const [color, accent] = tintFor(seatIndex)
   const r = baseRadius(m.base)
   const active = presented?.activation?.modelId === id
+  // Only slugs listed in the manifest are ever requested (no 404s); unit slug = unit id, weapon slug = weapon id.
+  const unitSlug = manifest.units[m.profileId] ? m.profileId : undefined
+  const mode = presented && engagedWith(presented, id).length > 0 ? 'melee' : 'ranged'
+  const weaponId = pickEquipped(m.carried, (d) => modeOfWeapon(bundle ? recordOf(bundle, 'weapons', d) : undefined), mode)
+  const weaponMode = (weaponId && bundle ? modeOfWeapon(recordOf(bundle, 'weapons', weaponId)) : undefined) ?? mode
+  const sock = socketFor(manifest, m.profileId, m.base)
   return (
     <group ref={outer} position={[m.pos.x, m.elev, m.pos.z]} name={`figure-${id}`}>
       {active && <Ring r={r} />}
       <group ref={body}>
-        <ProceduralFigure id={id} x={0} z={0} baseMm={m.base} color={color} accent={accent} />
+        <FigureBody id={id} slug={unitSlug} baseMm={m.base} color={color} accent={accent} />
+        {weaponId && (
+          <Weapon mode={weaponMode} accent={accent} url={manifest.weapons[weaponId] ? weaponGlbUrl(weaponId) : undefined}
+            length={manifest.weapons[weaponId]?.length} position={sock.rightHand} rotation={sock.rot} />
+        )}
       </group>
       <Pips id={id} r={r} />
     </group>

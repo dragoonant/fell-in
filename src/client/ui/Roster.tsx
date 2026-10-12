@@ -14,6 +14,7 @@ export function Roster() {
   const bySeat = state.seatOrder.map((seat) => ({ seat, ids: Object.values(state.models).filter((m) => m.owner === seat).map((m) => m.id) }))
   return (
     <aside className="rail rail-left" data-testid="rail-left">
+      <span className="rail-tab" aria-hidden="true">Crew</span>
       <div className="panel roster" data-testid="roster">
         {bySeat.map(({ seat, ids }) => (
           <div key={seat}>

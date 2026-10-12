@@ -11,3 +11,9 @@ export const PALETTE = {
   ink: '#1d1a16',
   bone: '#ece3d0',
 } as const
+
+// CSS font stacks only (no hosted fonts). Heading stack leans on installed stencil/condensed faces.
+export const FONTS = {
+  heading: '"Stencil Std", "Stencil", "Impact", "Haettenschweiler", "Arial Narrow Bold", "Franklin Gothic Medium", sans-serif',
+  body: '"Segoe UI", "Trebuchet MS", system-ui, sans-serif',
+} as const

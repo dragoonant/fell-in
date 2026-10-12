@@ -71,3 +71,75 @@
 .gameover h2 { font-size: 24px; }
 
 @media (max-width: 900px) { .rail-right { display: none; } .rail-left { width: 220px; } }
+
+/* ---- Polish pass: table is the hero. Post-atomic rust / sand / faded teal, CSS gradients only. ---- */
+:root { --font-head: "Stencil Std", "Stencil", "Impact", "Haettenschweiler", "Arial Narrow Bold", "Franklin Gothic Medium", sans-serif;
+  --panel-bg: linear-gradient(180deg, rgba(44,36,28,.78), rgba(26,22,18,.82)),
+    repeating-linear-gradient(45deg, rgba(201,173,124,.03) 0 2px, transparent 2px 6px); }
+.hud-root { font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif; font-size: 12.5px; }
+.hud-root button, .hud-root select { background: linear-gradient(180deg, rgba(60,50,38,.92), rgba(29,26,22,.92)); border-color: #4f8a82aa; }
+.panel, .card, .topbar { background: var(--panel-bg); border: 1px solid #4f8a8266; border-left: 3px solid var(--rust); backdrop-filter: blur(3px); box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+.card { border-color: #c9ad7c66; border-left-color: var(--sand); }
+.panel h2, .panel h3, .card-head b, .banner, .sect, .topbar-main { font-family: var(--font-head); letter-spacing: .06em; }
+.panel h3 { font-size: 14px; text-transform: uppercase; }
+.sect { margin: 6px 0 2px; }
+
+.topbar { top: 8px; left: 8px; right: 8px; padding: 3px 10px; gap: 4px 14px; }
+.topbar button { padding: 3px 8px; }
+.ticker { top: 52px; background: rgba(29,26,22,.55); font-size: 12px; }
+.banner { top: 30%; font-size: 30px; }
+
+/* rails: slim icon strips that open on hover/focus */
+.rail { top: 52px; bottom: 90px; overflow: hidden; background: transparent; transition: width .18s ease, opacity .18s ease; }
+.rail-left { left: 8px; width: 40px; }
+.rail-right { right: 8px; width: 40px; top: 52px; bottom: auto; max-height: 24vh; }
+.rail-left:hover, .rail-left:focus-within { width: 250px; overflow-y: auto; }
+.rail-right:hover, .rail-right:focus-within { width: 270px; max-height: 40vh; }
+.rail-tab { font-family: var(--font-head); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--sand);
+  background: var(--panel-bg); border: 1px solid #4f8a8266; border-left: 3px solid var(--rust); border-radius: 3px; padding: 4px 0; text-align: center; flex: none; }
+.rail:hover .rail-tab, .rail:focus-within .rail-tab { display: none; }
+.rail .panel { opacity: .9; }
+.rail-left:not(:hover):not(:focus-within) .roster { padding: 6px 4px; }
+.rail-left:not(:hover):not(:focus-within) .roster-row { padding: 4px 0; justify-content: center; }
+.rail-left:not(:hover):not(:focus-within) .roster-row span, .rail-left:not(:hover):not(:focus-within) .roster .sect { display: none; }
+.rail-left:not(:hover):not(:focus-within) .dot { width: 12px; height: 12px; }
+.rail-right:not(:hover):not(:focus-within) .panel { display: none; }
+.roster-row { padding: 3px 8px; }
+
+/* feed: short, with a fade at the top */
+.feed { max-height: 22vh; overflow-y: auto; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22px); mask-image: linear-gradient(to bottom, transparent 0, #000 22px); }
+.rail-right:hover .feed, .rail-right:focus-within .feed { max-height: 38vh; }
+
+/* unit card: compact, shown on demand (full detail on hover/focus) and floated beside the roster strip */
+.rail-left .card { position: fixed; left: 56px; bottom: 90px; width: 230px; font-size: 12px; z-index: 3; opacity: .94; max-height: 42vh; overflow: hidden; }
+.rail-left .card:hover, .rail-left .card:focus-within { overflow-y: auto; width: 270px; }
+.rail-left .card:not(:hover):not(:focus-within) :is(.sect, .plain, .rulers, .armor-row, .dim:not(.card-head .dim)) { display: none; }
+.rail-left .card:not(:hover):not(:focus-within) .attrs { margin: 3px 0; }
+.rail-left .card.empty { display: none; }
+.rail-left:not(:hover):not(:focus-within) .card { display: none; }
+.rail-left:hover .card, .rail-left:focus-within .card { display: block; }
+.rail-left:hover .card.empty { display: none; }
+.rail-left { overflow: visible; }
+.rail-left .roster { max-height: calc(100vh - 160px); overflow-y: auto; }
+
+/* prompt dock: narrow, bottom-centre, above a safe area */
+.dock { bottom: 56px; width: min(420px, calc(100vw - 24px)); max-height: 38vh; }
+.dock .panel { padding: 6px 10px; }
+.hint { margin-bottom: 5px; }
+
+@media (max-width: 900px) {
+  .rail-left { width: 34px; } .rail-left:hover, .rail-left:focus-within { width: 200px; }
+  .rail-right { display: none; }
+  .rail-left .card { left: 46px; width: 200px; }
+}
+@media (max-width: 600px) {
+  .topbar { top: 4px; left: 4px; right: 4px; font-size: 11px; }
+  .topbar-seats { display: none; }
+  .ticker { top: 78px; max-width: 90vw; }
+  .rail { top: 84px; bottom: 150px; }
+  .rail-left { left: 4px; width: 30px; }
+  .rail-left:hover, .rail-left:focus-within { width: 180px; }
+  .rail-left .card { display: none !important; }
+  .dock { bottom: 8px; width: calc(100vw - 16px); max-height: 44vh; }
+  .banner { font-size: 22px; }
+}

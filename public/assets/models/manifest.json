@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "note": "Generated models drop in here. units: unit id -> optional overrides; weapons: weapon id -> optional overrides. Files: units/<slug>.glb, weapons/<slug>.glb. Models: y up, origin at the base centre (units) or grip (weapons, barrel along +z).",
+  "sockets": {
+    "defaults": {
+      "25": { "rightHand": [0.34, 0.95, 0.2], "rot": [0.0, 0.0, 0.0] },
+      "32": { "rightHand": [0.42, 1.15, 0.26], "rot": [0.0, 0.0, 0.0] },
+      "40": { "rightHand": [0.52, 1.45, 0.32], "rot": [0.0, 0.0, 0.0] }
+    }
+  },
+  "units": {},
+  "weapons": {}
+}
