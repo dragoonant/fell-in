@@ -46,14 +46,31 @@ rulebook; we follow the errata), **Unsourced** (no source; our engineering or de
 - RULING: CH tutorials and settlement scenarios | placeholders CH-T1..T5 until a source is available | Campaign Handbook has no free copy | Unsourced | ERR p.4-5
 
 ## AI
-- RULING: AI activation order | AI draws one number token per turn, readies that model, Uses all Ready AI models in ascending number | only a search summary of the CH text; RoP App.1 confirms numbered AI markers | Fan-source | RoP p54; web search 2026-10-11
-- RULING: Matrix row icons | rows keyed to blue-die icon groups (bottle / star / blast); exact grouping per card when cards are entered | dev blog confirms a blue-die row roll, not the grouping | Unsourced | BLOG
-- RULING: Starter AI card data | placeholder matrices tagged `source: "placeholder"` until the owner's physical AI cards (or the paid AI deck PDF) are entered | not in any free PDF | Unsourced | CARDS; BLOG
-- RULING: Objective switches timing | evaluated before each AI activation and after each Action | AIH describes switches but not timing | Unsourced | AIH s2
-- RULING: AI reactions | an AI model with a Reaction marker reacts to the first trigger it is aware of with an attack if legal, else a move | CH procedure unavailable | Unsourced | RoP s4.4
-- RULING: AI ties | broken by seeded RNG and logged | tabletop leaves ties to the player | Unsourced | ERR p.16
-- RULING: Target priority vocabulary | Nearest, Vulnerable, Leader, Importance, Prepared confirmed; Least armor, Most damaged, Highest max Health from the dev blog | two official sources | Confirmed | ERR p.16-18; BLOG
-- RULING: Fall Back target | the model's own deployment position | FAQ refers to "their deployment point" | Confirmed | ERR p.16
+- RULING: AI activation order | AI draws one number token per turn, readies that model, Uses all Ready AI models in ascending number | CH states the procedure | Confirmed | CH p8
+- RULING: Number token pool | drawn tokens stay out until the round ends; each round the pool is the tokens of the AI models still on the table; the decider draws uniformly from the AI's Unready models with deriveSeed | CH describes the draw but not the refill | Unsourced | CH p8
+- RULING: Matrix row icons | rows are bottles / stars / blast; 1 and 2 icons of a kind share a row but each count has its own Method icon; the bottle+star face reads as one star | CH card anatomy and text | Confirmed | CH p10, p11, p50
+- RULING: Blue die timing | rolled once at activation start; the Response is fixed for the activation and the activity list is re-walked before each Action | CH states it (the old spec rolled per Action) | Corrected | CH p10, p16
+- RULING: Column choice | first column from the left that is true, else the last column; Health columns read Health remaining (`health:<lo>-<hi>` / `health:<n>+` in data) | CH states it | Confirmed | CH p10
+- RULING: Starter AI card data | Super Mutant, Brute and Sole Survivor Day One are entered from the CH card images; the other starter cards keep placeholder cells tagged `source: "placeholder"` until the owner's physical cards are entered | only three starter cards are printed in CH | Unsourced | CH p8, p10, p50
+- RULING: Placeholder matrices | melee units (Mutant Hound, Dogmeat, Deathclaw) copy the Brute pattern, ranged units (Aviator, Settler, Enslaved Tech, Sole Survivor, Goddard) copy the Sole Survivor Day One pattern, with Health bands scaled to the unit; Aviator, Sole Survivor and Goddard columns and priority lists come from product photos | engineering stand-in, no card text | Unsourced | R2-photos.md
+- RULING: Placeholder standard equipment | taken from the AIH/COOP/RR suggested forces for that unit | AI cards not in hand | Unsourced | AIH s4; COOP s4; RR p2
+- RULING: Preferred weapon in data | `notes` carries `pref:<weapon-id>` for the underlined weapon (Super Mutant: Board) | schema has no field and is frozen | Unsourced | CH p10, p11
+- RULING: AI card AP use | the Sole Survivor Day One footer (AP icon, then a bin and a damage glyph) is read as "spend AP to remove 1 regular damage", stored as `notes: ["ap:removeDamage"]` | CH p16 mentions AP damage removal; icons are not captioned | Unsourced | CH p16, p50
+- RULING: Objective None | the O response has no activity, so the model performs A | CH lists None but gives no O step; CH p13 says no way to do O means A | Unsourced | CH p9, p13
+- RULING: Objective switches timing | live predicates are re-checked before every AI Action; latching switches are checked by the scenario module at activation start and after each Action, stored in `tokens.aiPhase` | CH says objectives may change, not when they are checked | Unsourced | CH p9; AIH s2
+- RULING: AI reactions | AI models never Prepare (no activity list contains it), so a `react.offer` to the AI seat is declined | CH has no reaction step for AI models | Unsourced | CH p11-14; RoP s4.4
+- RULING: AI ties | broken by the AI's seeded stream and logged | CH says randomize the remaining targets | Confirmed | CH p12
+- RULING: Target priority vocabulary | CH list: Nearest, Weakest, Largest, Wounded, Healthiest, Vulnerable, Slowest, Fastest, Best Chance, Prepared, Spent, Importance, Not Engaged, Engaged, Capable; Leader from ERR | CH table plus FAQ | Confirmed | CH p12; ERR p.16
+- RULING: Prepared priority | holding a Reaction marker before not | CH defines it as "Ready before Not Ready", ERR renames cards' "Ready" to "Prepared", and RoP calls a model with a Reaction marker Prepared | Unsourced | CH p12; ERR p.18; RoP s4.4
+- RULING: Fall Back target | the model's own initial deployment point | CH states it | Confirmed | CH p13; ERR p.16
+- RULING: Push Back follow-up for printed M, F or S | M and F follow the O/D rule (Reckless only); S follows the A rule | CH lists A, O and D only | Unsourced | CH p15
+- RULING: Careful Move | moves at least half its Move, then stops at the point of that path with the best cover and fewest enemy attackers, preferring the farther point on a tie | CH gives the aim, not a scoring rule | Unsourced | CH p10, p13
+- RULING: Charge marker colour | flipped at random from the AI's seeded stream | CH says flip the token | Confirmed | CH p11
+- RULING: AI Heroic model | V.A.T.S. at activation start; any AP gives one Quick Action after the two Actions, run as the same Response; always Critical when able; Luck only for Tough | CH states it | Confirmed | CH p16; AIRF
+- RULING: Health above the top band | a model whose Health exceeds every printed band (e.g. a Heroic Super Mutant at 7 vs "4-6") falls through to the last column, as CH reads literally | no source addresses Heroic +1 Health on AI cards | Unsourced | CH p10, p16
+- RULING: AI matrix columns | modelled as predicates (Health remaining or a scenario condition), not Health only | CH names Health and friendly count as examples | Confirmed | CH p10
+- RULING: Narrative override | the CH hint letting players swap to another listed behaviour is not implemented | owner rule: official procedure only | Unsourced | CH p9
+- RULING: Co-op team decisions | team ready and pick decisions go to the team's first seat with the team listed in context; each player's use-all/none goes to that player | COOP gives the choice to the team, a local table needs one answering seat | Unsourced | COOP s2
 
 ## Campaign
 - RULING: Settlement rules | M6 uses only facts in spec 19 plus a labelled house procedure unless the owner provides the Campaign Handbook | no free source | Unsourced | spec 19
@@ -71,8 +88,6 @@ rulebook; we follow the errata), **Unsourced** (no source; our engineering or de
 - RULING: Chem diminishing order | columns hide right to left (dot counts 3/2/1); addiction rows read bottom-up from STR, so Bourbon gives AGI -1 | icon-only, table printed rotated | Unsourced | CARDS; RoP p33
 - RULING: Weapon pictograms | Bat helmet-crack = armorDown 1 (once per Action per errata); STAR burst = extraDamage 1; grenade/missile target-burst icon omitted | icon-only | Unsourced | CARDS; ERR
 - RULING: Fan perk/boost/quest/event data | used only as a name and mechanic cross-reference, all prose rewritten | campaign-edition fan transcription, edition unverified | Fan-source | R1-archives.md
-- RULING: AI Heroic model | gets V.A.T.S. at activation start and one extra Quick Action | Campaign Handbook p16 product preview photo | Confirmed | R2-photos.md
-- RULING: AI matrix columns | modelled as predicates (health or scenario condition), not health only | Wave 3 Institute card photo | Confirmed | R2-photos.md
 - RULING: Settlement storage | not implemented; campaign GAP-1/2 stay open | secondhand forum snippet only | Unsourced | R3-campaign.md
 
 ## M2 engine
@@ -94,3 +109,9 @@ rulebook; we follow the errata), **Unsourced** (no source; our engineering or de
 - RULING: BOX-4 Defender rows | the printed Defender rows read "the enemy controls the Tower"; read as the Defender's own side: both sides score a Major win with more models at the tower and a Minor win with more points on that level | the printed text contradicts the Attacker rows | Corrected (sheet typo) | BOX SCP-004
 - RULING: Placeholder bot | until the M4 AI the client bot is the seeded random decider, leaning toward the table centre and taking an offered attack 80% of the time | a pure random bot wandered off the table and never attacked | Unsourced (client only, no rules effect) | 50
 - RULING: Box-5 (Flip's Revenge) rescue | the captive cannot be freed (no rescue rule in the engine), so Flip only wins by elimination; box-5 is left out of the AI benchmark | the box PDF's rescue step is not modelled yet | Unsourced | BOX p.9-10
+- RULING: Object Health convention | an object's `props.health` is its Health left and `maxHealth` the start; a destroyed object stays on the table list flagged `destroyed` so scenarios can read the result | the Red Rocket check already read `health` as Health left | Unsourced (engine convention) | RR p2
+- RULING: Blast weapons at objects | an area weapon aimed at an object damages only the object (no splash, no scatter) | the object rules say nothing about templates | Unsourced | RR p2; AIH s4
+- RULING: Object cover and LoS | objects give no cover and do not block line of sight; a shot at one uses normal range, line of sight and cover rules to its position | RR lists only the sled's Cover and LoS lines, which are not modelled yet | Unsourced | RR p2
+- RULING: Co-op Ready decisions | the team readies one model, so only that model's owner is asked use all or none; a seat that chooses none turns its Ready models Used at once | COOP s2 words the choice per player but readies one model per team turn | Unsourced | COOP s2
+- RULING: Co-op hostility | seats of one team are never opposing: no engagement, no cover from teammates for the other side, reactions compare teams | COOP s2 treats the team as one side | Fan-source | COOP s2
+- RULING: Missile sled movement | the sled's end-of-turn Red move (SCN-004) is not built in M4b; the sled can be shot and destroyed like any object | the Red move needs a scenario timer hook | Unsourced | AIH s4

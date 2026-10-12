@@ -82,7 +82,7 @@ describe('AI navigation (spec 30 s6)', () => {
   it('NAV-004 the round tracker counts a new round when a Used model is Unready again', () => {
     const s = createGame(bundle, { seed: 'nav4', scenarioId: 'box-1' })
     const mem = newMemory()
-    const v = view(s, s.seatOrder[0]!)
+    const v = { ...view(s, s.seatOrder[0]!), round: undefined } // the memory tracker is for views without a round (the engine view carries one since M4b)
     observeRound(mem, v)
     expect(roundOf(mem, v)).toBe(1)
     const id = Object.keys(s.models)[0]!

@@ -49,6 +49,13 @@ function brainFor(tier: Tier): BotBrain {
   return lazy
 }
 
+/** Brain for a seat: the official AI cards for 'official' seats (loaded on demand), else the tier brain. */
+function brainForSeat(controller: string | undefined): BotBrain {
+  if (override) return override
+  if (controller !== 'official') return brainFor(launchTier())
+  return async (v, p, l, c) => (await import('./officialBrain')).officialBrain(v, p, l, c)
+}
+
 export interface BotDriverOptions {
   now?: () => number
   setTimeout?: (fn: () => void, ms: number) => unknown
@@ -135,7 +142,7 @@ export function createBotDriver(opts: BotDriverOptions = {}): BotDriver {
     // Headroom over the AI's own budget (worker start-up, clone, edition load): the search ends well before this gives up.
     const raceMs = Math.max(budgetMs, aiBudgetMs() * 3 + 1000)
     const timeout = new Promise<null>((res) => { setT(() => res(null), raceMs) })
-    Promise.race([Promise.resolve().then(() => brainFor(launchTier())(aiViewOf(s.state!, seat), p, legal, ctx)), timeout])
+    Promise.race([Promise.resolve().then(() => brainForSeat(s.controllers[seat])(aiViewOf(s.state!, seat), p, legal, ctx)), timeout])
       .catch(() => null)
       .then((a) => {
         if (inflight === key) inflight = null

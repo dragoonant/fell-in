@@ -9,12 +9,16 @@ export const MODES: readonly { id: PlayMode; label: string; blurb: string }[] = 
   { id: 'watch', label: 'Watch bots', blurb: 'Sit back and watch the bots fight it out.' },
 ]
 
-export type OpponentTier = 'easy' | 'normal' | 'random'
+export type OpponentTier = 'easy' | 'normal' | 'random' | 'official'
 export const OPPONENTS: readonly { id: OpponentTier; label: string; blurb: string }[] = [
   { id: 'easy', label: 'Easy', blurb: 'Plays sensibly but makes mistakes.' },
   { id: 'normal', label: 'Normal', blurb: 'Uses cover, picks fights it can win.' },
   { id: 'random', label: 'Random', blurb: 'Moves and shoots without a plan.' },
+  { id: 'official', label: 'Wasteland AI (official cards)', blurb: 'The tabletop AI deck plays the other side: solo, or co-op for two.' },
 ]
+export const OFFICIAL_TIER: OpponentTier = 'official'
+export type TeamSize = 1 | 2
+export const asTeam = (v: unknown): TeamSize => (v === 2 ? 2 : 1)
 export const DEFAULT_TIER: OpponentTier = 'normal'
 export const asTier = (v: unknown): OpponentTier => (OPPONENTS.some((o) => o.id === v) ? (v as OpponentTier) : DEFAULT_TIER)
 
@@ -26,6 +30,16 @@ export function seatsFor(mode: PlayMode, sides = 2): SeatController[] {
   const out = base.slice(0, Math.max(1, sides))
   while (out.length < sides) out.push('bot')
   return out
+}
+
+/** Seats for the official AI: one or two people (hot-seat co-op) against the AI seat, which always sits last. */
+export function officialSeats(team: TeamSize): SeatController[] {
+  return team === 2 ? ['human', 'human', 'official'] : ['human', 'official']
+}
+
+/** With the official AI as opponent only scenarios with an AI side apply: the solo and co-op groups. */
+export function aiScenarios(list: readonly ScenarioChoice[]): ScenarioChoice[] {
+  return list.filter((s) => s.mode === 'ai' || s.mode === 'coop')
 }
 
 /** Trim the seed; blank means a random seed (omit it). */
@@ -69,9 +83,10 @@ export function scenarioSummary(s: ScenarioChoice): string {
 }
 
 /** Build the launch options from the picker state. */
-export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier }): NewGameOptions & { tier?: OpponentTier } {
+export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier; team?: TeamSize }): NewGameOptions & { tier?: OpponentTier } {
   const seed = cleanSeed(p.seed)
-  return { ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
+  const seats = p.tier === OFFICIAL_TIER ? officialSeats(asTeam(p.team)) : seatsFor(p.mode, p.sides)
+  return { ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats, ...(seed ? { seed } : {}) }
 }
 
 /** "3 min ago" style label for the autosave line. */

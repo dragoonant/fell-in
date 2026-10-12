@@ -56,7 +56,7 @@ export function Hud() {
         {!result && pending && (pending.kind === 'turn.activation' ? <ActivationPanel pending={pending} /> : <Prompt pending={pending} />)}
         {!result && !pending && waiting && (
           <div className="panel waiting" data-testid="hud-thinking">
-            {waiting.controller === 'bot' ? `${waiting.label} is thinking...` : `Waiting for ${waiting.label}...`}
+            {waiting.controller !== 'human' ? `${waiting.label} is thinking...` : `Waiting for ${waiting.label}...`}
           </div>
         )}
       </div>

@@ -6,11 +6,12 @@ import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
 import './start/start.css'
 import {
-  ageLabel, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OPPONENTS, pickDefaultScenario, scenarioSummary, type OpponentTier, type PlayMode,
+  aiScenarios, ageLabel, asTeam, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OFFICIAL_TIER, OPPONENTS, pickDefaultScenario, scenarioSummary,
+  type OpponentTier, type PlayMode, type TeamSize,
 } from './start/startView'
 
 const PREF_KEY = 'fell-in.start'
-interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier }
+interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier; team: TeamSize }
 
 export function StartScreen() {
   const saved = useMemo(() => readJson<Partial<Prefs>>(PREF_KEY) ?? {}, [])
@@ -19,6 +20,7 @@ export function StartScreen() {
   const [scenarioId, setScenarioId] = useState<string>(saved.scenarioId ?? DEFAULT_SCENARIO_ID)
   const [mode, setMode] = useState<PlayMode>(saved.mode ?? 'bot')
   const [tier, setTier] = useState<OpponentTier>(asTier(saved.tier))
+  const [team, setTeam] = useState<TeamSize>(asTeam(saved.team))
   const [seed, setSeed] = useState('')
   const speed = useSettingsStore((s) => s.speed)
   const setSettings = useSettingsStore((s) => s.set)
@@ -33,14 +35,21 @@ export function StartScreen() {
     return () => { alive = false }
   }, [])
 
-  const groups = useMemo(() => groupScenarios(list), [list])
+  const official = tier === OFFICIAL_TIER
+  const shown = useMemo(() => (official ? aiScenarios(list) : list), [list, official])
+  const groups = useMemo(() => groupScenarios(shown), [shown])
+  // Switching to the official AI drops skirmish scenarios; keep the pick valid.
+  useEffect(() => {
+    if (official && shown.length && !shown.some((s) => s.id === scenarioId)) setScenarioId(shown[0]!.id)
+    else if (!official && list.length && !list.some((s) => s.id === scenarioId)) setScenarioId((cur) => pickDefaultScenario(list, cur) ?? cur)
+  }, [official, shown, list, scenarioId])
   const chosen = list.find((s) => s.id === scenarioId)
   const boxes = groups.find((g) => g.id === 'box')
   const others = groups.filter((g) => g.id !== 'box')
 
   const start = () => {
-    writeJson(PREF_KEY, { scenarioId, mode, tier })
-    launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier }))
+    writeJson(PREF_KEY, { scenarioId, mode, tier, team })
+    launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier, team }))
   }
   const pick = (s: ScenarioChoice) => (
     <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => setScenarioId(s.id)}>
@@ -57,7 +66,7 @@ export function StartScreen() {
 
         <section className="sc-sec" aria-label="Scenario">
           <h2 className="sc-h">Scenario</h2>
-          {boxes ? <div className="sc-row">{boxes.items.map(pick)}</div> : <p className="sc-note">{loadFailed ? 'Could not load the scenario list; the default skirmish will start.' : 'Loading scenarios...'}</p>}
+          {boxes ? <div className="sc-row">{boxes.items.map(pick)}</div> : official && list.length ? null : <p className="sc-note">{loadFailed ? 'Could not load the scenario list; the default skirmish will start.' : 'Loading scenarios...'}</p>}
           {others.map((g) => (
             <details key={g.id} open={g.items.some((s) => s.id === scenarioId)}>
               <summary>{g.label}</summary>
@@ -67,7 +76,7 @@ export function StartScreen() {
           <p className="sc-note" data-testid="scenario-note">{chosen ? scenarioSummary(chosen) : ''}</p>
         </section>
 
-        <section className="sc-sec" aria-label="Mode">
+        {!official && <section className="sc-sec" aria-label="Mode">
           <h2 className="sc-h">Mode</h2>
           <div className="sc-row">
             {MODES.map((m) => (
@@ -76,7 +85,7 @@ export function StartScreen() {
               </button>
             ))}
           </div>
-        </section>
+        </section>}
 
         <section className="sc-sec" aria-label="Opponent">
           <h2 className="sc-h">Opponent</h2>
@@ -88,6 +97,19 @@ export function StartScreen() {
             ))}
           </div>
         </section>
+
+        {official && (
+          <section className="sc-sec" aria-label="Team">
+            <h2 className="sc-h">Your team</h2>
+            <div className="sc-row" data-testid="team-size">
+              {([1, 2] as const).map((n) => (
+                <button key={n} className="sc-chip" aria-pressed={team === n} data-testid={`team-${n}`} onClick={() => setTeam(n)}>
+                  {n === 1 ? '1 player' : '2 players'}<small>{n === 1 ? 'Solo against the game.' : 'Co-op on one screen, taking turns.'}</small>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="sc-sec" aria-label="Options">
           <h2 className="sc-h">Speed</h2>

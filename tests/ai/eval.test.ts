@@ -96,7 +96,7 @@ describe('AI evaluation (spec 30 s7, s9)', () => {
   })
 
   it('AI-E06 objective value is 0 without markers and rises near an unseen marker', () => {
-    const c = ctxWith()
+    const c = ctxWith(undefined, { markers: [] }) // the engine view now carries markers (M4b); this case is the empty list
     const me = mine(c)[0]!
     expect(objectiveValue(c, me.id, me.pos)).toBe(0)
     const marker: MarkerState = { id: 'k1', kind: 'searchable', pos: { x: 3, z: 3 }, revealed: false, seenBy: [], props: {} }

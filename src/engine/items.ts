@@ -9,6 +9,7 @@ import { removeModel, healthOf, heal } from './damage'
 import { conditionSvMods, removeCondition } from './conditions'
 import { hasLos } from './los'
 import { isEngaged } from './attack'
+import { sameTeam } from './sides'
 import { roll } from './rng'
 import { option, pushEvents, raiseDecision, reject, updateModel, type ModuleDef, type StepResult } from './registry'
 import { modelDefaults } from './setup'
@@ -178,7 +179,7 @@ function findHolder(state: GameState, bundle: EditionBundle, user: ModelState, i
   const own = user.carried.find((c) => c.uid === itemUid)
   if (own) return { holder: user, c: own }
   for (const other of Object.values(state.models)) {
-    if (other.id === user.id || other.owner !== user.owner || other.life !== 'active' || other.offTable) continue
+    if (other.id === user.id || !sameTeam(state, other.owner, user.owner) || other.life !== 'active' || other.offTable) continue
     const c = other.carried.find((x) => x.uid === itemUid)
     if (!c) continue
     const def = recordOf(bundle, 'items', c.defId)

@@ -11,7 +11,9 @@ const GameScreen = lazy(() => import('./GameScreen').then((m) => ({ default: m.G
 
 function paramsLaunch() {
   const p = readParams()
-  return { seats: p.seats, ...(p.seed ? { seed: p.seed } : {}), ...(p.scenario ? { scenarioId: p.scenario } : {}) }
+  // The official AI needs a scenario with an AI side; default to the first solo one.
+  const scenarioId = p.scenario ?? (p.seats.includes('official') ? 'ai-rr' : null)
+  return { seats: p.seats, ...(p.seed ? { seed: p.seed } : {}), ...(scenarioId ? { scenarioId } : {}) }
 }
 
 export function App() {

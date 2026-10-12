@@ -117,7 +117,12 @@ export interface SeatState {
   done: boolean
   /** Victory points / scenario score. */
   score: number
+  /** M4b: who answers this seat's decisions ('official' = the official AI card decider; spec 18 s8.2). Default 'human'. */
+  controller?: SeatController
+  /** M4b: seats with the same team take turns together and are never hostile to each other (co-op, spec 18 s8.4). Default: the side. */
+  team?: string
 }
+export type SeatController = 'human' | 'bot' | 'official'
 
 export interface TurnState {
   /** Seat taking the current turn. */
@@ -268,6 +273,12 @@ export interface PlayerView {
   clouds: Cloud[]
   scenario: ScenarioState
   pending: PendingDecision
+  // ---- M4b additions (additive, optional): what the official AI and the HUD read (spec 00 s10, 18 s8) ----
+  round?: number
+  maxRounds?: number | null
+  scenarioId?: string | null
+  /** Scenario markers; `face` and `props` are removed while the seat's team has not seen them. */
+  markers?: MarkerState[]
 }
 
 export type LosReason = 'clear' | 'terrain' | 'model' | 'cloud' | 'forestDepth' | 'outOfTable' | 'self'

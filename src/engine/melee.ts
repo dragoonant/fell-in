@@ -14,6 +14,8 @@ import { sweepStraight } from './geometry'
 import { carriedOf } from './items'
 import { hasLos } from './los'
 import { modelDistance } from './measure'
+import { hostile } from './sides'
+import { inObjectContact, markerById, meleeableMarkers, withProbe } from './objects'
 import { chargeMove, pushBack, validateMove } from './movement'
 import {
   isRejection, option, pushEvents, raiseDecision, reject, updateModel, type ActionDone, type ModuleDef, type StepResult, type Trigger,
@@ -71,7 +73,7 @@ function chargePools(state: GameState, attackerId: ModelId, targetId: ModelId): 
 export function meleePlan(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId, opts: AttackOptsEx = {}): AttackPlan | Rejection {
   const A = state.models[attackerId], B = state.models[targetId]
   if (!A || !B || !isOnTable(A) || !isOnTable(B) || attackerId === targetId) return reject('E_BAD_TARGET', 'Not a valid attacker and target.')
-  if (!engagedWith(state, attackerId).includes(targetId)) return reject('E_NOT_ENGAGED', 'Close combat needs base contact with an opposing model.') // CC-013
+  if (!opts.objectContact && !engagedWith(state, attackerId).includes(targetId)) return reject('E_NOT_ENGAGED', 'Close combat needs base contact with an opposing model.') // CC-013
   const uid = opts.weaponUid ?? ccWeapons(state, bundle, attackerId)[0]
   if (!uid) return reject('E_NO_ITEM', 'No weapon to fight with.')
   const ref: WeaponRef | undefined = weaponRef(state, bundle, attackerId, uid)
@@ -107,6 +109,17 @@ export function meleePlan(state: GameState, bundle: EditionBundle, attackerId: M
   })
 }
 
+/** Close Combat plan against a scenario object in base contact; never an engagement (SHOT-003, RR p2). */
+export function objectMeleePlan(state: GameState, bundle: EditionBundle, attackerId: ModelId, markerId: string, opts: AttackOptsEx = {}): AttackPlan | Rejection {
+  const mk = markerById(state, markerId)
+  if (!mk || !meleeableMarkers(state).some((x) => x.id === markerId)) return reject('E_BAD_TARGET', 'That object cannot be struck.')
+  if (!inObjectContact(state, attackerId, mk)) return reject('E_NOT_ENGAGED', 'Close combat with an object needs base contact.')
+  const probed = withProbe(state, mk)
+  const plan = meleePlan(probed.state, bundle, attackerId, probed.probeId, { ...opts, objectContact: true })
+  if (isRejection(plan)) return plan
+  return { ...plan, targetId: markerId, targetMarkerId: markerId }
+}
+
 /** Free Quick Action attack against a withdrawing model (CC-009..011). Called by movement before the move. Not a trigger. */
 export function freeAttack(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId): { state: GameState } {
   const A = state.models[attackerId]
@@ -125,7 +138,7 @@ const validPath = (p: unknown): p is Vec2[] => Array.isArray(p) && p.every((v) =
 function canCharge(state: GameState, bundle: EditionBundle, modelId: ModelId, targetId: ModelId): boolean {
   const A = state.models[modelId], B = state.models[targetId]
   const unit = unitOf(state, bundle, modelId)
-  if (!A || !B || !unit || !isOnTable(A) || !isOnTable(B) || A.owner === B.owner || isEngaged(state, modelId)) return false
+  if (!A || !B || !unit || !isOnTable(A) || !isOnTable(B) || !hostile(state, A.owner, B.owner) || isEngaged(state, modelId)) return false
   const reach = rulerInches(bundle, unit.charge) + baseDiameter(A.base) // front-to-rear measuring (MOVE-001)
   if (!(modelDistance(A, B) <= reach + EPS) || !hasLos(state, modelId, targetId)) return false
   // The menu entry is the straight charge (no waypoints): offer it only when that charge resolves, so every listed
@@ -154,7 +167,7 @@ function chargeGo(state: GameState, bundle: EditionBundle, action: Action): Step
   const { id, m } = own
   const targetId = String(action.targetId ?? '')
   const B = state.models[targetId]
-  if (!B || !isOnTable(B) || B.owner === m.owner) return reject('E_BAD_TARGET', 'Charge an opposing model on the table.')
+  if (!B || !isOnTable(B) || !hostile(state, B.owner, m.owner)) return reject('E_BAD_TARGET', 'Charge an opposing model on the table.')
   if (isEngaged(state, id)) return reject('E_ENGAGED', 'A model cannot charge while engaged.') // CHG-002 / CC-011
   if (!hasLos(state, id, targetId)) return reject('E_NO_LOS', 'A charge needs line of sight to its target.')
   if (action.path !== undefined && !validPath(action.path)) return reject('E_BAD_PARAM', 'Malformed path.')
@@ -262,6 +275,13 @@ export const melee: ModuleDef = {
     if (!m || !isOnTable(m)) return []
     const out: DecisionOption[] = []
     const foes = engagedWith(state, modelId).sort()
+    for (const mk of meleeableMarkers(state)) { // SHOT-003: an object in contact can be struck, without any engagement
+      if (!inObjectContact(state, modelId, mk)) continue
+      for (const uid of ccWeapons(state, bundle, modelId)) {
+        const ref = weaponRef(state, bundle, modelId, uid)
+        if (ref) out.push(option(`melee:${uid}:obj:${mk.id}`, `Strike the ${mk.face ?? 'object'} with ${ref.def.name}`, 'melee.attack', { modelId, weaponUid: uid, targetMarkerId: mk.id }, m.owner))
+      }
+    }
     if (foes.length) {
       for (const uid of ccWeapons(state, bundle, modelId)) {
         const ref = weaponRef(state, bundle, modelId, uid)
@@ -285,7 +305,10 @@ export const melee: ModuleDef = {
       case 'melee.attack': {
         const own = ownedModel(state, action)
         if (isRejection(own)) return own
-        const plan = meleePlan(state, bundle, own.id, String(action.targetId ?? ''), { weaponUid: String(action.weaponUid ?? ''), critical: action.critical === true })
+        const mopts = { weaponUid: String(action.weaponUid ?? ''), critical: action.critical === true }
+        const plan = action.targetMarkerId !== undefined
+          ? objectMeleePlan(state, bundle, own.id, String(action.targetMarkerId), mopts)
+          : meleePlan(state, bundle, own.id, String(action.targetId ?? ''), mopts)
         if (isRejection(plan)) return plan
         return startAttack(state, bundle, 'melee', plan)
       }

@@ -3,7 +3,7 @@ import type { EditionBundle } from '../../data/types'
 import type { GameEvent, GameState, ModelId, SeatId } from '../../engine/types'
 import type { Cue } from './cues'
 
-export type SeatControllerLabel = 'human' | 'bot'
+export type SeatControllerLabel = 'human' | 'bot' | 'official'
 interface LabelContext { bundle: EditionBundle | null; controllers: Record<SeatId, SeatControllerLabel>; seatOrder: SeatId[] }
 let ctx: LabelContext = { bundle: null, controllers: {}, seatOrder: [] }
 
@@ -12,7 +12,8 @@ export function setLabelContext(c: Partial<LabelContext>): void { ctx = { ...ctx
 /** "Player 1", "Player 2 (bot)". */
 export function seatLabel(seat: SeatId | null | undefined): string {
   if (!seat) return 'Nobody'
-  const i = ctx.seatOrder.indexOf(seat)
+  if (ctx.controllers[seat] === 'official') return 'Wasteland AI'
+  const i = ctx.seatOrder.filter((x) => ctx.controllers[x] !== 'official').indexOf(seat)
   const base = `Player ${i >= 0 ? i + 1 : seat}`
   return ctx.controllers[seat] === 'bot' ? `${base} (bot)` : base
 }
@@ -56,6 +57,23 @@ export function narrate(state: GameState | null, cue: Cue): string | null {
   }
 }
 
+const RESPONSE_WORDS: Record<string, string> = {
+  A: 'attack', M: 'move', O: 'go for the objective', F: 'fall back', D: 'defend', S: 'strike',
+}
+/** One feed line for a logged AI choice: column, die row, response and target (our words, from the log fields). */
+function aiDecisionLine(state: GameState | null, ev: { [k: string]: unknown }): string | null {
+  const cell = ev.cell as { columnLabel?: string; row?: number; response?: string } | null | undefined
+  const performed = (ev.performed as string | null | undefined) ?? cell?.response
+  const target = ev.target as { id?: string; kind?: string } | undefined
+  if (!cell || !performed) return null
+  const who = typeof ev.modelId === 'string' ? modelName(state, ev.modelId) : 'The AI'
+  const parts = [`${who}: column ${cell.columnLabel ?? '?'}, die row ${(cell.row ?? 0) + 1}`]
+  const asked = cell.response ?? performed
+  parts.push(performed === asked ? `response: ${RESPONSE_WORDS[performed] ?? performed}` : `response: ${RESPONSE_WORDS[asked] ?? asked}, which turns into ${RESPONSE_WORDS[performed] ?? performed}`)
+  if (target?.id) parts.push(`target: ${target.kind === 'marker' ? 'a marker' : modelName(state, target.id)}`)
+  return `${parts.join('; ')}.`
+}
+
 const CONDITION_WORDS: Record<string, string> = {
   frozen: 'frozen', injuredArm: 'nursing an injured arm', injuredLeg: 'limping on an injured leg', onFire: 'burning',
   poisoned: 'poisoned', slow: 'slowed', stunned: 'stunned',
@@ -70,6 +88,7 @@ function noteLine(state: GameState | null, event: GameEvent): string | null {
     case 'itemFound': return `${modelName(state, s('modelId'))} finds ${dataName(s('defId'))}.`
     case 'searchEmpty': return `${modelName(state, s('modelId'))} searches and finds nothing.`
     case 'danger': return `${modelName(state, s('modelId'))} sets off a danger.`
+    case 'ai.decision': return aiDecisionLine(state, ev)
     case 'peek': return `${seatLabel(s('seat'))} takes a look at a marker.`
     default: return null
   }

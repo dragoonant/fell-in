@@ -18,7 +18,8 @@ the rulebook, the errata wins and the spec states the errata version only.
 | COST | wave9_costs.pdf | (COST "<name>") |
 | BOX | foww_box_scenarios_1-5_download.pdf (fetched from the 1st-ed downloads page) | (BOX SCP-00N) |
 | BLOG | modiphius.net/blogs/news/ai-game-play (dev blog #10) | (BLOG) |
-| CH | Campaign Handbook (starter-set booklet, no free copy) | gap marker only |
+| CH | foww-campaign-handbook-digital-final_compress.pdf (Campaign Handbook, owner copy) | (CH p<printed page>); PDF page = printed + 2 |
+| AIRF | ai_response_flowcharts.pdf | (AIRF) |
 
 ## Components (logical; our own art)
 - Models on round bases: Normal 32 mm, Large 40 mm, Huge 60 mm or wider (RoP s2.8 p17). A model in

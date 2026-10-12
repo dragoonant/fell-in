@@ -226,7 +226,9 @@ interface AiCardDef { id: string; unitId: string; standardEquipment: string[];
   rows: { blueIcons: ('BOT'|'STAR'|'BLAST'|'BOT+STAR'|'BOT2'|'STAR2')[];
     cells: { response: 'A'|'M'|'O'|'F'|'D'|'S'; reckless: boolean; stayEngaged: boolean }[];
     method: ('ranged'|'close')[] }[];
-  targetPriority: string[];   // 'nearest'|'vulnerable'|'leader'|'importance'|'prepared'|'mostDamaged'|'highestHealth'|...
+  targetPriority: string[];   // CH p12 ids: 'nearest'|'weakest'|'largest'|'wounded'|'healthiest'|'vulnerable'|'slowest'|'fastest'|'bestChance'|'prepared'|'spent'|'importance'|'notEngaged'|'engaged'|'capable'|'leader'
+  // conventions (M4b, spec 18 s8): columns[].when.other = 'health:<lo>-<hi>' | 'health:<n>+' (Health remaining);
+  // rows[].method[i] is the Method for rows[].blueIcons[i]; notes may hold 'pref:<weaponId>' and 'ap:<use>'
   preferFirst?: string; notes?: string[]; source: Source }   // source "placeholder" until real cards are entered
 
 interface ScenarioDef { id: string; name: string; mode: 'tutorial'|'versus'|'ai'|'coop';

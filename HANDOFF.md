@@ -4,6 +4,22 @@ Start here in a new session opened on this folder. Read `CLAUDE.md`, then this f
 Cross-project lessons (stack, reusable code, pipelines, token traps) are in `docs/KNOWLEDGE-BASE.md`;
 read only the section a task needs. The source map is `docs/spec/sources/WW-SOURCES.md`.
 
+## PAUSED 2026-10-12: M4b official AI, parked on branch `wip/m4b` (resume here)
+- Owner supplied the official Campaign Handbook PDF in the main checkout's gitignored `docs/sources/`
+  (`foww-campaign-handbook-digital-final_compress.pdf`; book page = PDF page - 2). It closes the CH gaps:
+  AI procedure (p8-16), AI scenarios (p40-42), Events/Perks/Boosts/Quests (p4-6), Settlement (p18-24).
+  The "no free copy" notes in this file and spec 10/19 are out of date.
+- Owner decisions 2026-10-12: official rules only, no house roguelike; finish M4b (official AI, solo/co-op)
+  then M6 campaign/settlement from CH.
+- Done in `wip/m4b` (work stopped mid-run, uncommitted state parked as-is, not yet re-tested):
+  design (spec 18 rewritten from CH, rulings Confirmed/Corrected, AI-001..029, 3 real AI cards from CH,
+  8 placeholders), engine (AI number-token turns, co-op sides/teams, object targets; additive frozen-contract
+  change logged in 00-architecture s10), client ("Wasteland AI (official cards)" opponent, 1-2 player toggle).
+- Not done: `src/ai/official/` decider was mid-implementation (may be partial, `createOfficialAiDecider` may
+  still throw); AI scenarios beyond AI-RR; Missile sled move (SCN-004); verify and fix stages.
+- Resume: `git checkout wip/m4b`, `npm run typecheck && npm test`, then rerun `tools/workflows/m4b-official-ai.js`
+  from the decider stage (pass `args.root` and `args.src`; skip design/engine/client which are done).
+
 ## Current state (2026-10-11)
 - **M0 bootstrap shipped.** Public repo `dragoonant/fell-in`, Pages https://dragoonant.github.io/fell-in/ (deploy
   workflow green, also runs on `workflow_dispatch`). Start screen, 36x36 in wasteland table, camera presets,
