@@ -1,13 +1,28 @@
 // Pure helpers for the start screen (no engine or data imports: the start chunk stays small).
 import type { NewGameOptions, ScenarioChoice, SeatController } from '../../store/launch'
 
-export type PlayMode = 'bot' | 'hotseat' | 'watch'
+export type PlayMode = 'bot' | 'hotseat' | 'watch' | 'solo' | 'coop'
 
 export const MODES: readonly { id: PlayMode; label: string; blurb: string }[] = [
   { id: 'bot', label: 'Versus bot', blurb: 'You take the near edge; the bot plays the rest.' },
   { id: 'hotseat', label: 'Hot-seat', blurb: 'Two people, one screen, taking turns.' },
   { id: 'watch', label: 'Watch bots', blurb: 'Sit back and watch the bots fight it out.' },
+  { id: 'solo', label: 'Solo against the game', blurb: 'You against the card-driven game AI.' },
+  { id: 'coop', label: 'Co-op', blurb: 'Two players share one screen against the game AI.' },
 ]
+
+/** Modes played against the official AI cards (the AI force is seat 0 in the AI and co-op scenarios). */
+export const isOfficialMode = (m: PlayMode): boolean => m === 'solo' || m === 'coop'
+export const scenarioModeFor = (m: PlayMode): 'ai' | 'coop' | null => (m === 'solo' ? 'ai' : m === 'coop' ? 'coop' : null)
+/** The mode an AI or co-op scenario is played in, else null. */
+export const modeForScenario = (s: Pick<ScenarioChoice, 'mode'> | undefined): PlayMode | null => (s?.mode === 'ai' ? 'solo' : s?.mode === 'coop' ? 'coop' : null)
+/** Keep scenario and mode consistent: solo/co-op need a scenario of their kind; other modes may not use one. */
+export function scenarioForMode(list: readonly ScenarioChoice[], mode: PlayMode, current: string): string {
+  const want = scenarioModeFor(mode)
+  const cur = list.find((s) => s.id === current)
+  if (want) return cur?.mode === want ? current : (list.find((s) => s.mode === want)?.id ?? current)
+  return cur && (cur.mode === 'ai' || cur.mode === 'coop') ? (pickDefaultScenario(list) ?? current) : current
+}
 
 export type OpponentTier = 'easy' | 'normal' | 'random'
 export const OPPONENTS: readonly { id: OpponentTier; label: string; blurb: string }[] = [
@@ -22,7 +37,12 @@ export const DEFAULT_SCENARIO_ID = 'box-1'
 
 /** Controllers in seat order for a mode, padded to the scenario's side count (extra sides are bots). */
 export function seatsFor(mode: PlayMode, sides = 2): SeatController[] {
+  if (mode === 'solo') return padSeats(['bot', 'human'], sides)
+  if (mode === 'coop') return padSeats(['bot', 'human', 'human'], sides)
   const base: SeatController[] = mode === 'hotseat' ? ['human', 'human'] : mode === 'watch' ? ['bot', 'bot'] : ['human', 'bot']
+  return padSeats(base, sides)
+}
+function padSeats(base: SeatController[], sides: number): SeatController[] {
   const out = base.slice(0, Math.max(1, sides))
   while (out.length < sides) out.push('bot')
   return out
@@ -69,9 +89,9 @@ export function scenarioSummary(s: ScenarioChoice): string {
 }
 
 /** Build the launch options from the picker state. */
-export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier }): NewGameOptions & { tier?: OpponentTier } {
+export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier }): NewGameOptions & { tier?: OpponentTier; official?: boolean } {
   const seed = cleanSeed(p.seed)
-  return { ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
+  return { ...(isOfficialMode(p.mode) ? { official: true } : {}), ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
 }
 
 /** "3 min ago" style label for the autosave line. */

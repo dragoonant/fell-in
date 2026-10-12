@@ -9,6 +9,8 @@ import { skipAll } from '../presentation/director'
 import { isPresentationIdle, usePresentedStore } from '../presentation/presentedStore'
 import { dispatch, isBotDecision, legalFor, ownerSeat, preview, useGameStore } from '../store/gameStore'
 import { scaled } from '../store/settingsStore'
+import { useAiPanelStore } from './aiPanelStore'
+import { createOfficialBrain, isOfficialScenario } from './officialBrain'
 import { completeAction, PARAMETERISED, randomBrain, type BotBrain, type BotContext } from './randomBot'
 
 export const WATCHDOG_MS = 5000
@@ -32,13 +34,27 @@ export function launchTier(): Tier {
   return typeof t === 'string' && (TIER_IDS as readonly string[]).includes(t) ? (t as Tier) : DEFAULT_TIER
 }
 
+/** True when AI seats follow the official AI cards: Solo/Co-op launches, or any AI or co-op scenario. */
+export function launchOfficial(): boolean {
+  const l = useLaunchStore.getState().launch
+  if (l && l.mode === 'new' && (l.opts as { official?: unknown }).official === true) return true
+  return isOfficialScenario()
+}
+
 let tiered: { tier: Tier; key: string; brain: BotBrain; dispose?: () => void } | null = null
 /** The brain for a tier: random uses the placeholder bot; easy and normal use the AI worker (loaded on demand). */
 function brainFor(tier: Tier): BotBrain {
   if (override) return override
-  const key = `${tier}:${useGameStore.getState().seed}`
+  const official = launchOfficial()
+  const key = `${official ? 'official' : tier}:${useGameStore.getState().seed}:${useLaunchStore.getState().launch?.id ?? 0}`
   if (tiered && tiered.key === key) return tiered.brain
   tiered?.dispose?.()
+  if (official) {
+    useAiPanelStore.getState().reset()
+    const b = createOfficialBrain()
+    tiered = { tier, key, brain: b, dispose: b.dispose }
+    return b
+  }
   if (tier === 'random') { tiered = { tier, key, brain: randomBrain }; return randomBrain }
   let inner: Promise<BotBrain & { dispose(): void }> | null = null
   const lazy: BotBrain = async (v, p, l, c) => {

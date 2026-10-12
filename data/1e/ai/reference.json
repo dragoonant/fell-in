@@ -1,0 +1,75 @@
+[
+  {
+    "id": "ai-generic",
+    "unitId": "settler",
+    "standardEquipment": [],
+    "columns": [
+      {
+        "label": "any",
+        "when": {}
+      }
+    ],
+    "rows": [
+      {
+        "blueIcons": [
+          "BOT",
+          "BOT2",
+          "BOT+STAR"
+        ],
+        "cells": [
+          {
+            "response": "A",
+            "reckless": false,
+            "stayEngaged": false
+          }
+        ],
+        "method": [
+          "ranged",
+          "close"
+        ]
+      },
+      {
+        "blueIcons": [
+          "STAR",
+          "STAR2"
+        ],
+        "cells": [
+          {
+            "response": "A",
+            "reckless": false,
+            "stayEngaged": false
+          }
+        ],
+        "method": [
+          "ranged",
+          "close"
+        ]
+      },
+      {
+        "blueIcons": [
+          "BLAST"
+        ],
+        "cells": [
+          {
+            "response": "A",
+            "reckless": false,
+            "stayEngaged": false
+          }
+        ],
+        "method": [
+          "ranged",
+          "close"
+        ]
+      }
+    ],
+    "targetPriority": [
+      "nearest"
+    ],
+    "notes": [
+      "Fallback for units with no card. unitId only satisfies the schema reference; lookup is by id."
+    ],
+    "source": [
+      "Unsourced (spec 18 s8.9): generic fallback card, every cell A, careful, both methods, priority nearest"
+    ]
+  }
+]

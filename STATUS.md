@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M4a versus bot** (owner playtest gate) (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M4 AI** (versus bot + official AI card system; owner playtest gate) (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -27,6 +27,13 @@ Milestone reached: **M4a versus bot** (owner playtest gate) (this file only list
 - `npm run sim -- --games N --seed s`: random bots, full games, invariants; 50 games 0 errors, max step 1.4 ms.
 - Not built: object/point targets (SHOT-003; GA tutorials can't be won), BC-006, DMG-005, Walked Fire, mines;
   box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
+
+## Official AI (M4b)
+- `src/ai/official/` (procedure, responses, targeting, decider) per spec 18 section 8 (rulings R-1..R-24);
+  Solo (human vs AI cards) and Co-op (2 humans hot-seat vs AI) modes; AiCardPanel shows the card, column, die
+  and response. `data/1e/ai/`: 11 starter cards + generic; 5 cards partly Confirmed from photos, the rest
+  Unsourced (see `docs/spec/sources/AI-CARDS-sources.md` for the cards to photograph).
+- Gaps: co-op team turns (R-9), patrol route markers, engaged-retargeting; not yet soaked in a long AI-scenario sim.
 
 ## AI (M4a)
 - `src/ai/`: decider (dispatch by decision kind, validates, falls back to random), eval, threat, nav, moves,

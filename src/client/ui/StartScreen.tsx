@@ -6,7 +6,7 @@ import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
 import './start/start.css'
 import {
-  ageLabel, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OPPONENTS, pickDefaultScenario, scenarioSummary, type OpponentTier, type PlayMode,
+  ageLabel, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, isOfficialMode, modeForScenario, MODES, OPPONENTS, pickDefaultScenario, scenarioForMode, scenarioSummary, type OpponentTier, type PlayMode,
 } from './start/startView'
 
 const PREF_KEY = 'fell-in.start'
@@ -42,8 +42,18 @@ export function StartScreen() {
     writeJson(PREF_KEY, { scenarioId, mode, tier })
     launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier }))
   }
+  const chooseScenario = (s: ScenarioChoice) => {
+    setScenarioId(s.id)
+    const m = modeForScenario(s)
+    if (m) setMode(m)
+    else if (isOfficialMode(mode)) setMode('bot')
+  }
+  const chooseMode = (m: PlayMode) => {
+    setMode(m)
+    setScenarioId(scenarioForMode(list, m, scenarioId))
+  }
   const pick = (s: ScenarioChoice) => (
-    <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => setScenarioId(s.id)}>
+    <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => chooseScenario(s)}>
       {s.name}<small>{scenarioSummary(s)}</small>
     </button>
   )
@@ -71,14 +81,14 @@ export function StartScreen() {
           <h2 className="sc-h">Mode</h2>
           <div className="sc-row">
             {MODES.map((m) => (
-              <button key={m.id} className="sc-chip" aria-pressed={m.id === mode} data-testid={`mode-${m.id}`} onClick={() => setMode(m.id)}>
+              <button key={m.id} className="sc-chip" aria-pressed={m.id === mode} data-testid={isOfficialMode(m.id) ? `start-mode-${m.id}` : `mode-${m.id}`} onClick={() => chooseMode(m.id)}>
                 {m.label}<small>{m.blurb}</small>
               </button>
             ))}
           </div>
         </section>
 
-        <section className="sc-sec" aria-label="Opponent">
+        {!isOfficialMode(mode) && <section className="sc-sec" aria-label="Opponent">
           <h2 className="sc-h">Opponent</h2>
           <div className="sc-row" data-testid="opponent-tier">
             {OPPONENTS.map((o) => (
@@ -87,7 +97,7 @@ export function StartScreen() {
               </button>
             ))}
           </div>
-        </section>
+        </section>}
 
         <section className="sc-sec" aria-label="Options">
           <h2 className="sc-h">Speed</h2>
