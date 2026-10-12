@@ -10,9 +10,9 @@
           0.2
         ],
         "rot": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ]
       },
       "32": {
@@ -22,9 +22,9 @@
           0.26
         ],
         "rot": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ]
       },
       "40": {
@@ -34,9 +34,9 @@
           0.32
         ],
         "rot": [
-          0.0,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ]
       }
     }
@@ -46,7 +46,7 @@
       "file": "units/sole-survivor.glb",
       "rightHand": [
         0.31,
-        1.0,
+        1,
         0.13
       ],
       "rot": [
@@ -59,7 +59,7 @@
       "file": "units/sole-survivor-day-one.glb",
       "rightHand": [
         0.32,
-        1.0,
+        1,
         0.14
       ],
       "rot": [
@@ -156,5 +156,23 @@
       ]
     }
   },
-  "weapons": {}
+  "weapons": {
+    "10mm-pistol": {},
+    "44-revolver": {},
+    "assault-rifle": {},
+    "baseball-bat": {},
+    "board": {},
+    "bolt-action-pipe-rifle": {},
+    "combat-rifle": {},
+    "combat-shotgun": {},
+    "fragmentation-grenade": {},
+    "hunting-rifle": {},
+    "laser-pistol": {},
+    "laser-rifle": {},
+    "missile-launcher": {},
+    "pipe-pistol": {},
+    "pipe-wrench": {},
+    "plasma-rifle": {},
+    "sledgehammer": {}
+  }
 }
