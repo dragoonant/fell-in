@@ -331,6 +331,15 @@ actions, alternating Ready/Use turns, no facing, an AI card system (Objective + 
   `.setMeshoptDecoder(MeshoptDecoder)`**; without it every GLB silently fails and the procedural fallback shows.
 - Terrain manifest written by the generator is a flat `{slug: {file, size:[w,d,h], rulesType}}` map; the engine
   keeps a mirrored `src/engine/terrainCatalog.ts` (engine never imports from `public/`).
+- **Owner playtest caught (2026-10-12), fixed:** (1) quadrupeds made from side-view concepts face +/-x; the
+  manifest now carries a per-unit `yaw` applied before the fit. (2) First socket estimates sat at the hip: the
+  raised empty fist is the figure's LEFT hand (+x for humans, -x for the super mutants), at 55-75% of height; store
+  the measured fist centre in fitted inches as `hand`. (3) Natural attacks (bite/claw/swipe/crush) must draw
+  nothing; the stand-in bar stuck out of the dogs. (4) Quadrupeds need their own `height` (dog 0.8, hound 1.1,
+  deathclaw 2.2 in), not the humanoid height from base size. **Always check `?gallery` front and side close-ups
+  before shipping figures**; the overview camera hides all of this.
+- The in-app browser pane can lose WebGL rendering (blank canvas, no errors, even on Pages); use
+  `npx playwright screenshot --wait-for-timeout=12000 <url> out.png` instead of trusting the pane.
 - A stale Vite server from another worktree on the same port served old code during a debug session; give each
   worktree its own port or check `preview_list` first.
 
