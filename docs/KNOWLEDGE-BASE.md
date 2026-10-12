@@ -312,6 +312,28 @@ actions, alternating Ready/Use turns, no facing, an AI card system (Objective + 
 
 ---------------------------------------------------------------------------------------------------
 
+### 3.4 Separate weapon models and Gemini batch extraction (FELL, 2026-10-11; in progress)
+- **Figures bare-handed, weapons as their own GLBs** (owner decision for loadout-heavy games). Figure prompt adds
+  "both hands empty, right hand a loose empty fist as if gripping a handle, left arm relaxed"; Gemini honours it.
+  Weapon prompt: "single prop ... exact side view, horizontal, barrel pointing right ... no hands". One Gemini chat
+  for figures, a second for weapons. About 1 in 17 weapon replies came back as text with no image (regenerate
+  with "Generate an image:" up front), and a few point left anyway (flip at finalize).
+- Client contract (`src/client/figures/{Weapon,equipped,glbModels}.ts`): weapon GLB grip at origin, barrel along +z,
+  y up; per-unit `rightHand` socket `[x,y,z]` + `rot` in `public/assets/models/manifest.json`; equipped weapon =
+  melee when engaged, else ranged; missing weapon GLB shows a procedural stand-in. Socket positions are estimated
+  from the concept's fist location on the finished mesh (first pass; verify on screen).
+- Gemini proportions: the first figure came out realistic (~7 heads) despite "four and a half heads". A follow-up
+  "noticeably larger head, bigger hands and chunkier boots" gave ~6 heads, then later prompts kept the look.
+- Extraction: `fetch(img.src)` on Gemini `blob:` images now FAILS; draw the `<img>` (same-origin blob) to a canvas
+  after `scrollIntoView` + 900 ms instead, collect `{slug: dataURL}`, then ONE anchor download per tab. Images are
+  1024x572. Map slugs by `model-response` index and check for a reply with no `<img>`.
+- **GLB loading: `models:optimize` writes `EXT_meshopt_compression`, so `GLTFLoader` must
+  `.setMeshoptDecoder(MeshoptDecoder)`**; without it every GLB silently fails and the procedural fallback shows.
+- Terrain manifest written by the generator is a flat `{slug: {file, size:[w,d,h], rulesType}}` map; the engine
+  keeps a mirrored `src/engine/terrainCatalog.ts` (engine never imports from `public/`).
+- A stale Vite server from another worktree on the same port served old code during a debug session; give each
+  worktree its own port or check `preview_list` first.
+
 ## 4. Rules and data research
 
 ### 4.1 Routes that worked (ranked by value found)
