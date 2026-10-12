@@ -1,7 +1,7 @@
 # 16 Cards and forces
 
 Card faces are our own designs; only the mechanical fields below are ported. Costs are 1st-edition
-data from COST and live in `data/<edition>/costs.json`.
+data from COST and live on each record's `cost` field (spec 20; no separate costs file).
 
 ## 1. Card types and fields
 ### Unit card (RoP s2.3 p9, s2.5 p12, s4.4 p42, s6.1 p50; CARDS p.2-12; GA A1)

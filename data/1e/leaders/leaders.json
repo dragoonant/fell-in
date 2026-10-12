@@ -1,0 +1,157 @@
+[
+  {
+    "id": "brawler",
+    "name": "Brawler",
+    "abilities": [
+      {
+        "id": "dirty-fighter",
+        "name": "Dirty Fighter",
+        "text": "Melee tests gain one extra yellow die.",
+        "effects": [
+          {
+            "op": "addDice",
+            "dice": {
+              "yellow": 1
+            },
+            "when": {
+              "skills": [
+                "melee"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "charming",
+        "name": "Charming",
+        "text": "The holder gains 2 CHA.",
+        "effects": [
+          {
+            "op": "attrMod",
+            "attr": "cha",
+            "n": 2
+          }
+        ]
+      }
+    ],
+    "cost": 7,
+    "source": "CARDS p.64; COST Brawler"
+  },
+  {
+    "id": "hunter",
+    "name": "Hunter",
+    "abilities": [
+      {
+        "id": "marksman",
+        "name": "Marksman",
+        "text": "Rifle tests at long range gain one extra green die.",
+        "effects": [
+          {
+            "op": "addDice",
+            "dice": {
+              "green": 1
+            },
+            "when": {
+              "skills": [
+                "rifle"
+              ],
+              "ranges": [
+                "long"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen-eyes",
+        "name": "Keen Eyes",
+        "aura": true,
+        "text": "Aura. Awareness moves one ruler colour longer.",
+        "effects": [
+          {
+            "op": "rulerStep",
+            "stat": "awareness",
+            "n": 1
+          }
+        ]
+      }
+    ],
+    "cost": 10,
+    "source": "CARDS p.65; COST Hunter"
+  },
+  {
+    "id": "wasteland-searcher",
+    "name": "Wasteland Searcher",
+    "abilities": [
+      {
+        "id": "forager",
+        "name": "Forager",
+        "aura": true,
+        "text": "Aura. Search tests gain one extra green die and one extra yellow die.",
+        "effects": [
+          {
+            "op": "addDice",
+            "dice": {
+              "green": 1,
+              "yellow": 1
+            },
+            "when": {
+              "skills": [
+                "search"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "persistent",
+        "name": "Persistent",
+        "text": "Battlefield item draws: +1 card drawn, +1 card discarded.",
+        "effects": [
+          {
+            "code": "persistent",
+            "args": {
+              "extraDraw": 1,
+              "extraDiscard": 1
+            }
+          }
+        ]
+      }
+    ],
+    "cost": 5,
+    "source": "CARDS p.66; COST Wasteland Searcher"
+  },
+  {
+    "id": "warden",
+    "name": "Warden",
+    "abilities": [
+      {
+        "id": "distraction",
+        "name": "Distraction",
+        "aura": true,
+        "text": "Aura. Once per round, one friendly model may disengage without giving the enemy a free attack.",
+        "effects": [
+          {
+            "code": "distraction",
+            "args": {
+              "perRound": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "resilient",
+        "name": "Resilient",
+        "aura": true,
+        "text": "Aura: a stun token placed on a friend is flipped and kept only if it lands stunned.",
+        "effects": [
+          {
+            "code": "resilientStun"
+          }
+        ]
+      }
+    ],
+    "cost": 12,
+    "source": "CARDS p.67; COST Warden"
+  }
+]

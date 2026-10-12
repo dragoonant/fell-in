@@ -1,0 +1,112 @@
+[
+  {
+    "id": "comfort-grip",
+    "name": "Comfort Grip",
+    "text": "A better handle that steadies shots at close range with rifles and pistols.",
+    "fitsTo": [
+      "rifle",
+      "pistol"
+    ],
+    "effects": [
+      {
+        "op": "skillMod",
+        "skill": "rifle",
+        "n": 2,
+        "when": {
+          "ranges": [
+            "short"
+          ]
+        }
+      },
+      {
+        "op": "skillMod",
+        "skill": "pistol",
+        "n": 2,
+        "when": {
+          "ranges": [
+            "short"
+          ]
+        }
+      }
+    ],
+    "cost": 10,
+    "source": "CARDS p.51; COST Comfort Grip"
+  },
+  {
+    "id": "hardened-receiver",
+    "name": "Hardened Receiver",
+    "text": "Once per attack, one blank black or yellow effect die face counts as a damage icon.",
+    "fitsTo": [
+      "rifle",
+      "pistol"
+    ],
+    "altName": {
+      "name": "Boosted Capacitor",
+      "whenDamage": "energy"
+    },
+    "effects": [
+      {
+        "op": "iconConvert",
+        "from": "blank",
+        "to": "DMG",
+        "dieColours": [
+          "black",
+          "yellow"
+        ],
+        "n": 1
+      }
+    ],
+    "cost": 7,
+    "source": "CARDS p.52; COST Hardened Receiver; ERR p.18 (v2)"
+  },
+  {
+    "id": "stun-pack",
+    "name": "Stun Pack",
+    "text": "A melee attachment: when the attack adds damage to the target it also offers a blast-priced stun, and the weapon gains a blue die if it lacks one.",
+    "fitsTo": [
+      "melee"
+    ],
+    "effects": [
+      {
+        "op": "addSpecial",
+        "special": {
+          "cost": [
+            "BLAST"
+          ],
+          "outcome": "stun"
+        },
+        "when": {
+          "code": "targetDamaged"
+        }
+      },
+      {
+        "op": "ensureDie",
+        "dice": {
+          "blue": 1
+        }
+      }
+    ],
+    "cost": 3,
+    "source": "CARDS p.53; COST Stun Pack"
+  },
+  {
+    "id": "dissipating",
+    "name": "Dissipating",
+    "text": "Coating that raises energy armor by one. Only works on a card that itself sets armor values.",
+    "fitsTo": [
+      "armor"
+    ],
+    "requires": {
+      "setsArmor": true
+    },
+    "effects": [
+      {
+        "op": "armorMod",
+        "damageType": "energy",
+        "n": 1
+      }
+    ],
+    "cost": 7,
+    "source": "CARDS p.54; COST Dissipating"
+  }
+]

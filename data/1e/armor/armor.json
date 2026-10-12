@@ -1,0 +1,110 @@
+[
+  {
+    "id": "damaged-hazmat-suit",
+    "name": "Damaged Hazmat Suit",
+    "kind": "armor",
+    "text": "A patched protective suit that shrugs off most radiation but little else.",
+    "sets": {
+      "radiation": {
+        "base": 3
+      }
+    },
+    "cost": 5,
+    "source": "CARDS p.45; COST Damaged Hazmat Suit; ERR p.16; ERR p.20 (v2)"
+  },
+  {
+    "id": "sturdy-leather-armor",
+    "name": "Sturdy Leather Armor",
+    "kind": "armor",
+    "text": "Layered hide and stitched plates; decent against blades and beams, useless against radiation.",
+    "sets": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 3
+      },
+      "radiation": "none"
+    },
+    "cost": 15,
+    "source": "CARDS p.46; COST Sturdy Leather Armor"
+  },
+  {
+    "id": "aviator-cap",
+    "name": "Aviator Cap",
+    "kind": "clothing",
+    "text": "A worn flight cap that only a Super Mutant head can use; adds a little padding and sharper senses.",
+    "modifies": {
+      "physical": 1,
+      "energy": 1
+    },
+    "attrBonus": {
+      "per": 2
+    },
+    "restriction": {
+      "factions": [
+        "super-mutants"
+      ]
+    },
+    "cost": 21,
+    "source": "CARDS p.47; COST Aviator Cap"
+  },
+  {
+    "id": "patched-three-piece-suit",
+    "name": "Patched Three-Piece Suit",
+    "kind": "clothing",
+    "text": "Mended formal wear that makes its wearer look sharp and read a room.",
+    "attrBonus": {
+      "per": 1,
+      "cha": 1
+    },
+    "cost": 8,
+    "source": "CARDS p.48; COST Patched Three-Piece Suit"
+  },
+  {
+    "id": "t-60-power-armor",
+    "name": "T-60 Power Armor",
+    "kind": "powerArmor",
+    "text": "A heavy powered frame. Its green side is the powered state with full armor and strength; the yellow side is the unpowered fallback.",
+    "powerArmor": {
+      "green": {
+        "attrBonus": {
+          "str": 3,
+          "end": 4
+        },
+        "armor": {
+          "physical": {
+            "base": 3,
+            "strong": 1
+          },
+          "energy": {
+            "base": 3,
+            "strong": 1
+          },
+          "radiation": {
+            "base": 4,
+            "strong": 1
+          }
+        }
+      },
+      "yellow": {
+        "attrBonus": {
+          "str": 3
+        },
+        "armor": {
+          "physical": {
+            "base": 3
+          },
+          "energy": {
+            "base": 3
+          },
+          "radiation": {
+            "base": 4
+          }
+        }
+      }
+    },
+    "cost": 82,
+    "source": "CARDS p.62; COST T-60 Power Armor"
+  }
+]

@@ -1,0 +1,525 @@
+[
+  {
+    "id": "sole-survivor",
+    "name": "Sole Survivor",
+    "faction": "survivors",
+    "unique": true,
+    "versionGroup": "sole-survivor",
+    "types": [],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "black",
+    "attrs": {
+      "str": 5,
+      "per": 7,
+      "end": 4,
+      "cha": 5,
+      "int": 5,
+      "agi": 7,
+      "luc": 4
+    },
+    "skills": [
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "blue"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      },
+      {
+        "skill": "lockpick",
+        "attr": "agi"
+      }
+    ],
+    "healthAttr": "agi",
+    "armor": {
+      "physical": {
+        "base": 3
+      },
+      "energy": {
+        "base": 3
+      },
+      "radiation": {
+        "base": 1
+      }
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [
+      {
+        "id": "dog-handler",
+        "name": "Dog Handler",
+        "aura": true,
+        "glyph": "dog",
+        "text": "Aura. From the start of this model's activation until its next one, a single Dog inside the aura may take Search tests using the Dog's own Perception. If this model is Heroic, that Dog also counts as Heroic during the Dog's own activation (not its reaction).",
+        "effects": [
+          {
+            "code": "dogHandler",
+            "args": {
+              "dogs": 1,
+              "skill": "search",
+              "heroicShare": true
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 89,
+    "source": [
+      "CARDS p.2",
+      "COST Sole Survivor",
+      "ERR p.3 (Dog Handler)"
+    ]
+  },
+  {
+    "id": "sole-survivor-day-one",
+    "name": "Sole Survivor Day One",
+    "faction": "survivors",
+    "unique": true,
+    "versionGroup": "sole-survivor",
+    "types": [],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "black",
+    "attrs": {
+      "str": 4,
+      "per": 5,
+      "end": 4,
+      "cha": 5,
+      "int": 5,
+      "agi": 6,
+      "luc": 4
+    },
+    "skills": [
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "blue"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      },
+      {
+        "skill": "lockpick",
+        "attr": "agi"
+      }
+    ],
+    "healthAttr": "agi",
+    "armor": {
+      "physical": {
+        "base": 3
+      },
+      "energy": {
+        "base": 3
+      },
+      "radiation": {
+        "base": 1
+      }
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [
+      {
+        "id": "dog-handler",
+        "name": "Dog Handler",
+        "aura": true,
+        "glyph": "dog",
+        "text": "Aura. From the start of this model's activation until its next one, a single Dog inside the aura may take Search tests using the Dog's own Perception. If this model is Heroic, that Dog also counts as Heroic during the Dog's own activation (not its reaction).",
+        "effects": [
+          {
+            "code": "dogHandler",
+            "args": {
+              "dogs": 1,
+              "skill": "search",
+              "heroicShare": true
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 68,
+    "source": [
+      "CARDS p.3",
+      "COST Sole Survivor Day One",
+      "ERR p.3 (Dog Handler)"
+    ]
+  },
+  {
+    "id": "settler",
+    "name": "Settler",
+    "faction": "survivors",
+    "unique": false,
+    "types": [],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "green",
+    "attrs": {
+      "str": 3,
+      "per": 6,
+      "end": 4,
+      "cha": 4,
+      "int": 4,
+      "agi": 4,
+      "luc": 3
+    },
+    "skills": [
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "search",
+        "attr": "per"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "green"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 1
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 40,
+    "source": [
+      "CARDS p.4",
+      "COST Settler"
+    ]
+  },
+  {
+    "id": "enslaved-tech",
+    "name": "Enslaved Tech",
+    "faction": "survivors",
+    "unique": false,
+    "types": [],
+    "baseMm": 32,
+    "move": "red",
+    "charge": "red",
+    "awareness": "green",
+    "attrs": {
+      "str": 3,
+      "per": 3,
+      "end": 3,
+      "cha": 3,
+      "int": 8,
+      "agi": 5,
+      "luc": 3
+    },
+    "skills": [
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "red"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "lockpick",
+        "attr": "agi"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 1
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [
+      {
+        "id": "free",
+        "name": "Free",
+        "text": "A Tech whose faction is Survivors is no longer a slave: it gains +1 END and +1 physical armor.",
+        "effects": [
+          {
+            "op": "attrMod",
+            "attr": "end",
+            "n": 1,
+            "when": {
+              "faction": "survivors"
+            }
+          },
+          {
+            "op": "armorMod",
+            "damageType": "physical",
+            "n": 1,
+            "when": {
+              "faction": "survivors"
+            }
+          }
+        ]
+      },
+      {
+        "id": "genius",
+        "name": "Genius",
+        "text": "This model can never be locked out of the Computers skill.",
+        "effects": [
+          {
+            "code": "neverLockedOut",
+            "args": {
+              "skill": "computers"
+            }
+          }
+        ]
+      },
+      {
+        "id": "back-up",
+        "name": "Back-up",
+        "text": "Expertise tests (Search, Computers, Lockpick, Presence) by a friendly model inside this model's Presence range gain one black die.",
+        "effects": [
+          {
+            "op": "addDice",
+            "dice": {
+              "black": 1
+            },
+            "when": {
+              "skills": [
+                "search",
+                "computers",
+                "lockpick",
+                "presence"
+              ],
+              "code": "friendlyInPresence"
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 32,
+    "source": [
+      "CARDS p.5",
+      "COST Enslaved Tech"
+    ]
+  },
+  {
+    "id": "dogmeat",
+    "name": "Dogmeat",
+    "faction": "survivors",
+    "unique": true,
+    "versionGroup": "dogmeat",
+    "types": [
+      "dog"
+    ],
+    "baseMm": 32,
+    "move": "red",
+    "charge": "blue",
+    "awareness": "black",
+    "attrs": {
+      "str": 5,
+      "per": 8,
+      "end": 5,
+      "cha": 3,
+      "int": 4,
+      "agi": 6,
+      "luc": 2
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "yellow"
+      },
+      {
+        "skill": "melee",
+        "attr": "agi"
+      }
+    ],
+    "healthAttr": "agi",
+    "armor": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 2
+      },
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare",
+      "movement"
+    ],
+    "flags": [
+      "cannotClimb"
+    ],
+    "abilities": [
+      {
+        "id": "senses",
+        "name": "Senses",
+        "text": "This model may declare a Charge at a target it cannot see; no line of sight is required.",
+        "effects": [
+          {
+            "code": "senses"
+          }
+        ]
+      }
+    ],
+    "equipped": [
+      "dog-bite"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md",
+      "attrs.agi": "ERR p.20 (card version 2: AGI 8 becomes 6); the free CARDS sheet prints version 1 with AGI 8"
+    },
+    "cost": 83,
+    "source": [
+      "CARDS p.6",
+      "COST Dogmeat",
+      "ERR p.20 (version 2)"
+    ]
+  }
+]

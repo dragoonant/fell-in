@@ -1,0 +1,189 @@
+[
+  {
+    "id": "survivors",
+    "name": "Survivors",
+    "rules": [
+      {
+        "id": "armor-boost",
+        "text": "Applies to units whose card names Survivor. During force set-up every Unique model takes one extra armor boost token on top of any it would normally receive. Non-Unique Survivors get none from this card.",
+        "effects": [
+          {
+            "code": "survivorArmorBoost",
+            "args": {
+              "n": 1,
+              "uniqueOnly": true
+            }
+          }
+        ]
+      }
+    ],
+    "source": [
+      "CARDS p.13",
+      "ERR p.19 (version 2 text)"
+    ]
+  },
+  {
+    "id": "super-mutants",
+    "name": "Super Mutants",
+    "rules": [
+      {
+        "id": "melee-sv",
+        "text": "Applies to units whose card names Super Mutant. When one fires a ranged weapon during close combat it tests with its Melee value.",
+        "effects": [
+          {
+            "code": "smMeleeSV"
+          }
+        ]
+      },
+      {
+        "id": "no-power-armor",
+        "text": "These models may never wear Power Armor.",
+        "effects": [
+          {
+            "code": "noPowerArmor"
+          }
+        ]
+      },
+      {
+        "id": "radiation-immune",
+        "text": "These models take no radiation damage.",
+        "effects": [
+          {
+            "code": "radiationImmune"
+          }
+        ]
+      },
+      {
+        "id": "food-cooked",
+        "text": "Food and drink eaten by these models always counts as cooked.",
+        "effects": [
+          {
+            "code": "foodCooked"
+          }
+        ]
+      }
+    ],
+    "source": [
+      "CARDS p.15",
+      "ERR p.19 (version 2 text)"
+    ]
+  },
+  {
+    "id": "brotherhood-of-steel",
+    "name": "Brotherhood of Steel",
+    "rules": [
+      {
+        "id": "leader-reaction",
+        "text": "Leader activation start: 1 Reaction token to an untokened friend in Leader Presence.",
+        "effects": [
+          {
+            "code": "bosLeaderReaction",
+            "args": {
+              "range": "presence"
+            }
+          }
+        ]
+      }
+    ],
+    "source": [
+      "ERR p.19-20 (version 2 addition only; the card itself is not in the free CARDS file)"
+    ]
+  },
+  {
+    "id": "general-reference",
+    "name": "General Reference",
+    "rules": [
+      {
+        "id": "actions",
+        "text": "Reference: the Actions are Move, Charge, Close Combat, Shoot, Throw, Expertise and Prepare; the matching AP-use icons are Movement, Attack, Expertise and Prepare.",
+        "effects": []
+      },
+      {
+        "id": "triggers",
+        "text": "Reference: at one ruler length, any action (not Prepare) or a friendly model being hit triggers a reaction; at two lengths only movements and attacks do. LoS is needed except for attacks.",
+        "effects": []
+      }
+    ],
+    "source": [
+      "CARDS p.14",
+      "ERR p.2 (attacks need no LoS to trigger)"
+    ]
+  },
+  {
+    "id": "dogs",
+    "name": "Dogs",
+    "rules": [
+      {
+        "id": "neutral-faction",
+        "text": "Factionless dog adopts the Leader's faction.",
+        "effects": [
+          {
+            "code": "neutralDogFaction"
+          }
+        ]
+      },
+      {
+        "id": "no-skills",
+        "text": "Dogs can never gain the Lockpick or Computers skills.",
+        "effects": [
+          {
+            "code": "cannotGainSkills",
+            "args": {
+              "skills": [
+                "lockpick",
+                "computers"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "items",
+        "text": "Dogs: only food/drink or items naming dogs.",
+        "effects": [
+          {
+            "code": "dogItemRestriction"
+          }
+        ]
+      }
+    ],
+    "source": [
+      "ERR p.3",
+      "ERR p.19"
+    ]
+  },
+  {
+    "id": "creatures",
+    "name": "Creatures",
+    "rules": [
+      {
+        "id": "no-skills",
+        "text": "Creatures can never gain the Lockpick or Computers skills.",
+        "effects": [
+          {
+            "code": "cannotGainSkills",
+            "args": {
+              "skills": [
+                "lockpick",
+                "computers"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "force-faction",
+        "text": "Creatures need a faction matching the Leader (unless agreed).",
+        "effects": [
+          {
+            "code": "creatureForceRule"
+          }
+        ]
+      }
+    ],
+    "source": [
+      "ERR p.4",
+      "ERR p.19"
+    ]
+  }
+]

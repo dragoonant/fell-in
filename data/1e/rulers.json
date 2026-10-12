@@ -1,0 +1,40 @@
+{
+  "id": "rulers",
+  "rulers": [
+    {
+      "colour": "orange",
+      "inches": 2,
+      "mark": "corners-1"
+    },
+    {
+      "colour": "yellow",
+      "inches": 4,
+      "mark": "corners-2"
+    },
+    {
+      "colour": "red",
+      "inches": 6,
+      "mark": "corners-3"
+    },
+    {
+      "colour": "green",
+      "inches": 8,
+      "mark": "corners-4"
+    },
+    {
+      "colour": "blue",
+      "inches": 10,
+      "mark": "corners-5"
+    },
+    {
+      "colour": "black",
+      "inches": 12,
+      "mark": "own"
+    }
+  ],
+  "source": [
+    "DICE p.1",
+    "RoP s2.2 p9",
+    "spec 14 s1"
+  ]
+}

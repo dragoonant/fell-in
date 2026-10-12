@@ -1,0 +1,14 @@
+{
+  "id": "heroic",
+  "vats": "BOT",
+  "healthBonus": 1,
+  "critical": true,
+  "luck": true,
+  "apUse": [
+    "movement",
+    "attack",
+    "expertise"
+  ],
+  "cost": 48,
+  "source": "CARDS p.69; RoP s6.1 p50; COST Heroic"
+}

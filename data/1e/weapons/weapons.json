@@ -1,0 +1,906 @@
+[
+  {
+    "id": "hunting-rifle",
+    "name": "Hunting Rifle",
+    "skill": "rifle",
+    "short": "blue",
+    "long": "black",
+    "dice": {
+      "short": {
+        "yellow": 2
+      },
+      "long": {
+        "green": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 4
+        }
+      ],
+      "restriction": "longOnly"
+    },
+    "cost": 18,
+    "source": "CARDS p.17; COST Hunting Rifle"
+  },
+  {
+    "id": "10mm-pistol",
+    "name": "10mm Pistol",
+    "skill": "pistol",
+    "short": "blue",
+    "dice": {
+      "short": {
+        "black": 1,
+        "green": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "cost": 6,
+    "source": "CARDS p.18; COST 10mm Pistol"
+  },
+  {
+    "id": "dog-bite",
+    "name": "Dog Bite",
+    "skill": "melee",
+    "restriction": {
+      "types": [
+        "dog"
+      ]
+    },
+    "dice": {
+      "melee": {
+        "yellow": 1,
+        "green": 1,
+        "blue": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "removeReaction"
+      },
+      {
+        "cost": [
+          "STAR"
+        ],
+        "outcome": "gainAP",
+        "n": 1
+      },
+      {
+        "cost": [
+          "BLAST"
+        ],
+        "outcome": "injuredArm"
+      }
+    ],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1
+      }
+    },
+    "cost": 0,
+    "source": "CARDS p.19; COST Dog Bite"
+  },
+  {
+    "id": "baseball-bat",
+    "name": "Baseball Bat",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 1
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "armorDown",
+        "n": 1,
+        "max": 2
+      }
+    ],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "blue": 1
+      },
+      "effects": [
+        {
+          "cost": [
+            "STAR"
+          ],
+          "outcome": "extraDamage",
+          "n": 1
+        },
+        {
+          "cost": [
+            "BLAST"
+          ],
+          "outcome": "stun"
+        }
+      ]
+    },
+    "cost": 3,
+    "source": "CARDS p.20; COST Baseball Bat"
+  },
+  {
+    "id": "pipe-pistol",
+    "name": "Pipe Pistol",
+    "skill": "pistol",
+    "short": "black",
+    "dice": {
+      "short": {
+        "black": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 1
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "yellow": 1
+      }
+    },
+    "cost": 2,
+    "source": "CARDS p.21; COST Pipe Pistol"
+  },
+  {
+    "id": "assault-rifle",
+    "name": "Assault Rifle",
+    "skill": "rifle",
+    "short": "red",
+    "long": "green",
+    "dice": {
+      "short": {
+        "black": 1,
+        "green": 1
+      },
+      "long": {
+        "black": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 4,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "yellow": 2
+      }
+    },
+    "cost": 9,
+    "source": "CARDS p.22; COST Assault Rifle"
+  },
+  {
+    "id": "sledgehammer",
+    "name": "Sledgehammer",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "yellow": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "blue": 1
+      },
+      "effects": [
+        {
+          "cost": [
+            "BOT"
+          ],
+          "outcome": "stun"
+        }
+      ]
+    },
+    "cost": 12,
+    "source": "CARDS p.23; COST Sledgehammer"
+  },
+  {
+    "id": "combat-shotgun",
+    "name": "Combat Shotgun",
+    "skill": "rifle",
+    "short": "red",
+    "long": "blue",
+    "dice": {
+      "short": {
+        "black": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 4,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "restriction": "shortOnly",
+      "extraDice": {
+        "blue": 1
+      },
+      "effects": [
+        {
+          "cost": [
+            "BOT"
+          ],
+          "outcome": "injuredArm"
+        }
+      ]
+    },
+    "cost": 9,
+    "source": "CARDS p.24; COST Combat Shotgun"
+  },
+  {
+    "id": "bolt-action-pipe-rifle",
+    "name": "Bolt-Action Pipe Rifle",
+    "skill": "rifle",
+    "short": "green",
+    "long": "blue",
+    "dice": {
+      "short": {
+        "yellow": 1,
+        "green": 1
+      },
+      "long": {
+        "black": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "cost": 11,
+    "source": "CARDS p.25; COST Bolt-Action Pipe Rifle"
+  },
+  {
+    "id": "board",
+    "name": "Board",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "black": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "yellow": 1
+      }
+    },
+    "cost": 8,
+    "source": "CARDS p.26; COST Board"
+  },
+  {
+    "id": "hound-bite",
+    "name": "Hound Bite",
+    "skill": "melee",
+    "restriction": {
+      "units": [
+        "mutant-hound"
+      ]
+    },
+    "dice": {
+      "melee": {
+        "black": 1,
+        "yellow": 1,
+        "blue": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "removeReaction"
+      },
+      {
+        "cost": [
+          "STAR"
+        ],
+        "outcome": "gainAP",
+        "n": 1
+      },
+      {
+        "cost": [
+          "BLAST"
+        ],
+        "outcome": "injuredArm"
+      }
+    ],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "yellow": 1
+      }
+    },
+    "cost": 0,
+    "source": "CARDS p.27; COST Hound Bite"
+  },
+  {
+    "id": "deathclaw-swipe",
+    "name": "Deathclaw Swipe",
+    "skill": "melee",
+    "restriction": {
+      "units": [
+        "deathclaw"
+      ]
+    },
+    "dice": {
+      "melee": {
+        "yellow": 2,
+        "blue": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "stun"
+      },
+      {
+        "cost": [
+          "BLAST"
+        ],
+        "outcome": "push",
+        "colour": "orange"
+      }
+    ],
+    "cost": 0,
+    "source": "CARDS p.28; COST Deathclaw Swipe"
+  },
+  {
+    "id": "deathclaw-crush",
+    "name": "Deathclaw Crush",
+    "skill": "melee",
+    "restriction": {
+      "units": [
+        "deathclaw"
+      ]
+    },
+    "skillRoll": {
+      "attr": "str",
+      "minusTargetAttr": "agi"
+    },
+    "dice": {
+      "melee": {
+        "yellow": 3
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 3
+      }
+    ],
+    "specials": [],
+    "primed": {
+      "tokens": 3,
+      "gain": "afterActionNonFriendlyInLos",
+      "use": "attack",
+      "onUse": [
+        {
+          "outcome": "stun"
+        },
+        {
+          "outcome": "throw",
+          "colour": "yellow"
+        }
+      ],
+      "spend": "all"
+    },
+    "cost": 0,
+    "source": "CARDS p.29; COST Deathclaw Crush"
+  },
+  {
+    "id": "laser-rifle",
+    "name": "Laser Rifle",
+    "skill": "rifle",
+    "short": "black",
+    "long": "black",
+    "dice": {
+      "short": {
+        "black": 1,
+        "blue": 1
+      },
+      "long": {
+        "yellow": 1,
+        "blue": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "energy",
+        "value": 2
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "ignoreArmor",
+        "n": 1
+      },
+      {
+        "cost": [
+          "BOT",
+          "BOT"
+        ],
+        "outcome": "fire"
+      }
+    ],
+    "critical": {
+      "rating": 4,
+      "damage": [
+        {
+          "type": "energy",
+          "value": 4
+        }
+      ],
+      "effects": [
+        {
+          "outcome": "addIcon",
+          "icon": "BOT",
+          "n": 1
+        }
+      ]
+    },
+    "cost": 24,
+    "source": "CARDS p.30; COST Laser Rifle"
+  },
+  {
+    "id": "fragmentation-grenade",
+    "name": "Fragmentation Grenade",
+    "skill": "throw",
+    "short": "throw",
+    "dice": {
+      "short": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2,
+        "area": "orange"
+      }
+    ],
+    "specials": [],
+    "grenade": true,
+    "limitedUse": true,
+    "scatter": [
+      {
+        "failBy": [
+          1,
+          2
+        ],
+        "colour": "orange"
+      },
+      {
+        "failBy": [
+          3,
+          null
+        ],
+        "colour": "yellow"
+      }
+    ],
+    "cost": 6,
+    "source": "CARDS p.31; COST Fragmentation Grenade; ERR p.11; limitedUse: ERR p.4 (counted copies)",
+    "targetExtra": {
+      "damage": 1
+    }
+  },
+  {
+    "id": "missile-launcher",
+    "name": "Missile Launcher",
+    "skill": "heavy",
+    "short": "black",
+    "long": "black",
+    "dice": {
+      "short": {
+        "black": 1,
+        "yellow": 1
+      },
+      "long": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2,
+        "area": "yellow"
+      }
+    ],
+    "specials": [],
+    "slowFiring": true,
+    "heavy": true,
+    "scatter": [
+      {
+        "failBy": [
+          1,
+          2
+        ],
+        "colour": "orange"
+      },
+      {
+        "failBy": [
+          3,
+          4
+        ],
+        "colour": "yellow"
+      },
+      {
+        "failBy": [
+          5,
+          null
+        ],
+        "colour": "red"
+      }
+    ],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3,
+          "area": "yellow"
+        }
+      ],
+      "extraDice": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "cost": 52,
+    "source": "CARDS p.32; COST Missile Launcher; ERR p.11",
+    "targetExtra": {
+      "damage": 1
+    }
+  },
+  {
+    "id": "combat-rifle",
+    "name": "Combat Rifle",
+    "skill": "rifle",
+    "short": "green",
+    "long": "black",
+    "dice": {
+      "short": {
+        "black": 1,
+        "yellow": 1
+      },
+      "long": {
+        "yellow": 1,
+        "green": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "black": 1
+      }
+    },
+    "cost": 16,
+    "source": "CARDS p.33; COST Combat Rifle"
+  },
+  {
+    "id": "laser-pistol",
+    "name": "Laser Pistol",
+    "skill": "pistol",
+    "short": "blue",
+    "dice": {
+      "short": {
+        "yellow": 1,
+        "green": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "energy",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "energy",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "yellow": 1
+      }
+    },
+    "cost": 7,
+    "source": "CARDS p.34; COST Laser Pistol"
+  },
+  {
+    "id": "44-revolver",
+    "name": ".44 Revolver",
+    "skill": "pistol",
+    "short": "blue",
+    "dice": {
+      "short": {
+        "yellow": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 3
+        }
+      ],
+      "extraDice": {
+        "black": 1
+      }
+    },
+    "cost": 6,
+    "source": "CARDS p.35; COST .44 Revolver"
+  },
+  {
+    "id": "plasma-rifle",
+    "name": "Plasma Rifle",
+    "skill": "rifle",
+    "short": "red",
+    "long": "black",
+    "dice": {
+      "short": {
+        "yellow": 1,
+        "green": 1
+      },
+      "long": {
+        "black": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "energy",
+        "value": 2,
+        "lowerOfPhysEnergy": true
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 4,
+      "damage": [
+        {
+          "type": "energy",
+          "value": 3
+        }
+      ],
+      "effects": [
+        {
+          "outcome": "armorDown",
+          "n": 2
+        }
+      ]
+    },
+    "cost": 16,
+    "source": "CARDS p.36; ERR p.15; COST Plasma Rifle"
+  },
+  {
+    "id": "pipe-wrench",
+    "name": "Pipe Wrench",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "yellow": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 2,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1
+      }
+    },
+    "cost": 6,
+    "source": "CARDS p.37; COST Pipe Wrench"
+  },
+  {
+    "id": "improvised-weapon",
+    "name": "Improvised Weapon",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "green": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 1
+      }
+    ],
+    "specials": [],
+    "cost": 0,
+    "source": "RoP p24; CC-001 (spec 12)"
+  }
+]

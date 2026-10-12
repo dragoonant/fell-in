@@ -1,0 +1,431 @@
+[
+  {
+    "id": "nuka-cola",
+    "name": "Nuka-Cola",
+    "kind": "food",
+    "text": "A fizzy pick-me-up: restores 3 health, adds 1 radiation and grants an extra action point.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "heal",
+        "n": 3
+      },
+      {
+        "op": "addRad",
+        "n": 1
+      },
+      {
+        "op": "gainAP",
+        "n": 1
+      }
+    ],
+    "cost": 15,
+    "source": "CARDS p.39; COST Nuka-Cola"
+  },
+  {
+    "id": "nuka-cherry",
+    "name": "Nuka-Cherry",
+    "kind": "food",
+    "text": "The cherry version: restores 4 health, adds 1 radiation and grants an extra action point.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "heal",
+        "n": 4
+      },
+      {
+        "op": "addRad",
+        "n": 1
+      },
+      {
+        "op": "gainAP",
+        "n": 1
+      }
+    ],
+    "cost": 23,
+    "source": "CARDS p.40; COST Nuka-Cherry"
+  },
+  {
+    "id": "iguana-bits",
+    "name": "Iguana Bits",
+    "kind": "food",
+    "text": "Skewered lizard: restores 2 health and adds 1 radiation. Cooked into soup it restores 4 instead.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "heal",
+        "n": 2
+      },
+      {
+        "op": "addRad",
+        "n": 1
+      }
+    ],
+    "cooked": [
+      {
+        "op": "heal",
+        "n": 4
+      }
+    ],
+    "cost": 20,
+    "source": "CARDS p.41; COST Iguana Bits"
+  },
+  {
+    "id": "mutant-hound-meat",
+    "name": "Mutant Hound Meat",
+    "kind": "food",
+    "text": "Raw it restores 3 health and adds 1 radiation. Cooked into chops it first removes 3 radiation, then restores 3 health.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "heal",
+        "n": 3
+      },
+      {
+        "op": "addRad",
+        "n": 1
+      }
+    ],
+    "cooked": [
+      {
+        "op": "healRad",
+        "n": 3
+      },
+      {
+        "op": "heal",
+        "n": 3
+      }
+    ],
+    "cost": 22,
+    "source": "CARDS p.42; COST Mutant Hound Meat"
+  },
+  {
+    "id": "blood-pack",
+    "name": "Blood Pack",
+    "kind": "food",
+    "text": "A sealed transfusion bag that restores 3 health.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "heal",
+        "n": 3
+      }
+    ],
+    "cost": 15,
+    "source": "CARDS p.43; COST Blood Pack"
+  },
+  {
+    "id": "stealth-boy",
+    "name": "Stealth Boy",
+    "kind": "gear",
+    "text": "Cloak (2 rounds): attackers, chargers and noticers must pass PER-4 first; the first pass removes the penalty for that turn; assigned to one model, never shared.",
+    "limitedUse": false,
+    "duration": {
+      "fixed": 2
+    },
+    "effects": [
+      {
+        "code": "stealthBoy"
+      }
+    ],
+    "shareable": false,
+    "restriction": {
+      "assignedOnly": true
+    },
+    "cost": 22,
+    "source": "CARDS p.44; COST Stealth Boy"
+  },
+  {
+    "id": "stimpak",
+    "name": "Stimpak",
+    "kind": "chem",
+    "text": "Pick one: restore 4 health, or cure both an injured arm and an injured leg.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "choose",
+        "options": [
+          [
+            {
+              "op": "heal",
+              "n": 4
+            }
+          ],
+          [
+            {
+              "op": "cureInjury",
+              "injury": "all"
+            }
+          ]
+        ]
+      }
+    ],
+    "cost": 26,
+    "source": "CARDS p.49; COST Stimpak"
+  },
+  {
+    "id": "radaway",
+    "name": "RadAway",
+    "kind": "chem",
+    "text": "Flushes 4 radiation from the user.",
+    "limitedUse": true,
+    "duration": "instant",
+    "effects": [
+      {
+        "op": "healRad",
+        "n": 4
+      }
+    ],
+    "cost": 10,
+    "source": "CARDS p.50; COST RadAway"
+  },
+  {
+    "id": "bourbon",
+    "name": "Bourbon",
+    "kind": "alcohol",
+    "text": "Three-step drink: the 3-dot column gives +1 STR and -1 INT and is hidden first, the middle gives +1 END, and the 1-dot column is empty. A blast icon on the addiction roll hooks the drinker.",
+    "limitedUse": true,
+    "duration": {
+      "diminishing": [
+        [],
+        [
+          {
+            "op": "attrMod",
+            "attr": "end",
+            "n": 1
+          }
+        ],
+        [
+          {
+            "op": "attrMod",
+            "attr": "str",
+            "n": 1
+          },
+          {
+            "op": "attrMod",
+            "attr": "int",
+            "n": -1
+          }
+        ]
+      ]
+    },
+    "effects": [],
+    "addictive": {
+      "icon": "BLAST",
+      "addicted": [
+        {
+          "op": "attrMod",
+          "attr": "agi",
+          "n": -1
+        }
+      ]
+    },
+    "cost": 8,
+    "source": "CARDS p.56; COST Bourbon"
+  },
+  {
+    "id": "psycho",
+    "name": "Psycho",
+    "kind": "chem",
+    "text": "Combat chem in three steps: +1 to all armor, then an extra black die on melee attacks, then +1 to all armor again. A star icon on the addiction roll hooks the user.",
+    "limitedUse": true,
+    "duration": {
+      "diminishing": [
+        [
+          {
+            "op": "armorMod",
+            "damageType": "all",
+            "n": 1
+          }
+        ],
+        [
+          {
+            "op": "addDice",
+            "dice": {
+              "black": 1
+            },
+            "when": {
+              "skills": [
+                "melee"
+              ]
+            }
+          }
+        ],
+        [
+          {
+            "op": "armorMod",
+            "damageType": "all",
+            "n": 1
+          }
+        ]
+      ]
+    },
+    "effects": [],
+    "addictive": {
+      "icon": "STAR",
+      "addicted": [
+        {
+          "op": "attrMod",
+          "attr": "str",
+          "n": -1
+        },
+        {
+          "op": "armorMod",
+          "damageType": "all",
+          "n": -1
+        }
+      ]
+    },
+    "cost": 10,
+    "source": "CARDS p.57; COST Psycho (chem)"
+  },
+  {
+    "id": "jet",
+    "name": "Jet",
+    "kind": "chem",
+    "text": "Speed chem in three steps, fading from the 3-dot column: an extra action point first, then an extra movement-only point, then awareness one ruler step longer. A star icon on the addiction roll hooks the user.",
+    "limitedUse": true,
+    "duration": {
+      "diminishing": [
+        [
+          {
+            "op": "gainAP",
+            "n": 1
+          }
+        ],
+        [
+          {
+            "op": "gainAP",
+            "n": 1,
+            "apUse": "movement"
+          }
+        ],
+        [
+          {
+            "op": "rulerStep",
+            "stat": "awareness",
+            "n": 1
+          }
+        ]
+      ]
+    },
+    "effects": [],
+    "addictive": {
+      "icon": "STAR",
+      "addicted": [
+        {
+          "op": "attrMod",
+          "attr": "agi",
+          "n": -2
+        }
+      ]
+    },
+    "cost": 12,
+    "source": "CARDS p.58; COST Jet"
+  },
+  {
+    "id": "mentats",
+    "name": "Mentats",
+    "kind": "chem",
+    "text": "Brain chem in three steps, fading from the 3-dot column: +1 PER first, then +1 PER and +1 INT, then +1 INT. A blast icon on the addiction roll hooks the user.",
+    "limitedUse": true,
+    "duration": {
+      "diminishing": [
+        [
+          {
+            "op": "attrMod",
+            "attr": "per",
+            "n": 1
+          }
+        ],
+        [
+          {
+            "op": "attrMod",
+            "attr": "per",
+            "n": 1
+          },
+          {
+            "op": "attrMod",
+            "attr": "int",
+            "n": 1
+          }
+        ],
+        [
+          {
+            "op": "attrMod",
+            "attr": "int",
+            "n": 1
+          }
+        ]
+      ]
+    },
+    "effects": [],
+    "addictive": {
+      "icon": "BLAST",
+      "addicted": [
+        {
+          "op": "attrMod",
+          "attr": "cha",
+          "n": -1
+        }
+      ]
+    },
+    "cost": 9,
+    "source": "CARDS p.59; COST Mentats"
+  },
+  {
+    "id": "buffout",
+    "name": "Buffout",
+    "kind": "chem",
+    "text": "Muscle chem in three steps, fading from the 3-dot column: +2 STR first, then nothing extra, then +1 STR and +3 END. A star icon on the addiction roll hooks the user.",
+    "limitedUse": true,
+    "duration": {
+      "diminishing": [
+        [
+          {
+            "op": "attrMod",
+            "attr": "str",
+            "n": 2
+          }
+        ],
+        [],
+        [
+          {
+            "op": "attrMod",
+            "attr": "str",
+            "n": 1
+          },
+          {
+            "op": "attrMod",
+            "attr": "end",
+            "n": 3
+          }
+        ]
+      ]
+    },
+    "effects": [],
+    "addictive": {
+      "icon": "STAR",
+      "addicted": [
+        {
+          "op": "attrMod",
+          "attr": "end",
+          "n": -1
+        },
+        {
+          "op": "attrMod",
+          "attr": "str",
+          "n": -1
+        }
+      ]
+    },
+    "cost": 13,
+    "source": "CARDS p.60; COST Buffout"
+  }
+]

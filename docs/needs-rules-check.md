@@ -57,3 +57,20 @@ rulebook; we follow the errata), **Unsourced** (no source; our engineering or de
 
 ## Campaign
 - RULING: Settlement rules | M6 uses only facts in spec 19 plus a labelled house procedure unless the owner provides the Campaign Handbook | no free source | Unsourced | spec 19
+
+## Data review fixes
+- RULING: Plasma Rifle armor glyph | red down arrow + phys/energy icons is damage.lowerOfPhysEnergy; armor reduction stays on the crit only | ERR p.15 FAQ answers it | Confirmed | CARDS p.36; ERR p.15
+- RULING: Hazmat v2 0/0 | keep unit P/E per FAQ; suit sets radiation 3 only | FAQ answers it directly | Unsourced | ERR p.16; ERR p.20
+- RULING: Base sizes | Normal units 32 mm, Large (Super Mutant, Brute, Aviator, Mutant Hound, Goddard in Power Armor) 40 mm, Deathclaw 50 mm | no store or fan source found yet; RoP p17 gives only categories | Unsourced | RoP s2.8 p17 (PDF p19)
+- RULING: Fragmentation Grenade limitedUse | counted copies, one use each | ERR p.4 implies counted grenades, the card does not print it | Unsourced | ERR p.4
+- RULING: Getting Acclimated tutorial mapping | ga-1..4 are sections A1..A4 at PDF p.2-3, 4-5, 6, 7-8 | section start pages checked in the PDF | Confirmed | GA
+- RULING: Dogmeat AGI | use ERR v2 AGI 6 over the free card's 8 | errata overrides the card | Corrected | ERR v2
+- RULING: Back-up aura | applies to all skill tests of friendly models in the aura | the glyph sits mid-text, not beside the name | Unsourced | CARDS
+- RULING: Mutant Hound keywords | Dog only, no Creature | card shows the paw glyph only | Confirmed | CARDS
+- RULING: Injury icons | bandage cone = arm, sock = leg; Dog/Hound Bite BLAST and Shotgun crit BOT = injuredArm | icon-only cards | Unsourced | CARDS
+- RULING: Chem diminishing order | columns hide right to left (dot counts 3/2/1); addiction rows read bottom-up from STR, so Bourbon gives AGI -1 | icon-only, table printed rotated | Unsourced | CARDS; RoP p33
+- RULING: Weapon pictograms | Bat helmet-crack = armorDown 1 (once per Action per errata); STAR burst = extraDamage 1; grenade/missile target-burst icon omitted | icon-only | Unsourced | CARDS; ERR
+- RULING: Fan perk/boost/quest/event data | used only as a name and mechanic cross-reference, all prose rewritten | campaign-edition fan transcription, edition unverified | Fan-source | R1-archives.md
+- RULING: AI Heroic model | gets V.A.T.S. at activation start and one extra Quick Action | Campaign Handbook p16 product preview photo | Confirmed | R2-photos.md
+- RULING: AI matrix columns | modelled as predicates (health or scenario condition), not health only | Wave 3 Institute card photo | Confirmed | R2-photos.md
+- RULING: Settlement storage | not implemented; campaign GAP-1/2 stay open | secondhand forum snippet only | Unsourced | R3-campaign.md

@@ -1,0 +1,364 @@
+{
+  "id": "dice",
+  "skill": {
+    "faces": [
+      {
+        "value": 1,
+        "icons": [
+          "AP"
+        ]
+      },
+      {
+        "value": 1,
+        "icons": [
+          "AP"
+        ]
+      },
+      {
+        "value": 1,
+        "icons": [
+          "CP"
+        ]
+      },
+      {
+        "value": 1,
+        "icons": [
+          "CP"
+        ]
+      },
+      {
+        "value": 1,
+        "icons": [
+          "CP"
+        ]
+      },
+      {
+        "value": 2,
+        "icons": []
+      },
+      {
+        "value": 3,
+        "icons": []
+      },
+      {
+        "value": 4,
+        "icons": []
+      },
+      {
+        "value": 5,
+        "icons": []
+      },
+      {
+        "value": 6,
+        "icons": []
+      },
+      {
+        "value": 6,
+        "icons": []
+      },
+      {
+        "value": 7,
+        "icons": []
+      },
+      {
+        "value": 7,
+        "icons": []
+      },
+      {
+        "value": 8,
+        "icons": []
+      },
+      {
+        "value": 8,
+        "icons": []
+      },
+      {
+        "value": 9,
+        "icons": []
+      },
+      {
+        "value": 10,
+        "icons": []
+      },
+      {
+        "value": "X",
+        "icons": []
+      },
+      {
+        "value": "X",
+        "icons": []
+      },
+      {
+        "value": "X",
+        "icons": [
+          "AP"
+        ]
+      }
+    ]
+  },
+  "effect": {
+    "black": [
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG",
+          "DMG"
+        ]
+      },
+      {
+        "icons": []
+      },
+      {
+        "icons": []
+      },
+      {
+        "icons": []
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      }
+    ],
+    "green": [
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "ACC2"
+        ]
+      },
+      {
+        "icons": [
+          "ACC2"
+        ]
+      },
+      {
+        "icons": [
+          "ACC3"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      }
+    ],
+    "yellow": [
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR"
+        ]
+      },
+      {
+        "icons": [
+          "AR",
+          "AR"
+        ]
+      },
+      {
+        "icons": []
+      },
+      {
+        "icons": []
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "ACC1"
+        ]
+      },
+      {
+        "icons": [
+          "DMG"
+        ]
+      }
+    ],
+    "blue": [
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT",
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT",
+          "BOT"
+        ]
+      },
+      {
+        "icons": [
+          "BOT",
+          "STAR"
+        ]
+      },
+      {
+        "icons": [
+          "STAR"
+        ]
+      },
+      {
+        "icons": [
+          "STAR"
+        ]
+      },
+      {
+        "icons": [
+          "STAR",
+          "STAR"
+        ]
+      },
+      {
+        "icons": [
+          "BLAST"
+        ]
+      },
+      {
+        "icons": [
+          "BLAST"
+        ]
+      }
+    ]
+  },
+  "armor": [
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    4,
+    4
+  ],
+  "source": [
+    "DICE p.1 (ruler and dice sheet)",
+    "RoP s2.4 p10-11",
+    "spec 13 s1-2"
+  ]
+}

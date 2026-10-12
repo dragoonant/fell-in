@@ -1,0 +1,189 @@
+[
+  {
+    "id": "deathclaw",
+    "name": "Deathclaw",
+    "faction": null,
+    "unique": false,
+    "types": [
+      "creature"
+    ],
+    "baseMm": 50,
+    "move": "yellow",
+    "charge": "green",
+    "awareness": "black",
+    "attrs": {
+      "str": 11,
+      "per": 5,
+      "end": 12,
+      "cha": 2,
+      "int": 2,
+      "agi": 2,
+      "luc": 1
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "colour": "yellow"
+      },
+      {
+        "skill": "search",
+        "attr": "per"
+      },
+      {
+        "skill": "melee",
+        "attr": "per"
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "blue"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 3,
+        "strong": 1
+      },
+      "energy": {
+        "base": 3,
+        "strong": 1
+      },
+      "radiation": "immune"
+    },
+    "apUse": [],
+    "flags": [
+      "cannotClimb",
+      "battleCryImmune",
+      "unimpeded"
+    ],
+    "abilities": [
+      {
+        "id": "barge",
+        "name": "Barge",
+        "text": "This model may pass through the bases of smaller non-friendly models while moving.",
+        "effects": [
+          {
+            "code": "barge"
+          }
+        ]
+      },
+      {
+        "id": "unnerving",
+        "name": "Unnerving",
+        "aura": true,
+        "text": "Aura: non-attack tests aimed at this model take -2.",
+        "effects": [
+          {
+            "code": "unnerving",
+            "args": {
+              "n": -2
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [
+      "deathclaw-swipe",
+      "deathclaw-crush"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: Deathclaw assumed 50 mm, between Large 40 and Huge 60+ (RoP s2.8 p17 (PDF p19)); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 240,
+    "source": [
+      "CARDS p.11",
+      "COST Deathclaw"
+    ]
+  },
+  {
+    "id": "aspirant-goddard",
+    "name": "Aspirant Goddard",
+    "faction": "brotherhood-of-steel",
+    "unique": true,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "blue",
+    "attrs": {
+      "str": 5,
+      "per": 3,
+      "end": 4,
+      "cha": 5,
+      "int": 4,
+      "agi": 3,
+      "luc": 1
+    },
+    "skills": [
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "red"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [
+      "t-60-power-armor"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 114,
+    "source": [
+      "CARDS p.12",
+      "COST Aspirant Goddard"
+    ]
+  }
+]

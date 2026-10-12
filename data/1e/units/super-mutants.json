@@ -1,0 +1,340 @@
+[
+  {
+    "id": "mutant-hound",
+    "name": "Mutant Hound",
+    "faction": "super-mutants",
+    "unique": false,
+    "types": [
+      "dog"
+    ],
+    "baseMm": 40,
+    "move": "red",
+    "charge": "blue",
+    "awareness": "black",
+    "attrs": {
+      "str": 6,
+      "per": 7,
+      "end": 6,
+      "cha": 2,
+      "int": 2,
+      "agi": 7,
+      "luc": 1
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "white": true
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "yellow"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 1
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "immune"
+    },
+    "apUse": [
+      "prepare",
+      "movement"
+    ],
+    "flags": [],
+    "abilities": [
+      {
+        "id": "senses",
+        "name": "Senses",
+        "text": "This model may declare a Charge at a target it cannot see; no line of sight is required.",
+        "effects": [
+          {
+            "code": "senses"
+          }
+        ]
+      },
+      {
+        "id": "leap",
+        "name": "Leap",
+        "text": "This model may climb, but it may not finish a movement partway up a climb.",
+        "effects": [
+          {
+            "code": "leap"
+          }
+        ]
+      }
+    ],
+    "equipped": [
+      "hound-bite"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md",
+      "types": "CARDS p.7: paw (Dog) glyph in the title bar, same as Dogmeat; no Creature claw glyph"
+    },
+    "cost": 63,
+    "source": [
+      "CARDS p.7",
+      "COST Mutant Hound",
+      "ERR p.20 (version 2: weapon renamed Hound Bite)"
+    ]
+  },
+  {
+    "id": "super-mutant",
+    "name": "Super Mutant",
+    "faction": "super-mutants",
+    "unique": false,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "green",
+    "attrs": {
+      "str": 7,
+      "per": 4,
+      "end": 6,
+      "cha": 3,
+      "int": 3,
+      "agi": 5,
+      "luc": 3
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "white": true
+      },
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "search",
+        "attr": "per"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "yellow"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "blue"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 1
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "immune"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 40,
+    "source": [
+      "CARDS p.8",
+      "COST Super Mutant"
+    ]
+  },
+  {
+    "id": "brute",
+    "name": "Brute",
+    "faction": "super-mutants",
+    "unique": false,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "green",
+    "awareness": "green",
+    "attrs": {
+      "str": 8,
+      "per": 3,
+      "end": 8,
+      "cha": 3,
+      "int": 3,
+      "agi": 4,
+      "luc": 3
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "colour": "yellow"
+      },
+      {
+        "skill": "presence",
+        "attr": "str",
+        "colour": "blue"
+      },
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "search",
+        "attr": "per"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "black"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 2
+      },
+      "radiation": "immune"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 77,
+    "source": [
+      "CARDS p.9",
+      "COST Brute"
+    ]
+  },
+  {
+    "id": "aviator",
+    "name": "Aviator",
+    "faction": "super-mutants",
+    "unique": true,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "blue",
+    "attrs": {
+      "str": 7,
+      "per": 4,
+      "end": 8,
+      "cha": 4,
+      "int": 4,
+      "agi": 5,
+      "luc": 3
+    },
+    "skills": [
+      {
+        "skill": "battleCry",
+        "attr": "str",
+        "white": true
+      },
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "search",
+        "attr": "per"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "green"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "blue"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "immune"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [
+      "aviator-cap"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: size picked from the model footprint (RoP s2.8 p17 (PDF p19): Normal 32, Large 40, Huge 60+); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 90,
+    "source": [
+      "CARDS p.10",
+      "COST Aviator"
+    ],
+    "versionGroup": "aviator"
+  }
+]

@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M0 bootstrap** (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M1 data** (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -26,9 +26,18 @@ Milestone reached: **M0 bootstrap** (this file only lists what is real; plans li
 - Not carried over (Warmachine-coupled, rebuild against the new engine): presentation director, interaction/drag,
   dice tray, VFX, audio manager, GLB figure loader, HUD panels.
 
-## Tests (`npm test`: 12 tests; `npm run e2e`: 2)
+## Data (M1)
+- Schema FROZEN M1 in `docs/spec/20-data-schema.md`; `src/data/` (types, loader via import.meta.glob, pure
+  validator), `tools/validate-data.ts`, `npm run validate:data`.
+- `data/1e/`: dice, rulers, rules, heroic; 11 units, 6 faction/reference records, 4 leaders; 22 weapons,
+  5 armor/clothing/power armor, 4 mods, 13 items (food, gear, alcohol, chems); 14 scenarios (GA tutorials,
+  box, AI/co-op handbook). Every record cites its source. Costs live on records (no costs.json).
+- Gap research: `docs/spec/sources/R1-archives.md`, `R2-photos.md`, `R3-campaign.md`. AI matrices for the
+  starter units and campaign settlement numbers are still open (owner cards or blocked BGG/Reddit pages).
+
+## Tests (`npm test`: 14 tests; `npm run e2e`: 2)
 GEOM-001..005, LOS-001..003, RNG-001, SETUP-001, VIEW-001, DECIDER-001; Playwright boot test and the screenshot
 `screenshots/m0-table.png`.
 
 ## Not yet
-Rules spec freeze, data schema and card data (M1), dice/attack/damage/turn flow (M2), playable 3D game (M3), AI (M4).
+Dice/attack/damage/turn flow (M2), playable 3D game (M3), AI (M4).

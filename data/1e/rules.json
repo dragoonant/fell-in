@@ -1,0 +1,41 @@
+{
+  "id": "rules",
+  "constants": {
+    "maxDicePerColour": 4,
+    "actionsPerActivation": 2,
+    "quickActionPenalty": -2,
+    "coverPenalty": -2,
+    "coverArmorBonus": 1,
+    "speciality": 2,
+    "strBonusThreshold": 7,
+    "intoMeleeBonus": 2,
+    "sharingRange": "yellow",
+    "fallingTable": {
+      "orange": 0,
+      "yellow": 2,
+      "red": 4,
+      "green": 6,
+      "blue": 8,
+      "black": 10,
+      "beyondBlack": "removed"
+    },
+    "armorBoostMax": 4,
+    "luckBonus": 2,
+    "injuredArmPenalty": -2,
+    "frozenPenalty": -2,
+    "heroicHealthBonus": 1,
+    "outnumberedGreenDice": 1,
+    "strBonusBlackDice": 1
+  },
+  "source": [
+    "RoP s2.4 p10-11",
+    "RoP s2.8 p17-18",
+    "RoP s2.9 p20",
+    "RoP p38-39",
+    "RoP s5.4 p48",
+    "RoP s6.2 p52",
+    "ERR p.1-2",
+    "ERR p.9-10",
+    "spec 20 s1"
+  ]
+}

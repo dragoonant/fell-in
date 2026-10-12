@@ -1,0 +1,1790 @@
+[
+  {
+    "id": "ga-1",
+    "name": "Navigating the Wastes",
+    "mode": "tutorial",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor-day-one",
+            "count": 1,
+            "items": []
+          }
+        ],
+        "deploy": {
+          "zone": "edge",
+          "note": "Start at the near edge."
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "crate",
+        "place": {
+          "note": "one crate to reach, then an exit"
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "tutorial-dice",
+        "text": "Only numbers and X matter on the skill die: icon faces count as a 1 and succeed."
+      },
+      {
+        "id": "hazards",
+        "text": "Green hazard zones are marked on the ground. The model must route around them, reach the crate and then leave by the exit."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "The model reaches the crate and then the exit without touching a hazard zone."
+      }
+    ],
+    "source": "GA PDF p.2-3 (A1); spec 17 s2 GA-1"
+  },
+  {
+    "id": "ga-2",
+    "name": "Shooting Range",
+    "mode": "tutorial",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor-day-one",
+            "count": 1,
+            "items": [
+              "10mm-pistol"
+            ]
+          }
+        ],
+        "deploy": {
+          "zone": "edge",
+          "note": "Start at the near edge."
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "investigation",
+        "face": "can",
+        "place": {
+          "index": 1
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "can",
+        "place": {
+          "index": 2
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "can",
+        "place": {
+          "index": 3
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "can",
+        "place": {
+          "index": 4
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "can",
+        "place": {
+          "index": 5
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "tutorial-dice",
+        "text": "Only numbers and X matter on the skill die: icon faces count as a 1 and succeed."
+      },
+      {
+        "id": "targets",
+        "text": "Five can markers stand in the open. The player moves into range when needed and shoots each one."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "Every can has been hit once."
+      }
+    ],
+    "source": "GA PDF p.4-5 (A2); spec 17 s2 GA-2"
+  },
+  {
+    "id": "ga-3",
+    "name": "Weird Harvest",
+    "mode": "tutorial",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor-day-one",
+            "count": 1,
+            "items": [
+              "baseball-bat"
+            ]
+          }
+        ],
+        "deploy": {
+          "zone": "edge",
+          "note": "Start at the near edge."
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "investigation",
+        "face": "plant",
+        "place": {
+          "index": 1
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "plant",
+        "place": {
+          "index": 2
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "plant",
+        "place": {
+          "index": 3
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "plant",
+        "place": {
+          "index": 4
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "plant",
+        "place": {
+          "index": 5
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "tutorial-dice",
+        "text": "Only numbers and X matter on the skill die: icon faces count as a 1 and succeed."
+      },
+      {
+        "id": "targets",
+        "text": "Five plant markers must be reached by Move or Charge into contact and struck in melee."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "Every plant has been hit once."
+      }
+    ],
+    "source": "GA PDF p.6 (A3); spec 17 s2 GA-3"
+  },
+  {
+    "id": "ga-4",
+    "name": "Solving the Rat Problem",
+    "mode": "tutorial",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor-day-one",
+            "count": 1,
+            "items": [
+              "hunting-rifle"
+            ]
+          }
+        ],
+        "deploy": {
+          "zone": "edge",
+          "note": "Start at the near edge."
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "investigation",
+        "face": "mound",
+        "place": {
+          "index": 1
+        },
+        "props": {
+          "health": 3,
+          "armor": {
+            "physical": 1
+          }
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "mound",
+        "place": {
+          "index": 2
+        },
+        "props": {
+          "health": 3,
+          "armor": {
+            "physical": 1
+          }
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "mound",
+        "place": {
+          "index": 3
+        },
+        "props": {
+          "health": 3,
+          "armor": {
+            "physical": 1
+          }
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "mound",
+        "place": {
+          "index": 4
+        },
+        "props": {
+          "health": 3,
+          "armor": {
+            "physical": 1
+          }
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "mound",
+        "place": {
+          "index": 5
+        },
+        "props": {
+          "health": 3,
+          "armor": {
+            "physical": 1
+          }
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "tutorial-dice",
+        "text": "Only numbers and X matter on the skill die: icon faces count as a 1 and succeed."
+      },
+      {
+        "id": "targets",
+        "text": "Five mounds each have 3 Health and 1 physical armor. Shoot them with the rifle."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "Every mound has taken at least 1 damage after armor."
+      }
+    ],
+    "source": "GA PDF p.7-8 (A4); spec 17 s2 GA-4"
+  },
+  {
+    "id": "box-1",
+    "name": "Ad Victoriam",
+    "mode": "versus",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 6,
+    "sides": [
+      {
+        "id": "defender",
+        "deploy": {
+          "within": "yellow",
+          "of": "own edge"
+        }
+      },
+      {
+        "id": "brotherhood",
+        "deploy": {
+          "within": "yellow",
+          "of": "own edge"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "crate",
+        "place": {
+          "line": "centre",
+          "spacing": "green",
+          "index": 1
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "crate",
+        "place": {
+          "line": "centre",
+          "spacing": "green",
+          "index": 2
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "crate",
+        "place": {
+          "line": "centre",
+          "spacing": "green",
+          "index": 3
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "building",
+        "count": 3,
+        "per": "player",
+        "place": "between the enemy deployment zone and the centre, Yellow apart"
+      }
+    ],
+    "rules": [
+      {
+        "id": "suit-crate",
+        "text": "The Brotherhood side may spend an Action in contact with a crate to receive and equip a random Power Armor."
+      },
+      {
+        "id": "suit-sabotage",
+        "text": "The other side may attack and destroy any suit nobody has claimed yet; its armor values apply."
+      }
+    ],
+    "victory": [
+      {
+        "side": "defender",
+        "when": "All enemy models are killed.",
+        "caps": 300
+      },
+      {
+        "side": "brotherhood",
+        "when": "All enemy models are killed; add 50 per intact equipped suit.",
+        "caps": 200
+      }
+    ],
+    "source": "BOX SCP-001; spec 17 s3"
+  },
+  {
+    "id": "box-2",
+    "name": "Big John's Salvage Showdown",
+    "mode": "versus",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "defender",
+        "faction": "super-mutants",
+        "deploy": {
+          "within": "red",
+          "of": "centre marker"
+        }
+      },
+      {
+        "id": "attacker",
+        "deploy": {
+          "within": "yellow",
+          "of": "any edge"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "nuke",
+        "place": {
+          "at": "centre"
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "container",
+        "size": "yellow x orange",
+        "spacing": "orange",
+        "blocksLos": true,
+        "note": "dense field of containers"
+      }
+    ],
+    "rules": [
+      {
+        "id": "pickup",
+        "text": "A model in contact can use an Action to pick up the nuke. The carrier hands it over to a model in contact by Action, or drops it where it dies; engaged defenders may grab a dropped one."
+      },
+      {
+        "id": "instability",
+        "text": "Whenever the carrier, or any model within Orange of the nuke, is hit, roll the armor die: a 1 detonates it."
+      }
+    ],
+    "victory": [
+      {
+        "side": "attacker",
+        "when": "The nuke leaves the table over any edge.",
+        "caps": 200
+      },
+      {
+        "side": "defender",
+        "when": "The nuke is still held by the defenders at round 9.",
+        "caps": 200
+      },
+      {
+        "side": "attacker",
+        "when": "The nuke explodes: both sides lose.",
+        "caps": 0
+      }
+    ],
+    "source": "BOX SCP-002; spec 17 s3"
+  },
+  {
+    "id": "box-3",
+    "name": "Quest for Knowledge",
+    "mode": "versus",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "defender",
+        "deploy": {
+          "within": "inside school"
+        }
+      },
+      {
+        "id": "attacker",
+        "deploy": {
+          "within": "yellow",
+          "of": "any edge"
+        },
+        "capsBonusPct": 20
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "book",
+        "place": {
+          "inside": "school",
+          "spacing": "yellow",
+          "index": 1
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "book",
+        "place": {
+          "inside": "school",
+          "spacing": "yellow",
+          "index": 2
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "book",
+        "place": {
+          "inside": "school",
+          "spacing": "yellow",
+          "index": 3
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "book",
+        "place": {
+          "inside": "school",
+          "spacing": "yellow",
+          "index": 4
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "book",
+        "place": {
+          "inside": "school",
+          "spacing": "yellow",
+          "index": 5
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "school",
+        "builtBy": "defender",
+        "blocksLos": true,
+        "note": "every wall blocks LoS"
+      }
+    ],
+    "rules": [
+      {
+        "id": "books",
+        "text": "The defender and attacker alternate placing five book markers inside the school, Yellow apart."
+      },
+      {
+        "id": "carry",
+        "text": "An Action in contact takes a book; a carrier who dies drops it. Books are carried off any edge."
+      }
+    ],
+    "victory": [
+      {
+        "side": "defender",
+        "when": "All attackers are killed.",
+        "caps": 200
+      },
+      {
+        "side": "attacker",
+        "when": "Three or more books leave the table.",
+        "caps": 200
+      }
+    ],
+    "source": "BOX SCP-003; spec 17 s3"
+  },
+  {
+    "id": "box-4",
+    "name": "Radio Tower Takeover",
+    "mode": "versus",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 6,
+    "sides": [
+      {
+        "id": "defender",
+        "deploy": {
+          "within": "yellow",
+          "of": "tower"
+        },
+        "note": "may place a turret and hold back up to half its caps"
+      },
+      {
+        "id": "attacker",
+        "deploy": {
+          "within": "red",
+          "of": "any edge"
+        },
+        "capsBonusPct": 20
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "tower",
+        "place": {
+          "at": "centre",
+          "maxSize": "yellow"
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "control",
+        "text": "A side controls the tower when it has a model in contact and no enemy is in contact."
+      },
+      {
+        "id": "reserves",
+        "text": "Three consecutive controlled turns let the defender bring in held-back reserves worth double the caps that were held back."
+      }
+    ],
+    "victory": [
+      {
+        "side": "attacker",
+        "level": "major",
+        "when": "End of round 6: most models in contact with the tower, with points breaking ties.",
+        "caps": 250
+      },
+      {
+        "side": "defender",
+        "level": "minor",
+        "when": "End of round 6: most models in contact with the tower, with points breaking ties.",
+        "caps": 150
+      }
+    ],
+    "source": "BOX SCP-004; spec 17 s3"
+  },
+  {
+    "id": "box-5",
+    "name": "Flip's Revenge",
+    "mode": "versus",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 6,
+    "sides": [
+      {
+        "id": "kidnappers",
+        "deploy": {
+          "within": "yellow",
+          "of": "centre marker"
+        },
+        "note": "worth double points"
+      },
+      {
+        "id": "flip",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "super-mutant",
+            "count": 1,
+            "items": [],
+            "heroic": true
+          }
+        ],
+        "deploy": {
+          "within": "red",
+          "of": "any edge"
+        },
+        "note": "one non-creature Super Mutant gets a free Heroic upgrade"
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "captive",
+        "place": {
+          "at": "centre"
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "building",
+        "ring": true,
+        "spacing": "yellow",
+        "note": "ring of buildings around the centre marker"
+      }
+    ],
+    "rules": [
+      {
+        "id": "rescue",
+        "text": "Flip spends an Action at the centre marker to free Sarah, a Survivor model with a Laser Rifle who then fights for Flip."
+      }
+    ],
+    "victory": [
+      {
+        "side": "flip",
+        "when": "Sarah leaves the table over any edge.",
+        "caps": 200
+      },
+      {
+        "side": "kidnappers",
+        "when": "Sarah is killed.",
+        "caps": 150
+      },
+      {
+        "side": "kidnappers",
+        "when": "Both Flip and Sarah are dead.",
+        "caps": 200
+      }
+    ],
+    "source": "BOX SCP-005; spec 17 s3"
+  },
+  {
+    "id": "ai-rr",
+    "name": "The Red Rocket Misunderstanding",
+    "mode": "ai",
+    "tableIn": [
+      24,
+      24
+    ],
+    "rounds": 4,
+    "sides": [
+      {
+        "id": "super-mutants",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": [
+              "sledgehammer"
+            ],
+            "heroic": true
+          },
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": [
+              "board",
+              "bolt-action-pipe-rifle"
+            ]
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 2,
+            "items": [
+              "hound-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "markers": "exactly orange from the diner, Yellow apart",
+          "diner": "yellow from a corner"
+        },
+        "ai": {
+          "objective": "defeat",
+          "subject": "red-rocket"
+        }
+      },
+      {
+        "id": "survivors",
+        "faction": "survivors",
+        "forces": [
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "hunting-rifle",
+              "baseball-bat"
+            ],
+            "heroic": true
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          },
+          {
+            "unit": "settler",
+            "count": 2,
+            "items": [
+              "laser-rifle"
+            ]
+          },
+          {
+            "unit": "enslaved-tech",
+            "count": 1,
+            "items": [
+              "combat-shotgun"
+            ]
+          }
+        ],
+        "deploy": {
+          "corner": "opposite the diner",
+          "area": "blue x blue"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "red-rocket",
+        "place": {
+          "zone": "survivor deployment",
+          "length": "yellow"
+        },
+        "props": {
+          "health": 10,
+          "armor": {
+            "physical": 1,
+            "energy": 1,
+            "radiation": "immune"
+          }
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "rocket",
+        "text": "The rocket has 10 Health and armor 1 against every damage type, ignores radiation, can be shot, and can be struck in melee from contact without that counting as an engagement."
+      },
+      {
+        "id": "push",
+        "text": "A model within Orange of the rocket may spend an Action on a STR test; a success pushes it Yellow."
+      }
+    ],
+    "victory": [
+      {
+        "side": "super-mutants",
+        "when": "The rocket is destroyed.",
+        "caps": 150
+      },
+      {
+        "side": "survivors",
+        "level": "major",
+        "when": "The rocket is pushed past the diner and off the opposite corner edge.",
+        "caps": 150
+      },
+      {
+        "side": "survivors",
+        "level": "minor",
+        "when": "The rocket has 4 or more health left at the end of round 4.",
+        "caps": 70
+      }
+    ],
+    "source": "RR p.1-2; spec 17 s4"
+  },
+  {
+    "id": "ai-missile",
+    "name": "The Missile",
+    "mode": "ai",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "super-mutants",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": []
+          },
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "enslaved-tech",
+            "count": 1,
+            "items": [
+              "combat-shotgun"
+            ]
+          }
+        ],
+        "deploy": {
+          "within": "yellow"
+        },
+        "ai": {
+          "objective": "protect",
+          "subject": "missile-sled"
+        }
+      },
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "combat-rifle",
+              "baseball-bat",
+              "t-60-power-armor"
+            ]
+          },
+          {
+            "unit": "settler",
+            "count": 2,
+            "items": [
+              "assault-rifle"
+            ]
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "zones": [
+            "A at start",
+            "B at round 2"
+          ]
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "missile-sled",
+        "place": {
+          "start": "black from an edge",
+          "exit": "opposite edge"
+        },
+        "props": {
+          "health": 5,
+          "armor": {
+            "physical": 3,
+            "energy": 1,
+            "radiation": "immune"
+          }
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "sled-move",
+        "text": "At the end of every turn the sled moves Red along the shortest route, ignoring difficult terrain, and pushes or crushes models in its path. It counts as cover and impassable but does not block LoS."
+      },
+      {
+        "id": "sabotage",
+        "text": "A Lockpick Use in contact deals 1 damage that ignores armor."
+      },
+      {
+        "id": "detonation",
+        "text": "A missile hit happens on an X when shooting at or within Yellow of the sled, or on any area damage; then roll the armor die and detonate if it shows no more than the number of earlier hits."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "The sled is sabotaged."
+      },
+      {
+        "side": "super-mutants",
+        "when": "The sled exits the table."
+      },
+      {
+        "side": "player",
+        "when": "The missile detonates: nobody wins.",
+        "caps": 0
+      }
+    ],
+    "source": "AIH p.5; spec 17 s4"
+  },
+  {
+    "id": "ai-breakin",
+    "name": "The Break-in",
+    "mode": "ai",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 6,
+    "sides": [
+      {
+        "id": "super-mutants",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": []
+          },
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "enslaved-tech",
+            "count": 1,
+            "items": []
+          },
+          {
+            "unit": "settler",
+            "count": 2,
+            "items": []
+          }
+        ],
+        "deploy": {
+          "patrols": "looping routes of numbered and lettered markers"
+        },
+        "ai": {
+          "objective": "goTo",
+          "subject": "next-route-marker",
+          "switches": [
+            {
+              "when": "aware of a trigger or sees a player model within one Awareness length",
+              "set": {
+                "objective": "defeat",
+                "subject": "any enemy seen this or last round"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "aspirant-goddard",
+            "count": 1,
+            "items": [
+              "plasma-rifle",
+              "pipe-wrench",
+              "t-60-power-armor"
+            ]
+          },
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "combat-rifle",
+              "baseball-bat"
+            ]
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "within": "orange",
+          "of": "any edge"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "valve",
+        "place": {
+          "inside": "valve hut"
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "compound",
+        "walled": true,
+        "blocksLos": true
+      },
+      {
+        "kind": "valve-hut",
+        "blocksLos": true
+      }
+    ],
+    "rules": [
+      {
+        "id": "patrol",
+        "text": "Until alerted, the AI walks its patrol loops (hounds move Yellow per step). Once alerted the normal response matrix takes over."
+      },
+      {
+        "id": "valve",
+        "text": "A player Interact action opens the valve."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "The valve is fixed and at least half the player models leave the table."
+      }
+    ],
+    "source": "AIH p.6; spec 17 s4"
+  },
+  {
+    "id": "ai-tech",
+    "name": "The Escaped Tech",
+    "mode": "ai",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "super-mutants",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": [
+              "bolt-action-pipe-rifle",
+              "board"
+            ]
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 2,
+            "items": [
+              "hound-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "corner": "yellow from one corner"
+        },
+        "ai": {
+          "objective": "use",
+          "subject": "nearest-investigation-marker",
+          "switches": [
+            {
+              "when": "a hound reveals marker 1",
+              "set": {
+                "phase": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "player",
+        "forces": [
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "hunting-rifle",
+              "baseball-bat"
+            ]
+          },
+          {
+            "unit": "settler",
+            "count": 2,
+            "items": [
+              "combat-rifle"
+            ]
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "corner": "yellow from the opposite corner"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "investigation",
+        "face": "tech",
+        "place": {
+          "spacing": "yellow",
+          "index": 1,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 2,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 3,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 4,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 5,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 6,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 7,
+          "avoid": "the two marked squares"
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "spacing": "yellow",
+          "index": 8,
+          "avoid": "the two marked squares"
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "phase-1",
+        "text": "Hounds Use the nearest marker (Awareness Red while peeking) and always respond with O; Super Mutants Protect their own hound. Player models peek at Yellow Awareness."
+      },
+      {
+        "id": "phase-2",
+        "text": "Once marker 1 is revealed the Tech appears. A player reveal gives the players the unarmed Tech (Move only; it will not move while a hound is within Yellow unless a player model is too) until it enters AI LoS. Hounds then Protect the Tech (always O) and Super Mutants Use Presence on it."
+      },
+      {
+        "id": "phase-3",
+        "text": "On a Presence success the hounds and Super Mutants Protect the Tech and the Tech goes to the exit, an edge within Black of the opposing starting corner."
+      }
+    ],
+    "victory": [
+      {
+        "side": "player",
+        "when": "The player-controlled Tech exits (phases 1-2), or every AI model is removed (phases 2-3). Losing the Tech removes this win."
+      },
+      {
+        "side": "super-mutants",
+        "when": "The AI-controlled Tech exits."
+      }
+    ],
+    "source": "AIH p.7; spec 17 s4"
+  },
+  {
+    "id": "coop-sewer",
+    "name": "Into the Sewer",
+    "mode": "coop",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 8,
+    "sides": [
+      {
+        "id": "ai",
+        "forces": [
+          {
+            "unit": "aspirant-goddard",
+            "count": 1,
+            "items": [
+              "baseball-bat",
+              "t-60-power-armor"
+            ]
+          },
+          {
+            "unit": "settler",
+            "count": 2,
+            "items": [
+              "assault-rifle"
+            ]
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "note": "AI side"
+        },
+        "ai": {
+          "objective": "defeat",
+          "subject": "sole-survivor"
+        }
+      },
+      {
+        "id": "p1",
+        "forces": [
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "10mm-pistol"
+            ]
+          },
+          {
+            "unit": "enslaved-tech",
+            "count": 1,
+            "items": [
+              "combat-shotgun"
+            ]
+          }
+        ],
+        "deploy": {
+          "note": "player 1"
+        }
+      },
+      {
+        "id": "p2",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": []
+          }
+        ],
+        "deploy": {
+          "note": "player 2"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "hatch",
+        "place": {
+          "at": "centre"
+        },
+        "props": {
+          "locks": 2
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "key-1",
+        "place": {
+          "index": 1
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "key-2",
+        "place": {
+          "index": 2
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "index": 3
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "index": 4
+        }
+      },
+      {
+        "kind": "investigation",
+        "face": "blank",
+        "place": {
+          "index": 5
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "keys",
+        "text": "Revealing marker 1 or 2 turns it into a lock or terminal. A matching Expertise Use takes a shareable key; a key-holder removes a lock with a free Interact. With both locks gone, touching the hatch is the exit."
+      },
+      {
+        "id": "deathclaw",
+        "text": "From round 4 to 6, when a luck token is flipped to its luck face, a Deathclaw (Defeat any model) enters once."
+      }
+    ],
+    "victory": [
+      {
+        "side": "p1",
+        "level": "major",
+        "when": "Sole Survivor and two other player models exit."
+      },
+      {
+        "side": "p1",
+        "level": "minor",
+        "when": "Sole Survivor exits."
+      }
+    ],
+    "source": "COOP p.4; spec 17 s4"
+  },
+  {
+    "id": "coop-cage",
+    "name": "Blood Cage",
+    "mode": "coop",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": null,
+    "sides": [
+      {
+        "id": "ai",
+        "forces": [
+          {
+            "unit": "aviator",
+            "count": 1,
+            "items": [
+              "aviator-cap",
+              "pipe-pistol"
+            ]
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 1,
+            "items": [
+              "hound-bite"
+            ]
+          },
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": []
+          },
+          {
+            "unit": "super-mutant",
+            "count": 1,
+            "items": []
+          }
+        ],
+        "deploy": {
+          "waves": [
+            {
+              "round": 2,
+              "units": [
+                "aviator",
+                "mutant-hound"
+              ]
+            },
+            {
+              "rounds": "3-6",
+              "when": "armor die lower than the round number minus 1",
+              "units": [
+                "brute",
+                "super-mutant"
+              ]
+            }
+          ]
+        },
+        "ai": {
+          "objective": "defeat",
+          "subject": "any-enemy"
+        }
+      },
+      {
+        "id": "p1",
+        "forces": [
+          {
+            "unit": "sole-survivor-day-one",
+            "count": 1,
+            "items": [
+              "improvised-weapon"
+            ],
+            "heroic": true
+          }
+        ],
+        "deploy": {
+          "note": "chained start"
+        }
+      },
+      {
+        "id": "p2",
+        "forces": [
+          {
+            "unit": "settler",
+            "count": 1,
+            "items": [
+              "sturdy-leather-armor"
+            ],
+            "heroic": true
+          }
+        ],
+        "deploy": {
+          "note": "chained start; carries the Mysterious Stranger perk"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 1
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 2
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 3
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 4
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 5
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 6
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 7
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 8
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 9
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 10
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 11
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "index": 12
+        }
+      }
+    ],
+    "wastelandDecks": {
+      "items": []
+    },
+    "rules": [
+      {
+        "id": "chain",
+        "text": "The two players are chained: their combined distance from their holes may not exceed Black, and they are pulled back otherwise. The chain has 2 Health, armor 2+1 against physical and energy, and gives +1 green die to hit it."
+      },
+      {
+        "id": "loot",
+        "text": "Twelve searchable markers draw from a fixed deck of twelve item cards. Improvised Weapon is only available at the start; non-melee weapons found have 3 uses."
+      }
+    ],
+    "victory": [
+      {
+        "side": "p1",
+        "when": "The last side standing wins."
+      }
+    ],
+    "source": "COOP p.5; spec 17 s4"
+  },
+  {
+    "id": "coop-munitions",
+    "name": "Dangerous Munitions",
+    "mode": "coop",
+    "tableIn": [
+      36,
+      36
+    ],
+    "rounds": 8,
+    "sides": [
+      {
+        "id": "ai",
+        "faction": "super-mutants",
+        "forces": [
+          {
+            "unit": "brute",
+            "count": 1,
+            "items": []
+          },
+          {
+            "unit": "super-mutant",
+            "count": 2,
+            "items": []
+          },
+          {
+            "unit": "mutant-hound",
+            "count": 2,
+            "items": []
+          }
+        ],
+        "deploy": {
+          "within": "green",
+          "of": "opposite corner"
+        },
+        "ai": {
+          "objective": "goTo",
+          "subject": "munitions"
+        }
+      },
+      {
+        "id": "p1",
+        "forces": [
+          {
+            "unit": "sole-survivor",
+            "count": 1,
+            "items": [
+              "combat-rifle"
+            ]
+          },
+          {
+            "unit": "dogmeat",
+            "count": 1,
+            "items": [
+              "dog-bite"
+            ]
+          }
+        ],
+        "deploy": {
+          "within": "red",
+          "of": "other corner"
+        }
+      },
+      {
+        "id": "p2",
+        "forces": [
+          {
+            "unit": "aspirant-goddard",
+            "count": 1,
+            "items": [
+              "baseball-bat",
+              "t-60-power-armor"
+            ]
+          },
+          {
+            "unit": "settler",
+            "count": 1,
+            "items": [
+              "laser-pistol"
+            ]
+          }
+        ],
+        "deploy": {
+          "within": "red",
+          "of": "other corner"
+        }
+      }
+    ],
+    "markers": [
+      {
+        "kind": "object",
+        "face": "munitions",
+        "place": {
+          "from": "a corner",
+          "offset": "orange diagonally"
+        }
+      }
+    ],
+    "terrain": [
+      {
+        "kind": "wall",
+        "climbable": false,
+        "length": "black + orange",
+        "from": "edge midpoint",
+        "count": 2
+      }
+    ],
+    "rules": [
+      {
+        "id": "munitions",
+        "text": "The AI heads for the munitions marker. At round end, any non-dog AI model that can Interact with it triggers the AI win."
+      }
+    ],
+    "victory": [
+      {
+        "side": "ai",
+        "when": "A non-dog AI model interacts with the munitions at the end of a round."
+      },
+      {
+        "side": "p1",
+        "when": "All AI models are removed, or the players survive round 8."
+      }
+    ],
+    "source": "COOP p.6; spec 17 s4"
+  }
+]
