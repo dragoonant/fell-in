@@ -3,11 +3,158 @@
   "note": "Generated models drop in here. units: unit id -> optional overrides; weapons: weapon id -> optional overrides. Files: units/<slug>.glb, weapons/<slug>.glb. Models: y up, origin at the base centre (units) or grip (weapons, barrel along +z).",
   "sockets": {
     "defaults": {
-      "25": { "rightHand": [0.34, 0.95, 0.2], "rot": [0.0, 0.0, 0.0] },
-      "32": { "rightHand": [0.42, 1.15, 0.26], "rot": [0.0, 0.0, 0.0] },
-      "40": { "rightHand": [0.52, 1.45, 0.32], "rot": [0.0, 0.0, 0.0] }
+      "25": {
+        "rightHand": [
+          0.34,
+          0.95,
+          0.2
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "32": {
+        "rightHand": [
+          0.42,
+          1.15,
+          0.26
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "40": {
+        "rightHand": [
+          0.52,
+          1.45,
+          0.32
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
     }
   },
-  "units": {},
+  "units": {
+    "sole-survivor": {
+      "file": "units/sole-survivor.glb",
+      "rightHand": [
+        0.31,
+        1.0,
+        0.13
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "sole-survivor-day-one": {
+      "file": "units/sole-survivor-day-one.glb",
+      "rightHand": [
+        0.32,
+        1.0,
+        0.14
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "settler": {
+      "file": "units/settler.glb",
+      "rightHand": [
+        0.3,
+        0.97,
+        0.13
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "enslaved-tech": {
+      "file": "units/enslaved-tech.glb",
+      "rightHand": [
+        0.3,
+        0.98,
+        0.05
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "dogmeat": {
+      "file": "units/dogmeat.glb"
+    },
+    "mutant-hound": {
+      "file": "units/mutant-hound.glb"
+    },
+    "super-mutant": {
+      "file": "units/super-mutant.glb",
+      "rightHand": [
+        -0.78,
+        1.45,
+        0.27
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "brute": {
+      "file": "units/brute.glb",
+      "rightHand": [
+        -0.91,
+        1.48,
+        0.24
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "aviator": {
+      "file": "units/aviator.glb",
+      "rightHand": [
+        -0.82,
+        1.36,
+        0.32
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    },
+    "deathclaw": {
+      "file": "units/deathclaw.glb"
+    },
+    "aspirant-goddard": {
+      "file": "units/aspirant-goddard.glb",
+      "rightHand": [
+        0.72,
+        1.18,
+        0.25
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
   "weapons": {}
 }
