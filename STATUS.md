@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M3 playable** (polish pass before the owner playtest) (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M4a versus bot** (owner playtest gate) (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -27,6 +27,14 @@ Milestone reached: **M3 playable** (polish pass before the owner playtest) (this
 - `npm run sim -- --games N --seed s`: random bots, full games, invariants; 50 games 0 errors, max step 1.4 ms.
 - Not built: object/point targets (SHOT-003; GA tutorials can't be won), BC-006, DMG-005, Walked Fire, mines;
   box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
+
+## AI (M4a)
+- `src/ai/`: decider (dispatch by decision kind, validates, falls back to random), eval, threat, nav, moves,
+  policies, world (view shim), worker. Tiers random / easy / normal; start-screen Opponent picker. Spec 30.
+- `npm run bench:ai -- --games 100 --a normal --b random`: normal 95-98% over box-1..4 (box-5 excluded: no
+  rescue rule), easy ~80%, ~25 ms per decision. Objective weight is low and needs the owner playtest.
+- Assets: 15 terrain, 11 unit figures (bare-handed, hand sockets), 17 weapons (flat tints; textured paint
+  blocked by Smart App Control on the GPU PC). Procedural Web Audio SFX and music.
 
 ## Client (M3)
 - Start screen (box 1-5 + skirmish, vs bot / hot-seat / watch bots, seed, speed, Continue) -> game -> game over.

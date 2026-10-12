@@ -1,8 +1,10 @@
 // Bot driver (KNOWLEDGE-BASE 1.4): answers bot-owned decisions through gameStore.dispatch, only while the presentation
 // is idle, so a bot never acts over an animation the player has not seen. A watchdog force-answers when a bot decision
 // has made no progress for WATCHDOG_MS, whatever the presentation is doing. Per-decision AI time budget: VITE_AI_MS.
-import { view } from '../../engine/view'
 import type { Action } from '../../engine/types'
+import { aiBudgetMs, TIER_IDS, type Tier } from '../../ai/types'
+import { aiViewOf } from '../../ai/world'
+import { useLaunchStore } from '../store/launch'
 import { skipAll } from '../presentation/director'
 import { isPresentationIdle, usePresentedStore } from '../presentation/presentedStore'
 import { dispatch, isBotDecision, legalFor, ownerSeat, preview, useGameStore } from '../store/gameStore'
@@ -18,9 +20,34 @@ export const AI_MS: number = (() => {
   return Number.isFinite(v) && v > 0 ? v : 2000
 })()
 
-let brain: BotBrain = randomBrain
-/** Install the bot brain (M4 AI). null restores the random bot. */
-export function setBotBrain(b: BotBrain | null): void { brain = b ?? randomBrain }
+let override: BotBrain | null = null
+/** Install a fixed bot brain (tests, tooling). null restores the tier-driven brain. */
+export function setBotBrain(b: BotBrain | null): void { override = b }
+
+export const DEFAULT_TIER: Tier = 'normal'
+/** The opponent tier of the running game: the launch options' `tier`, else normal. */
+export function launchTier(): Tier {
+  const l = useLaunchStore.getState().launch
+  const t = l && l.mode === 'new' ? (l.opts as { tier?: unknown }).tier : undefined
+  return typeof t === 'string' && (TIER_IDS as readonly string[]).includes(t) ? (t as Tier) : DEFAULT_TIER
+}
+
+let tiered: { tier: Tier; key: string; brain: BotBrain; dispose?: () => void } | null = null
+/** The brain for a tier: random uses the placeholder bot; easy and normal use the AI worker (loaded on demand). */
+function brainFor(tier: Tier): BotBrain {
+  if (override) return override
+  const key = `${tier}:${useGameStore.getState().seed}`
+  if (tiered && tiered.key === key) return tiered.brain
+  tiered?.dispose?.()
+  if (tier === 'random') { tiered = { tier, key, brain: randomBrain }; return randomBrain }
+  let inner: Promise<BotBrain & { dispose(): void }> | null = null
+  const lazy: BotBrain = async (v, p, l, c) => {
+    inner ??= import('./aiWorkerClient').then((m) => m.createAiBrain(tier))
+    return (await inner)(v, p, l, c)
+  }
+  tiered = { tier, key, brain: lazy, dispose: () => { void inner?.then((b) => b.dispose()) } }
+  return lazy
+}
 
 export interface BotDriverOptions {
   now?: () => number
@@ -59,7 +86,7 @@ function forcedAction(): Action | null {
   if (!legal.length || !seat) return null
   const pick = legal.find((a) => !PARAMETERISED.has(a.type)) ?? legal[0]!
   const p = s.state.pending
-  const a = completeAction(view(s.state, seat), p, legal, pick, contextFor(s.seed, 0))
+  const a = completeAction(aiViewOf(s.state, seat), p, legal, pick, contextFor(s.seed, 0))
   return p.seat === 'all' ? { ...a, seat } : a
 }
 
@@ -105,8 +132,10 @@ export function createBotDriver(opts: BotDriverOptions = {}): BotDriver {
     const legal = legalFor(s.state)
     inflight = key
     const ctx = contextFor(s.seed, budgetMs)
-    const timeout = new Promise<null>((res) => { setT(() => res(null), budgetMs) })
-    Promise.race([Promise.resolve().then(() => brain(view(s.state!, seat), p, legal, ctx)), timeout])
+    // Headroom over the AI's own budget (worker start-up, clone, edition load): the search ends well before this gives up.
+    const raceMs = Math.max(budgetMs, aiBudgetMs() * 3 + 1000)
+    const timeout = new Promise<null>((res) => { setT(() => res(null), raceMs) })
+    Promise.race([Promise.resolve().then(() => brainFor(launchTier())(aiViewOf(s.state!, seat), p, legal, ctx)), timeout])
       .catch(() => null)
       .then((a) => {
         if (inflight === key) inflight = null

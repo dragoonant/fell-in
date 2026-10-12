@@ -9,6 +9,15 @@ export const MODES: readonly { id: PlayMode; label: string; blurb: string }[] = 
   { id: 'watch', label: 'Watch bots', blurb: 'Sit back and watch the bots fight it out.' },
 ]
 
+export type OpponentTier = 'easy' | 'normal' | 'random'
+export const OPPONENTS: readonly { id: OpponentTier; label: string; blurb: string }[] = [
+  { id: 'easy', label: 'Easy', blurb: 'Plays sensibly but makes mistakes.' },
+  { id: 'normal', label: 'Normal', blurb: 'Uses cover, picks fights it can win.' },
+  { id: 'random', label: 'Random', blurb: 'Moves and shoots without a plan.' },
+]
+export const DEFAULT_TIER: OpponentTier = 'normal'
+export const asTier = (v: unknown): OpponentTier => (OPPONENTS.some((o) => o.id === v) ? (v as OpponentTier) : DEFAULT_TIER)
+
 export const DEFAULT_SCENARIO_ID = 'box-1'
 
 /** Controllers in seat order for a mode, padded to the scenario's side count (extra sides are bots). */
@@ -60,9 +69,9 @@ export function scenarioSummary(s: ScenarioChoice): string {
 }
 
 /** Build the launch options from the picker state. */
-export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number }): NewGameOptions {
+export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier }): NewGameOptions & { tier?: OpponentTier } {
   const seed = cleanSeed(p.seed)
-  return { ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
+  return { ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
 }
 
 /** "3 min ago" style label for the autosave line. */

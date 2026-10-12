@@ -6,11 +6,11 @@ import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
 import './start/start.css'
 import {
-  ageLabel, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, pickDefaultScenario, scenarioSummary, type PlayMode,
+  ageLabel, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OPPONENTS, pickDefaultScenario, scenarioSummary, type OpponentTier, type PlayMode,
 } from './start/startView'
 
 const PREF_KEY = 'fell-in.start'
-interface Prefs { scenarioId: string; mode: PlayMode }
+interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier }
 
 export function StartScreen() {
   const saved = useMemo(() => readJson<Partial<Prefs>>(PREF_KEY) ?? {}, [])
@@ -18,6 +18,7 @@ export function StartScreen() {
   const [loadFailed, setLoadFailed] = useState(false)
   const [scenarioId, setScenarioId] = useState<string>(saved.scenarioId ?? DEFAULT_SCENARIO_ID)
   const [mode, setMode] = useState<PlayMode>(saved.mode ?? 'bot')
+  const [tier, setTier] = useState<OpponentTier>(asTier(saved.tier))
   const [seed, setSeed] = useState('')
   const speed = useSettingsStore((s) => s.speed)
   const setSettings = useSettingsStore((s) => s.set)
@@ -38,8 +39,8 @@ export function StartScreen() {
   const others = groups.filter((g) => g.id !== 'box')
 
   const start = () => {
-    writeJson(PREF_KEY, { scenarioId, mode })
-    launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2 }))
+    writeJson(PREF_KEY, { scenarioId, mode, tier })
+    launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier }))
   }
   const pick = (s: ScenarioChoice) => (
     <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => setScenarioId(s.id)}>
@@ -72,6 +73,17 @@ export function StartScreen() {
             {MODES.map((m) => (
               <button key={m.id} className="sc-chip" aria-pressed={m.id === mode} data-testid={`mode-${m.id}`} onClick={() => setMode(m.id)}>
                 {m.label}<small>{m.blurb}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="sc-sec" aria-label="Opponent">
+          <h2 className="sc-h">Opponent</h2>
+          <div className="sc-row" data-testid="opponent-tier">
+            {OPPONENTS.map((o) => (
+              <button key={o.id} className="sc-chip" aria-pressed={o.id === tier} data-testid={`opponent-${o.id}`} onClick={() => setTier(o.id)}>
+                {o.label}<small>{o.blurb}</small>
               </button>
             ))}
           </div>
