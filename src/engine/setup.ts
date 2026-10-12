@@ -6,6 +6,7 @@ import { recordOf, rulerColours, rulerInches } from './edition'
 import { baseRadius } from './geometry'
 import { raiseDecision } from './registry'
 import { seedRng } from './rng'
+import { themedTerrain } from './terrainCatalog'
 import type { CarriedItem, CarriedKind, GameState, MarkerState, ModelState, SeatId, SeatState, TerrainInstance } from './types'
 
 export const TABLE_IN = 36 // M0 demo only; real games take the table from the scenario record
@@ -176,7 +177,7 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     rollSeq: 0,
     decisionSeq: 0,
     models,
-    terrain: simpleTerrain(w, d),
+    terrain: w === 36 && d === 36 ? themedTerrain(sc.id) : simpleTerrain(w, d),
     clouds: [],
     scenario: { table: { w, d } },
     pending: { id: 'd:0', seat: seatOrder[0]!, kind: 'turn.start', context: {}, options: [], canPass: false },

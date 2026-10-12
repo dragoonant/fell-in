@@ -33,7 +33,13 @@ export function parseTerrainManifest(raw: unknown): TerrainManifest {
     }
   }
   if (Array.isArray(raw)) list(raw)
-  else if (raw && typeof raw === 'object') { const r = raw as Record<string, unknown>; list(r.pieces); list(r.models); list(r.slugs); list(r.terrain) }
+  else if (raw && typeof raw === 'object') {
+    const r = raw as Record<string, unknown>
+    const wrapped = ['pieces', 'models', 'slugs', 'terrain'].filter((k) => k in r)
+    // The generator writes a flat {slug: {file, size, rulesType}} map.
+    if (wrapped.length) for (const k of wrapped) list(r[k])
+    else list(r)
+  }
   return out
 }
 

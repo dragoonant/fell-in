@@ -1,0 +1,137 @@
+{
+  "ruined-brick-wall": {
+    "file": "ruined-brick-wall.glb",
+    "size": [
+      6,
+      1,
+      3.5
+    ],
+    "rulesType": "obstruction"
+  },
+  "collapsed-house-corner": {
+    "file": "collapsed-house-corner.glb",
+    "size": [
+      7,
+      6,
+      5
+    ],
+    "rulesType": "building"
+  },
+  "rusted-sedan-wreck": {
+    "file": "rusted-sedan-wreck.glb",
+    "size": [
+      5,
+      2.4,
+      1.8
+    ],
+    "rulesType": "obstacle"
+  },
+  "burnt-bus-wreck": {
+    "file": "burnt-bus-wreck.glb",
+    "size": [
+      10,
+      3,
+      3.2
+    ],
+    "rulesType": "obstacle"
+  },
+  "oil-drum-cluster": {
+    "file": "oil-drum-cluster.glb",
+    "size": [
+      2.5,
+      2.5,
+      1.4
+    ],
+    "rulesType": "obstacle"
+  },
+  "wooden-crate-stack": {
+    "file": "wooden-crate-stack.glb",
+    "size": [
+      3,
+      2,
+      2
+    ],
+    "rulesType": "obstacle"
+  },
+  "concrete-jersey-barrier": {
+    "file": "concrete-jersey-barrier.glb",
+    "size": [
+      4,
+      1,
+      1.2
+    ],
+    "rulesType": "obstacle"
+  },
+  "scrap-metal-fence": {
+    "file": "scrap-metal-fence.glb",
+    "size": [
+      6,
+      0.6,
+      2.5
+    ],
+    "rulesType": "obstruction"
+  },
+  "shipping-container-rusted": {
+    "file": "shipping-container-rusted.glb",
+    "size": [
+      8,
+      3.2,
+      3.2
+    ],
+    "rulesType": "obstruction"
+  },
+  "junk-pile": {
+    "file": "junk-pile.glb",
+    "size": [
+      4,
+      4,
+      1.8
+    ],
+    "rulesType": "rough"
+  },
+  "tire-stack": {
+    "file": "tire-stack.glb",
+    "size": [
+      2,
+      2,
+      1.6
+    ],
+    "rulesType": "obstacle"
+  },
+  "fuel-pump-island": {
+    "file": "fuel-pump-island.glb",
+    "size": [
+      5,
+      2.5,
+      3
+    ],
+    "rulesType": "obstacle"
+  },
+  "water-tower-short": {
+    "file": "water-tower-short.glb",
+    "size": [
+      4,
+      4,
+      7
+    ],
+    "rulesType": "obstruction"
+  },
+  "dead-tree": {
+    "file": "dead-tree.glb",
+    "size": [
+      3,
+      3,
+      5
+    ],
+    "rulesType": "rough"
+  },
+  "sandbag-wall": {
+    "file": "sandbag-wall.glb",
+    "size": [
+      4,
+      1.2,
+      1.2
+    ],
+    "rulesType": "obstacle"
+  }
+}

@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     chunkSizeWarningLimit: 800,
     rolldownOptions: {
+      input: { main: fileURLToPath(new URL('./index.html', import.meta.url)), sounds: fileURLToPath(new URL('./sounds.html', import.meta.url)) },
       output: {
         codeSplitting: {
           groups: [

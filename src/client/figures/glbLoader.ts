@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Mesh, type Object3D } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 
 type Entry = { status: 'loading' | 'ready' | 'failed'; scene?: Object3D }
@@ -16,7 +17,9 @@ function request(url: string): Entry {
   const entry: Entry = { status: 'loading' }
   cache.set(url, entry)
   try {
+    // models:optimize writes EXT_meshopt_compression, so the decoder is required.
     new GLTFLoader()
+      .setMeshoptDecoder(MeshoptDecoder)
       .loadAsync(url)
       .then((gltf) => {
         gltf.scene.traverse((o) => {
