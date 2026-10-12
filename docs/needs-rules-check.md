@@ -74,3 +74,19 @@ rulebook; we follow the errata), **Unsourced** (no source; our engineering or de
 - RULING: AI Heroic model | gets V.A.T.S. at activation start and one extra Quick Action | Campaign Handbook p16 product preview photo | Confirmed | R2-photos.md
 - RULING: AI matrix columns | modelled as predicates (health or scenario condition), not health only | Wave 3 Institute card photo | Confirmed | R2-photos.md
 - RULING: Settlement storage | not implemented; campaign GAP-1/2 stay open | secondhand forum snippet only | Unsourced | R3-campaign.md
+
+## M2 engine
+- RULING: Reaction triggers | a reaction's own triggers do not provoke further reactions, and reactions resolve in declaration order | keeps the queue finite | Unsourced | RoP s4.4 p41-42
+- RULING: Climb and fall | a move that ends on a higher surface needs one Agi test, and a fall resolves at the move's end point (a failed climb falls the height climbed and stays put) | no per-leg climb data exists | Unsourced | RoP p38-39
+- RULING: Special effects | auto-applied greedily in card order, each paid and fired once per Action, so the Bat's armorDown max 2 is ignored | avoids a per-icon decision and follows the errata | Corrected | ERR p.1
+- RULING: ignoreArmor n | n points are moved off the first damage entry and dealt as direct damage | a hit has no partial-ignore field | Unsourced | CARDS
+- RULING: Area attacks | every touched model gets the same DMG/AR icons; the target alone gets its target extra; scattered blasts skip LoS and cover | the spec is silent on per-victim dice | Unsourced | RoP s5.3 p46-47
+- RULING: Stunned target in melee | the attacker gets the into-melee bonus (+2) | no dedicated constant | Unsourced | RoP p25
+- RULING: Minimum range | a weapon whose short band has a non-zero minimum cannot be used in close combat | card data marks minimum range this way | Unsourced | CARDS
+- RULING: DMG icons | each DMG icon is added to every damage type in the hit | followed spec 15 s1 step 2 literally | Unsourced | RoP s2.9 p19
+- RULING: Slow and Injured Leg | together they count as one move step; Frozen adds one more | the spec lists Slow per source and Injured Leg as granting Slow | Unsourced | RoP s5.4 p48
+- RULING: Diminishing items | all columns are active on use; one is hidden right to left at each activation start; gain-AP effects fire on each tick (the AP-use restriction is ignored) | card data gives no timing | Unsourced | CARDS
+- RULING: Dogs and consumables | dogs may use food and alcohol; creatures use no chems, food or alcohol | FORCE-012 says food and drink | Unsourced | ERR p.3
+- RULING: Scenario ends | box-1..4, ai-rr, ai-missile and ga-2..4 are checked by id from marker props; box-5, ai-breakin, ai-tech, coop-sewer, ga-1 and the BOX-1 suit bonus are not implemented; pickup faces come from a table in scenario.ts | no structured scenario data for the rest | Unsourced | 17
+- RULING: Charge menu entry | the menu offers a charge only when the straight charge (no waypoints) reaches base contact; a client may still send a path; Quick variants are offered only where the Quick ruler still reaches | every listed option must be accepted (spec 60 s2) | Unsourced | RoP p23
+- RULING: Charge bonus upkeep | after any finished Action other than charge, Battle Cry or Close Combat the actor's charge markers are discarded; primed weapons gain after every finished Action | CHG-005 and WPN-009 wording | Unsourced | RoP p23; ERR p.21

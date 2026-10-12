@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M1 data** (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M2 engine** (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -17,6 +17,16 @@ Milestone reached: **M1 data** (this file only lists what is real; plans live in
 - Contracts: `types.ts`, `decider.ts` (random and replay deciders), `view.ts`, `pending.ts`, `index.ts`.
 - `setup.ts`: `createDemoGame` (4 models, 5 terrain pieces) only.
 - Stubs with TODO(M2): `dice.ts`, `attack.ts`, `damage.ts`, `turnflow.ts`, `movement.ts` (re-exports geometry).
+
+## Rules engine (M2)
+- Protocol: `registry.ts` (ModuleDef per namespace), `apply.ts` (validate + dispatch), `query.ts` (hitOdds,
+  rangeBand, coverFor, expectedDamage, killOdds). `dice.ts` exact odds; `edition.ts`; `setup.ts` createGame
+  (default box-1, Survivors vs Super Mutants).
+- Modules: turnflow/movement (rounds, activation, AP, reactions, move/climb/fall), attack/melee (shoot, throw,
+  blast, crits, luck, charge, battle cry, close combat), damage/conditions, items/scenario/forces.
+- `npm run sim -- --games N --seed s`: random bots, full games, invariants; 50 games 0 errors, max step 1.4 ms.
+- Not built: object/point targets (SHOT-003; GA tutorials can't be won), BC-006, DMG-005, Walked Fire, mines;
+  box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
 
 ## Client (`src/client/`)
 - Start screen "Fell-in: Wasteland Warfair" and a 3D table: 36 x 36 in procedural wasteland mat, camera presets
@@ -35,7 +45,7 @@ Milestone reached: **M1 data** (this file only lists what is real; plans live in
 - Gap research: `docs/spec/sources/R1-archives.md`, `R2-photos.md`, `R3-campaign.md`. AI matrices for the
   starter units and campaign settlement numbers are still open (owner cards or blocked BGG/Reddit pages).
 
-## Tests (`npm test`: 14 tests; `npm run e2e`: 2)
+## Tests (`npm test`: 172 tests; `npm run e2e`: 2)
 GEOM-001..005, LOS-001..003, RNG-001, SETUP-001, VIEW-001, DECIDER-001; Playwright boot test and the screenshot
 `screenshots/m0-table.png`.
 

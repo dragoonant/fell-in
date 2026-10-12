@@ -19,6 +19,17 @@ Edition note: everything below is **1st edition** (2018-). A 2nd edition is anno
 Not downloaded (URLs only): per-type card PDFs for waves 1-9 (Google Drive: Wave 9 Unit https://drive.google.com/file/d/1ZtCOQt53esqlUFJGbId4y2Z_E98Ndb83/view , Weapon .../1gTPZOrpqB_LojSpslACKXaXWto0nQ4Ex , Perk .../1vgSjasPORNcVLaSibOQLr8Ho7SLQ5z3P , Mods .../1lF6HUvDu1DXKn6oouCbCmr982vV7UtGD , Item Equip .../1VI8-Ku80Vyvyo3Xg1MnCc6on0b7dvges , Power Armor .../1fOcB9S4UmQJy8dEsqT_GhxO9EjM1Da2p , Reference .../1ssf1zOP5rbZGvFosxn9Gn4GHQyKvmcU0 ), Wave 9 full card list https://cdn.shopify.com/s/files/1/0225/4035/files/FWW_Wave_9_Full_Card_List_002LW.pdf?v=1701287020 , Revised cards Wave 1-8 https://drive.google.com/file/d/1VOaaGIWPhqcqNQYcmzWe4aOwxh5BDYfC/view , Leader cards https://cdn.shopify.com/s/files/1/0225/4035/files/FWW_Wave_6_Cards_Leader_001w.pdf?v=1649427232 , Heroic cards https://cdn.shopify.com/s/files/1/0225/4035/files/heroic_cards_v4_001w.pdf?v=1638219475 , Chem cards https://cdn.shopify.com/s/files/1/0225/4035/files/wave_5_cards_chem_may17.pdf?v=1638219475 , Settlement sheet https://cdn.shopify.com/s/files/1/0225/4035/files/settlement_sheet_v4.0_001w.pdf?v=1638212433 , box scenarios https://cdn.shopify.com/s/files/1/0225/4035/files/foww_box_scenarios_1-5_download.pdf?v=1638212433 , Wave 10/11 rules packets (Drive folders on the 1st-ed page). Quickstart PDFs (2nd-ed hub): https://modiphius.us/products/fallout-wasteland-warfare-into-the-wasteland-quickstart-pdf , https://modiphius.us/products/fallout-wasteland-warfare-warbands-quickstart-pdf .
 Paid (not free): Campaign Book PDF https://modiphius.us/products/fallout-wasteland-warfare-campaign-book-pdf (AI scenarios, settlement mode). The printed AI/Quest/Event/Boosts/Perk cards ship only in the Two Player Starter Set (per search summary, https://modiphius.net/products/fallout-wasteland-warfare-campaign-book-pdf). Official companion app (1st ed + Factions only): https://fallout.maloric.com/home . Errata form: https://forms.gle/dzgrskETRtbKxVhV8 .
 
+## 1b. Added 2026-10-11 (M1/M2)
+Downloaded from the URLs above into gitignored `docs/sources/`: `box_scenarios_1-5.pdf`, `settlement_sheet_v4.pdf`,
+`heroic_cards_v4.pdf`, `chem_cards_w5.pdf`, `leader_cards_w6.pdf`, `wave9_full_card_list.pdf`, `perk_cards_w9.pdf`,
+`reference_cards_w9.pdf`.
+Supplied by the owner:
+- `ai_response_flowcharts.pdf` (5 pages): fan-made AI response flowcharts (Charge/Close Combat, Engaged, Move/Defend,
+  Attack), BGG file page https://boardgamegeek.com/filepage/170006/ai-response-flowcharts . Fan-source for spec 18.
+- `machine_frequency_campaign.pdf` (16 pages): "Machine Frequency", a three-part story campaign for the Wasteland
+  Warfare RPG expansion (Overseer + 4-6 players). Narrative quests only, no settlement rules; candidate M6 story content.
+Still pending: Reddit r/wastelandwarfare cheat sheets (group approval needed).
+
 ## 2. Card/stat data sources
 - **BSData/fallout-wasteland-warfare** (BattleScribe XML, `.cat` per faction: Brotherhood_of_Steel, Institute, Raiders, Robots, Super_Mutants, Survivors, Wasteland_Creatures, plus Library-*.cat, `Fallout_Wasteland_Warfare.gst`). Archived, last push 2020-04-17, so misses waves 6+. https://github.com/BSData/fallout-wasteland-warfare  **Best structured unit/weapon/cost data.**
 - aslanator/Fallout_Wasteland_Warfare_Builder (web list builder, back+front, 2021): https://github.com/aslanator/Fallout_Wasteland_Warfare_Builder

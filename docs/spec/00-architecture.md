@@ -9,11 +9,26 @@ Adapted from the base project's architecture, with its rules-specific parts remo
 src/engine/   pure TypeScript, no DOM, no Math.random. State in, state out.
   types.ts      contract types (frozen)         decider.ts  Decider interface, random + replay deciders (frozen)
   view.ts       per-seat redacted view (frozen) rng.ts      seeded sfc32 + d20/d12 helpers (frozen)
-  pending.ts    raise() the one open decision   setup.ts    createGame (M0: createDemoGame only)
+  pending.ts    raise() the one open decision   setup.ts    createGame(bundle, opts), createDemoGame (M0 table)
   geometry.ts   circle bases, sweeps, placement, path validation
   los.ts        3D line of sight with an explaining verdict
   measure.ts    base-edge distances             terrain.ts  terrain prisms, cover, rough, elevation
-  dice.ts attack.ts damage.ts turnflow.ts movement.ts   TODO(M2) rules modules
+  -- M2 foundations (frozen for the rules owners) --
+  registry.ts   action protocol: ModuleDef, Controller, StepResult, ActionDone, raiseDecision, todo
+  apply.ts      apply(state, bundle, action): validate, dispatch by pending.kind namespace, afterAction, log
+  query.ts      every displayed number: hitOdds, rangeBand, coverFor, expectedDamage, killOdds
+  dice.ts       skill test, effect pools, armor die, luck flip, rerolls, exact odds (complete)
+  edition.ts    bundle lookups: ruler inches/colour steps, rule constants, recordOf
+  -- M2 rules modules (owner: namespaces they own) --
+  turnflow.ts   T: turn.* react.* prepare.*  controller; rounds, readiness, activation menu, AP, reactions
+  movement.ts   T: move.*                   Move, withdraw, climb/fall, charge path, Push Back
+  attack.ts     A: shoot.* throw.*          shooting, range bands, cover, thrown/advanced weapons, crits, luck
+  melee.ts      A: charge.* melee.* battleCry.*  charge bonus, Battle Cry, close combat, slide, free attacks
+  damage.ts     D: damage.*                 hits vs armor, Power Armor, radiation, Health, removal, damage odds
+  conditions.ts D: cond.*                   conditions add/remove/tick, SV and movement penalties
+  items.ts      I: item.* expertise.* search.*  item use and durations, expertise tests, markers
+  scenario.ts   I: scenario.* deploy.*      victory, round end, scenario actions
+  forces.ts     I: (no decisions)           stat lookups (unitOf, attrOf, skillBase), force cost/validation
 src/data/     (M1) JSON bundle + schemas
 src/ai/       (M4) deciders: random, easy, normal; Web Worker host
 src/client/   React 19 + R3F + zustand; never mutates GameState, never computes a rules number
@@ -63,3 +78,21 @@ Per-decision AI time sits behind an env var (CI is slow). Engine step under 5 ms
 
 ## 10. Contract change log (additive only)
 - M0: initial contracts, stripped of the Warmachine rules (focus, damage grids, fury, power attacks, factions).
+- M2 (foundations, frozen for the rules owners):
+  - `types.ts`: `ModelState` gains readiness, damage, rad, luck, reaction, chargeBonus, armorBoost, bonusDice,
+    carried (`CarriedItem`: uid, defId, kind, starting, spent, cp, loaded, primed, paDamage, degraded, mods), effects
+    (`ActiveEffect`), addictions, heroic, leaderId, tokens. `GameState` gains edition, scenarioId, phase, round,
+    maxRounds, seats (`SeatState`), seatOrder, advantage, turn (`TurnState`), activation (`ActivationState`: actionsTaken,
+    ap, apIconsUsed, heavyFired, testsUsed), action (`ActionContext`: quick, reaction, free, itemUsed), markers
+    (`MarkerState`), events (`GameEvent`), result (`GameResult`). New `WastelandCondition` (`WASTELAND_CONDITIONS`),
+    `WastelandDamageType`, `EffectDieColour`; the legacy `ConditionId`/`DamageType` stay `string` because geometry, LoS
+    and terrain still use the base project's names. `RejectionCode` gains E_WRONG_SEAT, E_GAME_OVER, E_UNKNOWN_KIND,
+    E_BAD_PARAM, E_NO_ACTIONS_LEFT, E_NO_AP, E_NO_SKILL, E_OUT_OF_RANGE, E_NO_LOS, E_ENGAGED, E_NOT_ENGAGED,
+    E_CONDITION, E_NO_ITEM, E_ITEM_USED, E_BAD_TARGET, E_TODO.
+  - Protocol (`registry.ts`, `apply.ts`): kinds and action types are `<namespace>.<verb>`; each namespace has one owner.
+    `apply` checks game over, decision id, seat and option match (an option's action is a template; extra fields are
+    parameters the owner validates), then calls the owner of `pending.kind`. A step returns `{state}` with a new decision
+    raised by `raiseDecision`, or `{state, done}`; `done` goes to `turnflow.afterAction`. Turnflow forwards activation
+    menu picks to `moduleFor(action.type)`. Unimplemented bodies throw `TodoError`, which `apply` reports as E_TODO.
+  - `createGame(bundle, {seed, seats, scenarioId, forces})`: default scenario box-1 with the starter Survivors vs Super
+    Mutants forces, automatic deployment and simple terrain; first decision `turn.start`.
