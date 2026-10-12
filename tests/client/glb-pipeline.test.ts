@@ -9,8 +9,9 @@ describe('glb pipeline', () => {
   it('manifest parsing lists only valid slugs and picks sockets by base size', () => {
     const m = parseManifest({ sockets: { defaults: { '25': { rightHand: [1, 2, 3] }, '40': { rightHand: [4, 5, 6] } } }, units: { 'a-b': { height: 2 }, 'bad slug!': {} }, weapons: { laser: {} } })
     expect(Object.keys(m.units)).toEqual(['a-b'])
-    expect(socketFor(m, 'x', 38).rightHand).toEqual([4, 5, 6])
-    expect(socketFor(parseManifest(null), 'x', 25).rightHand).toHaveLength(3)
+    expect(socketFor(m, 'x', 38)?.hand).toEqual([4, 5, 6])
+    expect(socketFor(m, 'a-b', 32)).toBeUndefined() // listed GLB unit without a hand holds nothing
+    expect(socketFor(parseManifest(null), 'x', 25)?.hand).toHaveLength(3)
     expect(fitFigure([-1, 2, -1], [1, 4, 1], 1.5).scale).toBeCloseTo(0.75)
   })
   it('equips ranged unless engaged, falling back to whatever is carried', () => {
@@ -19,6 +20,8 @@ describe('glb pipeline', () => {
     expect(pickEquipped(c, modeOf, 'ranged')).toBe('rifle')
     expect(pickEquipped(c, modeOf, 'melee')).toBe('knife')
     expect(pickEquipped([], modeOf, 'ranged')).toBeUndefined()
+    const beast = [{ uid: 'a', defId: 'deathclaw-swipe', kind: 'weapon' }, { uid: 'b', defId: 'dog-bite', kind: 'weapon' }] as never
+    expect(pickEquipped(beast, modeOf, 'melee')).toBeUndefined() // natural attacks draw nothing
   })
   it('terrain manifest matches pieceId with or without the terrain. prefix and fits within the footprint', () => {
     const tm = parseTerrainManifest({ pieces: { wall: { file: 'wall-v2.glb' } } })

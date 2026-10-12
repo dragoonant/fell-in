@@ -12,22 +12,27 @@ export function fitFigure(min: readonly [number, number, number], max: readonly 
   return { scale: sy, offset: [-((min[0] + max[0]) / 2) * sy, -min[1] * sy, -((min[2] + max[2]) / 2) * sy] as [number, number, number] }
 }
 
-/** Fitted GLB group for `url`, or null while loading / when it failed (draw the procedural body). */
-export function useFittedFigure(url: string | undefined, height: number): Group | null {
+/** Fitted GLB group for `url`, or null while loading / when it failed (draw the procedural body). `yaw` (radians about
+ * +y, from the manifest) first turns the raw model so its head looks along +z; the fit and the hand socket are both
+ * measured after that turn, so sockets live in the fitted figure frame (inches, base centre on the table). */
+export function useFittedFigure(url: string | undefined, height: number, yaw = 0): Group | null {
   const inst = useGlbInstance(url)
   return useMemo(() => {
     if (!inst) return null
-    inst.updateMatrixWorld(true)
-    const b = new Box3().setFromObject(inst)
+    const turned = new Group()
+    turned.rotation.y = yaw
+    inst.position.set(0, 0, 0)
+    turned.add(inst)
+    turned.updateMatrixWorld(true)
+    const b = new Box3().setFromObject(turned)
     if (b.isEmpty()) return null
     const f = fitFigure(b.min.toArray() as [number, number, number], b.max.toArray() as [number, number, number], height)
     const g = new Group()
-    g.add(inst)
-    inst.position.set(0, 0, 0)
+    g.add(turned)
     g.scale.setScalar(f.scale)
     g.position.fromArray(f.offset).add(new Vector3(0, 0.12, 0))
     return g
-  }, [inst, height])
+  }, [inst, height, yaw])
 }
 
 export function GlbBase({ baseMm, color }: { baseMm: number; color: string }): ReactElement {

@@ -7,6 +7,7 @@ import { launchGame, useLaunchStore } from './store/launch'
 import { audio } from './audio/manager'
 import { StartScreen } from './ui/StartScreen'
 
+const Gallery = lazy(() => import('./figures/Gallery').then((m) => ({ default: m.Gallery })))
 const GameScreen = lazy(() => import('./GameScreen').then((m) => ({ default: m.GameScreen })))
 
 function paramsLaunch() {
@@ -21,6 +22,7 @@ export function App() {
     audio.setMood('calm')
     if (readParams().autostart && !useLaunchStore.getState().launch) launchGame(paramsLaunch())
   }, [])
+  if (readParams().gallery) return <Suspense fallback={null}><Gallery /></Suspense>
   if (screen === 'start') return <StartScreen />
   return (
     <Suspense fallback={<div className="start" data-testid="loading"><p className="tag">Setting up the table...</p></div>}>

@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react'
 
 type V3 = [number, number, number]
-export interface UnitEntry { rightHand?: V3; rot?: V3; height?: number }
+/** Unit overrides. `hand`: the grip point of the held weapon, in the FITTED figure frame (inches, origin at the base
+ * centre on the table, y up, front +z, after `yaw` and the fit scale/lift in GlbBody). `rot`: weapon Euler (radians)
+ * relative to "barrel along +z, level". `yaw`: radians about +y that turns the raw GLB so its head looks along +z.
+ * A listed unit with no `hand` (beasts) holds nothing. `rightHand` is read as a legacy alias of `hand`. */
+export interface UnitEntry { hand?: V3; rot?: V3; height?: number; yaw?: number }
 export interface WeaponEntry { length?: number }
 export interface Manifest {
-  defaults: Record<string, { rightHand: V3; rot: V3 }>
+  defaults: Record<string, { hand: V3; rot?: V3 }>
   units: Record<string, UnitEntry>
   weapons: Record<string, WeaponEntry>
 }
@@ -22,12 +26,18 @@ export function parseManifest(raw: unknown): Manifest {
   const out: Manifest = { defaults: {}, units: {}, weapons: {} }
   for (const [k, v] of Object.entries(rec(rec(r.sockets).defaults))) {
     const e = rec(v)
-    if (isV3(e.rightHand)) out.defaults[k] = { rightHand: e.rightHand, rot: isV3(e.rot) ? e.rot : [0, 0, 0] }
+    const hand = isV3(e.hand) ? e.hand : isV3(e.rightHand) ? e.rightHand : undefined
+    if (hand) out.defaults[k] = { hand, ...(isV3(e.rot) ? { rot: e.rot } : {}) }
   }
   for (const [slug, v] of Object.entries(rec(r.units))) {
     if (!SLUG.test(slug)) continue
     const e = rec(v)
-    out.units[slug] = { ...(isV3(e.rightHand) ? { rightHand: e.rightHand } : {}), ...(isV3(e.rot) ? { rot: e.rot } : {}), ...(typeof e.height === 'number' && e.height > 0 ? { height: e.height } : {}) }
+    const hand = isV3(e.hand) ? e.hand : isV3(e.rightHand) ? e.rightHand : undefined
+    out.units[slug] = {
+      ...(hand ? { hand } : {}), ...(isV3(e.rot) ? { rot: e.rot } : {}),
+      ...(typeof e.height === 'number' && e.height > 0 ? { height: e.height } : {}),
+      ...(typeof e.yaw === 'number' && Number.isFinite(e.yaw) ? { yaw: e.yaw } : {}),
+    }
   }
   for (const [slug, v] of Object.entries(rec(r.weapons))) {
     if (!SLUG.test(slug)) continue
@@ -40,15 +50,24 @@ export function parseManifest(raw: unknown): Manifest {
 /** Figure height in inches by base size (the procedural formula, so GLB and stand-in match). */
 export const figureHeight = (baseMm: number): number => 1.45 + (baseMm - 25) * 0.045
 
-/** Hand socket for a unit: its manifest entry, else the default of the nearest base size, else a computed one. */
-export function socketFor(m: Manifest, slug: string, baseMm: number): { rightHand: V3; rot: V3 } {
+/** Hand socket for a unit, or undefined when it holds nothing. A unit listed in the manifest (it has a GLB) uses only
+ * its own `hand`; an unlisted (procedural) unit uses the default of the nearest base size, else a computed one. `rot`
+ * is undefined unless the manifest sets it (the caller then poses by weapon mode, see heldRotation). */
+export function socketFor(m: Manifest, slug: string, baseMm: number): { hand: V3; rot: V3 | undefined } | undefined {
   const own = m.units[slug]
+  if (own) return own.hand ? { hand: own.hand, rot: own.rot } : undefined
   const keys = Object.keys(m.defaults).map(Number).filter(Number.isFinite)
   const near = keys.length ? keys.reduce((a, b) => (Math.abs(b - baseMm) < Math.abs(a - baseMm) ? b : a)) : undefined
   const def = near !== undefined ? m.defaults[String(near)] : undefined
   const h = figureHeight(baseMm)
   const fallback: V3 = [baseMm / 25.4 * 0.27, 0.12 + h * 0.6, baseMm / 25.4 * 0.15]
-  return { rightHand: own?.rightHand ?? def?.rightHand ?? fallback, rot: own?.rot ?? def?.rot ?? [0, 0, 0] }
+  return { hand: def?.hand ?? fallback, rot: def?.rot }
+}
+
+/** Weapon pose in the hand: guns level with the barrel forward (+z); melee weapons raised up and forward like a club. */
+export const MELEE_ROT: V3 = [-0.95, 0, 0]
+export function heldRotation(mode: 'ranged' | 'melee', rot: V3 | undefined): V3 {
+  return rot ?? (mode === 'melee' ? MELEE_ROT : [0, 0, 0])
 }
 
 const base = (): string => import.meta.env.BASE_URL
