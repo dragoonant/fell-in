@@ -338,7 +338,7 @@
     "rounds": 6,
     "sides": [
       {
-        "id": "defender",
+        "id": "scavengers",
         "deploy": {
           "within": "yellow",
           "of": "own edge"
@@ -346,6 +346,7 @@
       },
       {
         "id": "brotherhood",
+        "faction": "brotherhood-of-steel",
         "deploy": {
           "within": "yellow",
           "of": "own edge"
@@ -355,7 +356,7 @@
     "markers": [
       {
         "kind": "searchable",
-        "face": "crate",
+        "face": "power-armor",
         "place": {
           "line": "centre",
           "spacing": "green",
@@ -364,7 +365,7 @@
       },
       {
         "kind": "searchable",
-        "face": "crate",
+        "face": "power-armor",
         "place": {
           "line": "centre",
           "spacing": "green",
@@ -373,7 +374,7 @@
       },
       {
         "kind": "searchable",
-        "face": "crate",
+        "face": "power-armor",
         "place": {
           "line": "centre",
           "spacing": "green",
@@ -391,27 +392,31 @@
     ],
     "rules": [
       {
-        "id": "suit-crate",
-        "text": "The Brotherhood side may spend an Action in contact with a crate to receive and equip a random Power Armor."
+        "id": "suit-claim",
+        "text": "A Brotherhood model touching a suit marker can spend an Action to claim a random suit of Power Armor and put it on."
       },
       {
         "id": "suit-sabotage",
-        "text": "The other side may attack and destroy any suit nobody has claimed yet; its armor values apply."
+        "text": "The Scavengers may shoot or smash any suit still waiting to be claimed; the suit's own defense applies."
+      },
+      {
+        "id": "timeout-points",
+        "text": "House ruling: if six rounds pass with both sides standing, the side with more surviving points wins; no caps are paid."
       }
     ],
     "victory": [
       {
-        "side": "defender",
-        "when": "All enemy models are killed.",
+        "side": "scavengers",
+        "when": "Every Brotherhood model is dead.",
         "caps": 300
       },
       {
         "side": "brotherhood",
-        "when": "All enemy models are killed; add 50 per intact equipped suit.",
+        "when": "Every Scavenger model is dead. Pays 200 plus 50 per suit still worn and unbroken.",
         "caps": 200
       }
     ],
-    "source": "BOX SCP-001; spec 17 s3"
+    "source": "box_scenarios_1-5.pdf p1-2 (SCP-001); spec 17 s3"
   },
   {
     "id": "box-2",
@@ -484,7 +489,7 @@
         "caps": 0
       }
     ],
-    "source": "BOX SCP-002; spec 17 s3"
+    "source": "box_scenarios_1-5.pdf p3-4 (SCP-002); spec 17 s3"
   },
   {
     "id": "box-3",
@@ -579,7 +584,7 @@
     "victory": [
       {
         "side": "defender",
-        "when": "All attackers are killed.",
+        "when": "Every attacking model is dead.",
         "caps": 200
       },
       {
@@ -588,7 +593,7 @@
         "caps": 200
       }
     ],
-    "source": "BOX SCP-003; spec 17 s3"
+    "source": "box_scenarios_1-5.pdf p5-6 (SCP-003); spec 17 s3"
   },
   {
     "id": "box-4",
@@ -639,19 +644,31 @@
     ],
     "victory": [
       {
-        "side": "attacker",
+        "side": "defender",
         "level": "major",
-        "when": "End of round 6: most models in contact with the tower, with points breaking ties.",
+        "when": "At the end of round 6 the defenders have more models touching the tower.",
         "caps": 250
       },
       {
         "side": "defender",
         "level": "minor",
-        "when": "End of round 6: most models in contact with the tower, with points breaking ties.",
+        "when": "At the end of round 6 the models touching the tower are level and the defenders have more points on the table.",
+        "caps": 150
+      },
+      {
+        "side": "attacker",
+        "level": "major",
+        "when": "At the end of round 6 the attackers have more models touching the tower.",
+        "caps": 250
+      },
+      {
+        "side": "attacker",
+        "level": "minor",
+        "when": "At the end of round 6 the models touching the tower are level and the attackers have more points on the table.",
         "caps": 150
       }
     ],
-    "source": "BOX SCP-004; spec 17 s3"
+    "source": "box_scenarios_1-5.pdf p7-8 (SCP-004); the printed Defender rows name 'the enemy' by mistake, read as own side; spec 17 s3"
   },
   {
     "id": "box-5",
@@ -729,7 +746,7 @@
         "caps": 200
       }
     ],
-    "source": "BOX SCP-005; spec 17 s3"
+    "source": "box_scenarios_1-5.pdf p9-10 (SCP-005); spec 17 s3"
   },
   {
     "id": "ai-rr",

@@ -30,6 +30,10 @@ Tutorial mode: only numbers and X on the skill die; icon faces count as 1 and su
 | BOX-3 | Quest for Knowledge | Defender builds a walled school (all walls block LoS); alternate placing 5 S books inside, Yellow apart; defender inside, attacker within Yellow of an edge | Attacker +20% caps; Action in contact takes a book; drop at death point; carry off any edge | until a win | Defender: kill all 200; attacker: 3+ books off 200 |
 | BOX-4 | Radio Tower Takeover | Tower at centre (<= Yellow); defenders within Yellow of it, may place a turret, may hold back up to half caps; attacker within Red of any edge | Attacker +20% caps; control = in contact with tower without enemy contact; 3 consecutive controlled turns lets the defender bring reserves worth double the held-back caps | 6 | Most units in contact at end; tie broken by points: major 250, minor 150 |
 | BOX-5 | Flip's Revenge | Ring of buildings, S at centre, Yellow apart; kidnappers (double points) within Yellow of S; Flip (one non-creature Super Mutant, free Heroic) within Red of an edge | Flip's Action at the S frees Sarah (Survivor model with Laser Rifle, joins Flip's side) | 6 | Sarah off any edge: Flip 200; Sarah killed: kidnappers 150; both dead: kidnappers 200 |
+Source: `docs/sources/box_scenarios_1-5.pdf` (BOX SCP-001..005): BOX-1 p1-2, BOX-2 p3-4, BOX-3 p5-6, BOX-4 p7-8, BOX-5 p9-10.
+BOX-1 sides are Scavengers (defender, pays 300) against the Brotherhood (attacker, 200 + 50 per worn suit); its only printed
+win is elimination, so we add RULING timeout-points (points on table at round 6, no caps). BOX-4 printed Defender rows say
+"the enemy controls the Tower", a typo; both sides win Major with more models at the tower, Minor on equal models and more points.
 Note: BOX-1 and BOX-4 name Brotherhood/turrets; with starter models use Aspirant Goddard and skip the
 turret (RULING).
 

@@ -87,7 +87,7 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
     const [first, second] = ranked
     if (!first || (second && first[1].n === second[1].n && first[1].pts === second[1].pts)) return { side: null, reason: 'The tower is shared evenly' }
     const side = sideOfSeat(c.state, first[0])
-    return { side, level: side === 'attacker' ? 'major' : 'minor', reason: 'Most models at the tower when time ran out' }
+    return { side, level: second && first[1].n === second[1].n ? 'minor' : 'major', reason: 'Most models at the tower when time ran out' }
   },
   'ai-rr': (c) => {
     const rocket = markersOf(c.state, 'red-rocket')[0]
@@ -167,12 +167,23 @@ function dropDeadCarriers(state: GameState): GameState {
   return changed ? { ...state, markers } : state
 }
 
+/** House ruling (scenario rule "timeout-points"): at the round limit the side with more surviving points wins, no caps. */
+function timeoutByPoints(state: GameState, bundle: EditionBundle): GameResult | null {
+  const def = scenarioDefOf(state, bundle)
+  if (!def?.rules.some((r) => r.id === 'timeout-points')) return null
+  const pts: Record<string, number> = Object.fromEntries(state.seatOrder.map((x) => [x, 0]))
+  for (const m of Object.values(state.models)) if (onTable(m) && !m.inert) pts[m.owner] = (pts[m.owner] ?? 0) + (recordOf(bundle, 'units', m.profileId)?.cost ?? 0)
+  const ranked = Object.entries(pts).sort((a, b) => b[1] - a[1])
+  if (ranked.length < 2 || ranked[0]![1] === ranked[1]![1]) return null
+  return { winner: ranked[0]![0], reason: 'Time ran out; the side with more surviving points wins', caps: 0 }
+}
+
 /** Round end: scenario timers, round limit -> result, phase 'over' (SCN-001). Called by turnflow. */
 export function endOfRound(state: GameState, bundle: EditionBundle): GameState {
   if (state.phase === 'over') return state
   const s = dropDeadCarriers(state)
   let result = evaluate(s, bundle, 'roundEnd')
-  if (!result && s.maxRounds !== null && s.round >= s.maxRounds) result = { winner: null, reason: 'The round limit was reached with no winner', caps: 0 }
+  if (!result && s.maxRounds !== null && s.round >= s.maxRounds) result = timeoutByPoints(s, bundle) ?? { winner: null, reason: 'The round limit was reached with no winner', caps: 0 }
   if (!result) return s
   return pushEvents({ ...s, phase: 'over', result }, [{ type: 'gameOver', winner: result.winner, reason: result.reason }])
 }

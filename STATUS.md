@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M2 engine** (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M3 playable** (polish pass before the owner playtest) (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -27,6 +27,15 @@ Milestone reached: **M2 engine** (this file only lists what is real; plans live 
 - `npm run sim -- --games N --seed s`: random bots, full games, invariants; 50 games 0 errors, max step 1.4 ms.
 - Not built: object/point targets (SHOT-003; GA tutorials can't be won), BC-006, DMG-005, Walked Fire, mines;
   box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
+
+## Client (M3)
+- Start screen (box 1-5 + skirmish, vs bot / hot-seat / watch bots, seed, speed, Continue) -> game -> game over.
+- `contract.ts` surface; `store/gameStore.ts` only apply caller, autosave; `bot/` random bot + watchdog;
+  `presentation/` director, cues, presented state; `board/` + `figures/` render from presented state;
+  `interaction/` select, drag move with ruler, targeting with LOS/cover; `ui/` HUD, prompts, unit card, odds,
+  feed, game over; `dice/` d20 + d12 tray and log. Box scenarios 1-5 re-entered from the PDF (sim: 0 draws).
+- E2E: bot-vs-bot to game over and a human click path; screenshots `screenshots/m3-playable.png`.
+- Known: overlays crowd at 1280x800; figures and terrain are procedural; no audio yet.
 
 ## Client (`src/client/`)
 - Start screen "Fell-in: Wasteland Warfair" and a 3D table: 36 x 36 in procedural wasteland mat, camera presets

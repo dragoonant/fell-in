@@ -39,11 +39,30 @@ describe('SCN: scenarios and victory', () => {
   })
 
   it('SCN-001 the round limit ends the game as a draw when nothing else decided it', () => {
-    const g = { ...game('box-1'), round: 6 }
+    const g = { ...game('box-5'), round: 6 }
     const over = endOfRound(g, bundle)
     expect(over.phase).toBe('over')
     expect(over.result!.winner).toBeNull()
     expect(endOfRound({ ...g, round: 5 }, bundle).phase).toBe('play')
+  })
+
+  it('SCN-001 BOX-1: at the round limit the side with more surviving points wins, no caps', () => {
+    let g = { ...game('box-1'), round: 6 }
+    const b = Object.values(g.models).find((m) => m.owner === 'B')!
+    g = updateModel(g, b.id, { life: 'dead' })
+    const over = endOfRound(g, bundle)
+    expect(over.result!.winner).toBe('A')
+    expect(over.result!.caps).toBe(0)
+  })
+
+  it('SCN-004 BOX-4: more models at the tower is a major win', () => {
+    let g: GameState = { ...game('box-4'), round: 6 }
+    const tower = g.markers.find((m) => m.face === 'tower')!
+    const a = Object.values(g.models).find((m) => m.owner === 'B')!
+    g = updateModel(g, a.id, { pos: { ...tower.pos } })
+    const over = endOfRound(g, bundle)
+    expect(over.result!.winner).toBe('B')
+    expect(over.result!.level).toBe('major')
   })
 
   it('SCN-001 a scenario without a round limit does not time out', () => {

@@ -1,19 +1,27 @@
-import { useEffect } from 'react'
+// App shell (start chunk). The game screen, engine and data load lazily on the first launch, so the start screen
+// stays small. URL test hooks (?test=1, ?seats=, ?scenario=) skip straight into a game.
+import { lazy, Suspense, useEffect } from 'react'
 import './ui/styles.css'
 import { readParams } from './params'
-import { useStore } from './store'
-import { GameScreen } from './GameScreen'
+import { launchGame, useLaunchStore } from './store/launch'
 import { StartScreen } from './ui/StartScreen'
 
+const GameScreen = lazy(() => import('./GameScreen').then((m) => ({ default: m.GameScreen })))
+
+function paramsLaunch() {
+  const p = readParams()
+  return { seats: p.seats, ...(p.seed ? { seed: p.seed } : {}), ...(p.scenario ? { scenarioId: p.scenario } : {}) }
+}
+
 export function App() {
-  const screen = useStore((s) => s.screen)
-  const start = useStore((s) => s.start)
+  const screen = useLaunchStore((s) => s.screen)
   useEffect(() => {
-    const p = readParams()
-    if (p.test) {
-      start(p.seed)
-      ;(window as unknown as { __game: unknown }).__game = { getState: () => useStore.getState().game, params: p }
-    }
-  }, [start])
-  return screen === 'start' ? <StartScreen onStart={() => start(readParams().seed)} /> : <GameScreen />
+    if (readParams().autostart && !useLaunchStore.getState().launch) launchGame(paramsLaunch())
+  }, [])
+  if (screen === 'start') return <StartScreen />
+  return (
+    <Suspense fallback={<div className="start" data-testid="loading"><p className="tag">Setting up the table...</p></div>}>
+      <GameScreen />
+    </Suspense>
+  )
 }

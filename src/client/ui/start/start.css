@@ -1,0 +1,19 @@
+.start .start-card.sc { max-width: 680px; width: calc(100% - 24px); max-height: 100%; overflow: auto; padding: 28px 32px; text-align: left; }
+.sc h1 { text-align: center; font-size: 34px; }
+.sc .eyebrow, .sc .tag { text-align: center; }
+.sc-sec { margin: 16px 0 0; }
+.sc-h { margin: 0 0 6px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
+.sc-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.sc-chip { padding: 8px 12px; border: 1px solid #5a4a36; background: #2a2218; color: var(--bone); border-radius: 4px; cursor: pointer; font: inherit; font-size: 14px; text-align: left; }
+.sc-chip:hover { border-color: var(--sand); }
+.sc-chip[aria-pressed="true"] { border-color: var(--teal); background: #2f5a55; }
+.sc-chip small { display: block; opacity: .7; font-size: 11px; }
+.sc-note { margin: 6px 0 0; font-size: 12px; opacity: .75; color: var(--bone); min-height: 1.4em; }
+.sc input[type=text] { padding: 8px 10px; background: #14110d; color: var(--bone); border: 1px solid #5a4a36; border-radius: 4px; font: inherit; width: 220px; max-width: 100%; }
+.sc details { margin-top: 8px; }
+.sc summary { cursor: pointer; font-size: 13px; color: var(--sand); }
+.sc-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
+.sc-actions .go { margin: 0; }
+.sc-actions .go.alt { background: transparent; border: 2px solid var(--teal); }
+.sc .fine { text-align: center; margin-top: 14px; }
+.sc-err { color: #e0a080; font-size: 13px; text-align: center; }
