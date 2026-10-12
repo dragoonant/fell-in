@@ -2,9 +2,14 @@
 // Owns 'scenario.*' (scenario-specific Actions such as picking up an objective) and 'deploy.*' (interactive deployment,
 // TURN-013, when a scenario asks for it). setup.ts already places forces, terrain and markers automatically.
 import type { EditionBundle, ScenarioDef } from '../data/types'
-import { recordOf } from './edition'
+import { computeSv, skillTest } from './dice'
+import { recordOf, rulerInches } from './edition'
+import { attrOf } from './forces'
 import { baseRadius, dist } from './geometry'
 import { isEngaged } from './attack'
+import { objectGap, pushObject } from './objects'
+import { teamOf } from './sides'
+import { gainAp } from './turnflow'
 import { option, pushEvents, reject, type ModuleDef, type StepResult } from './registry'
 import type { Action, DecisionOption, GameResult, GameState, MarkerState, ModelId, ModelState, SeatId } from './types'
 
@@ -93,7 +98,7 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
     const rocket = markersOf(c.state, 'red-rocket')[0]
     if (!rocket) return null
     const hp = typeof rocket.props.health === 'number' ? rocket.props.health : null
-    if (hp !== null && hp <= 0) return { side: 'super-mutants', reason: 'The rocket was wrecked' }
+    if ((hp !== null && hp <= 0) || rocket.props.destroyed === true) return { side: 'super-mutants', reason: 'The rocket was wrecked' }
     if (markerGone(c.state, rocket)) return { side: 'survivors', level: 'major', reason: 'The rocket was shoved off the far corner' }
     const keep = numberIn(victoryText(c.def, 'survivors', 'minor'), /(\d+) or more/i)
     if (c.phase === 'roundEnd' && c.state.maxRounds !== null && c.state.round >= c.state.maxRounds && hp !== null && keep !== null && hp >= keep) {
@@ -120,7 +125,7 @@ function tutorialAll(c: Ctx, flag: string, reason: string): Verdict | null {
 
 /** Fallback for every scenario: a group with nobody left on the table loses. Co-op seats pool as "players" against the AI. */
 function lastGroupStanding(c: Ctx): Verdict | null {
-  const group = (s: SeatId): string => (c.def.mode === 'coop' ? (sideOfSeat(c.state, s) === 'ai' ? 'ai' : 'players') : s)
+  const group = (s: SeatId): string => teamOf(c.state, s) // seats on one team win or lose together (COOP s2)
   const groups = new Set(c.state.seatOrder.map(group))
   if (groups.size < 2) return null
   const standing = new Set<string>()
@@ -195,17 +200,27 @@ const CARRIED_FACES: Record<string, string[]> = { 'box-2': ['nuke'], 'box-3': ['
 function carriable(state: GameState, mk: MarkerState): boolean {
   return !mk.carriedBy && (mk.props.carry === true || (!!state.scenarioId && !!mk.face && (CARRIED_FACES[state.scenarioId] ?? []).includes(mk.face)))
 }
+/** Objects a scenario lets models push, by scenario (RR p2: a Str test within Orange shoves the rocket Yellow). A marker may opt in with props.pushable. */
+const PUSHABLE_FACES: Record<string, string[]> = { 'ai-rr': ['red-rocket'] }
+const PUSH_REACH = 'orange', PUSH_DISTANCE = 'yellow'
+function pushable(state: GameState, mk: MarkerState): boolean {
+  if (mk.props.destroyed === true || mk.props.offTable === true) return false
+  return mk.props.pushable === true || (!!state.scenarioId && !!mk.face && (PUSHABLE_FACES[state.scenarioId] ?? []).includes(mk.face))
+}
 const touching = (m: ModelState, mk: MarkerState): boolean => dist(m.pos, mk.pos) - baseRadius(m.base) <= MARKER_REACH_IN
 
 export const scenario: ModuleDef = {
   id: 'scenario',
   kinds: ['scenario', 'deploy'],
-  options(state: GameState, _bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
+  options(state: GameState, bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
     const m = state.models[modelId]
     if (!m || !onTable(m) || isEngaged(state, modelId)) return []
     const out: DecisionOption[] = []
     const carried = state.markers.filter((mk) => mk.carriedBy === modelId)
     for (const mk of state.markers) if (carriable(state, mk) && touching(m, mk)) out.push(option(`take:${mk.id}`, `Pick up the ${mk.face}`, 'scenario.pickup', { modelId, markerId: mk.id }))
+    for (const mk of state.markers) {
+      if (pushable(state, mk) && objectGap(state, modelId, mk) <= rulerInches(bundle, PUSH_REACH) + 1e-9) out.push(option(`push:${mk.id}`, `Shove the ${mk.face ?? 'object'} (Str test)`, 'scenario.push', { modelId, markerId: mk.id }))
+    }
     for (const mk of carried) out.push(option(`drop:${mk.id}`, `Put down the ${mk.face}`, 'scenario.drop', { modelId, markerId: mk.id }))
     return out
   },
@@ -222,6 +237,17 @@ export const scenario: ModuleDef = {
       if (!touching(m, mk)) return reject('E_OUT_OF_RANGE', 'Not in contact with the marker')
       const s = { ...state, markers: state.markers.map((x) => (x.id === mk.id ? { ...x, carriedBy: modelId, pos: { ...m.pos } } : x)) }
       return { state: s, done: { modelId, type: action.type, triggers: [] } }
+    }
+    if (action.type === 'scenario.push') {
+      if (!pushable(state, mk)) return reject('E_BAD_TARGET', 'That cannot be pushed')
+      if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot push things')
+      if (objectGap(state, modelId, mk) > rulerInches(bundle, PUSH_REACH) + 1e-9) return reject('E_OUT_OF_RANGE', 'Too far from the object')
+      const sv = computeSv(attrOf(state, bundle, modelId, 'str'), []).sv
+      const t = skillTest(state, bundle, { sv, pool: {}, purpose: `push:${modelId}>${mk.id}`, ownerId: modelId })
+      let s = pushEvents(t.state, t.events)
+      s = gainAp(s, t.test.ap) // AP-004
+      if (t.test.success) s = pushObject(s, mk.id, m.pos, rulerInches(bundle, PUSH_DISTANCE))
+      return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
     }
     if (action.type === 'scenario.drop') {
       if (mk.carriedBy !== modelId) return reject('E_BAD_TARGET', 'You are not carrying that')

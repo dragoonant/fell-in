@@ -4,10 +4,10 @@
 import type { EditionBundle, ScenarioDef, ScenarioForce } from '../data/types'
 import { recordOf, rulerColours, rulerInches } from './edition'
 import { baseRadius } from './geometry'
-import { raiseDecision } from './registry'
-import { seedRng } from './rng'
+import { pushEvents, raiseDecision } from './registry'
+import { roll, seedRng } from './rng'
 import { themedTerrain } from './terrainCatalog'
-import type { CarriedItem, CarriedKind, GameState, MarkerState, ModelState, SeatId, SeatState, TerrainInstance } from './types'
+import type { CarriedItem, CarriedKind, GameState, MarkerState, ModelState, SeatController, SeatId, SeatState, TerrainInstance } from './types'
 
 export const TABLE_IN = 36 // M0 demo only; real games take the table from the scenario record
 
@@ -36,6 +36,8 @@ export interface CreateGameOpts {
   scenarioId?: string
   /** Per-seat forces overriding the scenario's (and the defaults). */
   forces?: Partial<Record<SeatId, ScenarioForce[]>>
+  /** Who answers each seat's decisions (spec 18 s8.2). Default 'human'; the seat named 'ai' defaults to 'official'. */
+  controllers?: Partial<Record<SeatId, SeatController>>
 }
 
 /** Every M2 rules field of a fresh model (unready, no tokens, nothing carried). */
@@ -93,12 +95,18 @@ function placeMarkers(bundle: EditionBundle, sc: ScenarioDef, w: number): Marker
   const n = sc.markers.length
   return sc.markers.map((mk, i) => {
     const place = mk.place as { spacing?: string; index?: number }
+    const props: Record<string, unknown> = { ...(mk.props ?? {}) }
+    // Objects with Health are targets: full Health, no damage, shootable and meleeable in contact unless the data says no.
+    // Tutorial investigation markers (cans, plants, mounds) are the targets of the practice shoots (SCN-005).
+    const target = (mk.kind === 'object' && typeof props.health === 'number') || (sc.mode === 'tutorial' && mk.kind === 'investigation')
+    if (typeof props.health === 'number') { props.maxHealth ??= props.health; props.damage ??= 0 }
+    if (target) { props.shootable ??= true; props.meleeable ??= mk.kind === 'object' }
     const colours = rulerColours(bundle)
     const spacingColour = colours.find((c) => c === place.spacing)
     const step = spacingColour ? rulerInches(bundle, spacingColour) : w / (n + 1)
     const idx = typeof place.index === 'number' ? place.index - 1 : i
     const x = (idx - (n - 1) / 2) * step
-    return { id: `marker-${i + 1}`, kind: mk.kind, face: mk.face, pos: { x: Math.max(-w / 2 + 1, Math.min(w / 2 - 1, x)), z: 0 }, revealed: false, seenBy: [], props: { ...(mk.props ?? {}) } }
+    return { id: `marker-${i + 1}`, kind: mk.kind, face: mk.face, pos: { x: Math.max(-w / 2 + 1, Math.min(w / 2 - 1, x)), z: 0 }, revealed: false, seenBy: [], props }
   })
 }
 
@@ -131,11 +139,27 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
   if (!sc) throw new Error(`createGame: no scenario "${scenarioId}" in edition ${bundle.edition}`)
   const seatOrder = opts.seats ?? ['A', 'B']
   const [w, d] = sc.tableIn
+  const controllerOf = (seat: SeatId): SeatController => opts.controllers?.[seat] ?? (seat === 'ai' ? 'official' : 'human')
+  const aiSideIdx = sc.sides.findIndex((x) => x.ai)
+  const hasAi = aiSideIdx >= 0 && seatOrder.some((x) => controllerOf(x) === 'official')
+  // Seat -> scenario side. Plain games: seat i plays side i. AI games: the AI seat plays the side with the `ai` block and
+  // the human seats take the other sides in order (several humans share the last one and split its force; spec 18 s8.2).
+  const humanSides = sc.sides.map((_, i) => i).filter((i) => i !== aiSideIdx)
+  const humanSeats = seatOrder.filter((x) => controllerOf(x) !== 'official')
+  const sideIdx = (seat: SeatId): number => {
+    if (!hasAi) return seatOrder.indexOf(seat)
+    if (controllerOf(seat) === 'official') return aiSideIdx
+    return humanSides[Math.min(humanSeats.indexOf(seat), humanSides.length - 1)] ?? 0
+  }
   const models: Record<string, ModelState> = {}
   const seats: Record<SeatId, SeatState> = {}
+  const perSeat: Record<SeatId, ModelState[]> = {}
   seatOrder.forEach((seat, i) => {
-    const side = sc.sides[i]
-    const forces = opts.forces?.[seat] ?? (side?.forces?.length ? side.forces : DEFAULT_FORCES[i] ?? [])
+    const si = sideIdx(seat)
+    const side = sc.sides[hasAi ? si : i]
+    const sharing = seatOrder.filter((x) => sideIdx(x) === si && controllerOf(x) === controllerOf(seat))
+    let forces = opts.forces?.[seat] ?? (side?.forces?.length ? side.forces : DEFAULT_FORCES[i] ?? [])
+    if (!opts.forces?.[seat] && sharing.length > 1) forces = forces.filter((_, k) => k % sharing.length === sharing.indexOf(seat))
     const list: ModelState[] = []
     const counts: Record<string, number> = {}
     for (const f of forces) {
@@ -145,17 +169,35 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
         const n = (counts[f.unit] = (counts[f.unit] ?? 0) + 1)
         const id = `${seat.toLowerCase()}-${f.unit}-${n}`
         const heroic = !!f.heroic
+        // AI forces also take everything their AI card lists as standard equipment (CH p8 step 2, ERR p.3).
+        const std = controllerOf(seat) === 'official' ? bundle.records.ai.find((c) => c.unitId === f.unit)?.standardEquipment ?? [] : []
         list.push({
           ...modelDefaults(),
           id, profileId: unit.id, owner: seat, unitId: id, pos: { x: 0, z: 0 }, elev: 0, base: unit.baseMm, life: 'active', conditions: [],
           heroic, luck: unit.luck || heroic ? unit.attrs.luc : 0,
-          carried: carriedFor(bundle, id, [...unit.equipped, ...f.items]),
+          carried: carriedFor(bundle, id, [...unit.equipped, ...f.items, ...std]),
           ...(f.leader ? { leaderId: f.leader } : {}),
         })
       }
     }
-    // Deploy in a row (two rows when crowded) inside the zone: seat 0 near edge (+z), seat 1 far edge (-z), others centre.
-    const sign = i === 0 ? 1 : i === 1 ? -1 : 0
+    perSeat[seat] = list
+    seats[seat] = {
+      id: seat, side: side?.id ?? `side-${i + 1}`,
+      faction: side?.faction ?? (list[0] ? recordOf(bundle, 'units', list[0].profileId)?.faction ?? null : null),
+      done: false, score: 0,
+      ...(controllerOf(seat) !== 'human' ? { controller: controllerOf(seat) } : {}),
+      ...(hasAi ? { team: controllerOf(seat) === 'official' ? 'ai' : 'players' } : {}),
+    }
+  })
+  // Deploy each team in rows inside its zone: the first team at the near edge (+z), the second at the far edge, others in
+  // the centre. In AI games the AI team is always last (far edge), the players near.
+  const teamKey = (seat: SeatId): string => seats[seat]!.team ?? seats[seat]!.side
+  const teamOrder = [...new Set(seatOrder.map(teamKey))].sort((x, y) => Number(x === 'ai' && hasAi) - Number(y === 'ai' && hasAi))
+  teamOrder.forEach((key, ti) => {
+    const members = seatOrder.filter((x) => teamKey(x) === key)
+    const list = members.flatMap((x) => perSeat[x]!)
+    const side = sc.sides[hasAi ? sideIdx(members[0]!) : seatOrder.indexOf(members[0]!)]
+    const sign = ti === 0 ? 1 : ti === 1 ? -1 : 0
     const depth = deployDepth(bundle, side?.deploy)
     const perRow = Math.max(1, Math.floor((w - 4) / 3))
     list.forEach((m, j) => {
@@ -165,11 +207,6 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
       const zEdge = d / 2 - r - 0.25 - row * Math.min(2, Math.max(0, depth - 2 * r - 0.5))
       models[m.id] = { ...m, pos: { x, z: sign * zEdge } }
     })
-    seats[seat] = {
-      id: seat, side: side?.id ?? `side-${i + 1}`,
-      faction: side?.faction ?? (list[0] ? recordOf(bundle, 'units', list[0].profileId)?.faction ?? null : null),
-      done: false, score: 0,
-    }
   })
   const base: GameState = {
     seed: opts.seed,
@@ -189,10 +226,48 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     seatOrder,
     markers: placeMarkers(bundle, sc, w),
   }
-  return raiseDecision(base, {
-    seat: seatOrder[0]!, kind: 'turn.start', context: { scenarioId: sc.id }, canPass: false,
-    options: [{ id: 'start', label: 'Begin the battle', action: { type: 'turn.start', decisionId: '', seat: seatOrder[0]! } }],
+  const game = hasAi ? setUpAiForces(base, seatOrder.filter((x) => controllerOf(x) === 'official')) : base
+  // A human seat opens the game; the AI never has to answer the start prompt.
+  const opener = seatOrder.find((x) => controllerOf(x) !== 'official') ?? seatOrder[0]!
+  return raiseDecision(game, {
+    seat: opener, kind: 'turn.start', context: { scenarioId: sc.id }, canPass: false,
+    options: [{ id: 'start', label: 'Begin the battle', action: { type: 'turn.start', decisionId: '', seat: opener } }],
   })
+}
+
+/** In-place Fisher-Yates through roll() so replays match (never Math.random). */
+function shuffled<T>(state: GameState, items: readonly T[], purpose: string): { state: GameState; items: T[] } {
+  const out = [...items]
+  let s = state
+  for (let i = out.length - 1; i > 0; i--) {
+    const r = roll(s, { count: 1, sides: i + 1, purpose })
+    s = pushEvents(r.state, [r.event])
+    const j = r.event.dice[0]! - 1
+    ;[out[i], out[j]] = [out[j]!, out[i]!]
+  }
+  return { state: s, items: out }
+}
+
+/**
+ * AI set-up (CH p8, AI-027): one Number Token per AI model drawn at random, the AI markers (the deployment spots) shuffled
+ * face down and each model placed at its number's marker; each model's deployment point is kept in tokens for Fall Back.
+ */
+function setUpAiForces(state: GameState, aiSeats: readonly SeatId[]): GameState {
+  let s = state
+  for (const seat of aiSeats) {
+    const ids = Object.values(s.models).filter((m) => m.owner === seat).map((m) => m.id).sort()
+    if (!ids.length) continue
+    const nums = shuffled(s, ids.map((_, i) => i + 1), `ai-setup:numbers:${seat}`)
+    const spots = shuffled(nums.state, ids.map((id) => ({ ...s.models[id]!.pos })), `ai-setup:markers:${seat}`)
+    s = spots.state
+    const models = { ...s.models }
+    ids.forEach((id, i) => {
+      const pos = spots.items[i]!
+      models[id] = { ...models[id]!, pos, tokens: { ...models[id]!.tokens, aiNumber: nums.items[i]!, deployX: pos.x, deployZ: pos.z } }
+    })
+    s = { ...s, models }
+  }
+  return s
 }
 
 const demoModel = (id: string, owner: SeatId, x: number, z: number, base: number): ModelState => ({

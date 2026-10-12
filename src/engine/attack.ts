@@ -26,6 +26,8 @@ import {
 } from './registry'
 import { roll } from './rng'
 import { scenarioDefOf } from './scenario'
+import { hostile, sameTeam } from './sides'
+import { hitObject, markerById, shootableMarkers, withProbe } from './objects'
 import { distToShape, segmentInsideIntervals, terrainPieces } from './terrain'
 import type { AttackOpts, Band, CoverInfo, HitOdds, RangeInfo } from './query'
 import type {
@@ -46,12 +48,17 @@ export interface AttackOptsEx extends AttackOpts {
   critical?: boolean
   /** A free attack from withdrawal (CC-009): Quick Action penalty, no AP, no luck, not a trigger. */
   free?: boolean
+  /** Close Combat against a scenario object in base contact: skips the engagement requirement (SHOT-003). */
+  objectContact?: boolean
 }
 
 /** Everything needed to roll an attack, computed purely (the same object feeds query.hitOdds). */
 export interface AttackPlan extends HitOdds {
   attackerId: ModelId
+  /** The target model, or the marker id when `targetMarkerId` is set (scenario object, SHOT-003). */
   targetId: ModelId
+  /** Set when the target is a scenario object (a MarkerState), not a model. */
+  targetMarkerId?: Id
   weaponUid: string
   weaponId: string
   cover: CoverInfo
@@ -74,7 +81,7 @@ export function engagedWith(state: GameState, modelId: ModelId): ModelId[] {
   const m = state.models[modelId]
   if (!m || !isOnTable(m)) return []
   return Object.values(state.models)
-    .filter((o) => o.id !== modelId && o.owner !== m.owner && isOnTable(o) && modelDistance(m, o) <= EPS)
+    .filter((o) => o.id !== modelId && hostile(state, o.owner, m.owner) && isOnTable(o) && modelDistance(m, o) <= EPS)
     .map((o) => o.id)
 }
 export const isEngaged = (state: GameState, modelId: ModelId): boolean => engagedWith(state, modelId).length > 0
@@ -171,7 +178,7 @@ export function coverOf(state: GameState, bundle: EditionBundle, attackerId: Mod
     sources.push(p.t.id)
   }
   for (const o of Object.values(state.models)) {
-    if (o.id === A.id || o.id === B.id || !isOnTable(o) || o.owner === A.owner) continue // COVER-005
+    if (o.id === A.id || o.id === B.id || !isOnTable(o) || sameTeam(state, o.owner, A.owner)) continue // COVER-005
     const { d, t } = segPointDist(A.pos, B.pos, o.pos)
     if (!(d < baseRadius(o.base) - EPS && t > EPS && t < 1 - EPS)) continue
     if (baseClass(o.base) === 'huge' && !(o.base > B.base && modelDistance(B, o) > EPS)) continue // COVER-006
@@ -313,12 +320,36 @@ export function legalTargets(state: GameState, bundle: EditionBundle, attackerId
   if (!A || !isOnTable(A) || !rangedWeapons(state, bundle, attackerId).includes(weaponUid)) return []
   const out: { targetId: ModelId; band: 'short' | 'long' }[] = []
   for (const o of Object.values(state.models).sort((a, b) => a.id.localeCompare(b.id))) {
-    if (o.owner === A.owner || !isOnTable(o)) continue
+    if (!hostile(state, o.owner, A.owner) || !isOnTable(o)) continue
     const r = rangeBandOf(state, bundle, attackerId, o.id, weaponUid)
     if (r.band === null || !hasLos(state, attackerId, o.id)) continue
     for (const b of r.band === 'both' ? (['short', 'long'] as const) : [r.band]) out.push({ targetId: o.id, band: b })
   }
   return out
+}
+
+/** Legal (object, band) pairs for a ranged weapon: shootable markers in range and in line of sight (SHOT-003). */
+export function legalObjectTargets(state: GameState, bundle: EditionBundle, attackerId: ModelId, weaponUid: string): { markerId: Id; band: 'short' | 'long' }[] {
+  const A = state.models[attackerId]
+  if (!A || !isOnTable(A) || !rangedWeapons(state, bundle, attackerId).includes(weaponUid)) return []
+  const out: { markerId: Id; band: 'short' | 'long' }[] = []
+  for (const mk of shootableMarkers(state)) {
+    const probed = withProbe(state, mk)
+    const r = rangeBandOf(probed.state, bundle, attackerId, probed.probeId, weaponUid)
+    if (r.band === null || !hasLos(probed.state, attackerId, probed.probeId)) continue
+    for (const b of r.band === 'both' ? (['short', 'long'] as const) : [r.band]) out.push({ markerId: mk.id, band: b })
+  }
+  return out
+}
+
+/** Attack plan against a scenario object (no engagement, no dodge, armor from the marker; SHOT-003). */
+export function objectAttackPlan(state: GameState, bundle: EditionBundle, attackerId: ModelId, markerId: Id, opts: AttackOptsEx = {}): AttackPlan | Rejection {
+  const mk = markerById(state, markerId)
+  if (!mk || !shootableMarkers(state).some((x) => x.id === markerId)) return reject('E_BAD_TARGET', 'That object cannot be shot.')
+  const { state: probed, probeId } = withProbe(state, mk)
+  const plan = attackPlan(probed, bundle, attackerId, probeId, opts)
+  if (isRejection(plan)) return plan
+  return { ...plan, targetId: markerId, targetMarkerId: markerId, intoMelee: false }
 }
 
 // ---------- special effects (WPN-007: each effect pays and fires at most once per Action) ----------
@@ -435,7 +466,8 @@ function raiseLuck(state: GameState, ask: 'accurate' | 'dodge' | 'crit', run: Ru
 function advance(state: GameState, bundle: EditionBundle, run0: RunCtx): StepResult {
   const run = { ...run0 }
   const { plan, test } = run
-  const A = state.models[plan.attackerId]!, B = state.models[plan.targetId]!
+  const A = state.models[plan.attackerId]!
+  const B = plan.targetMarkerId ? undefined : state.models[plan.targetId]! // an object cannot dodge or earn a Critical (SHOT-003)
   if (run.stage === 'accurate') {
     run.stage = 'dodge'
     // LUCK-002: after a failed, non-X test (never a chosen failure).
@@ -446,14 +478,14 @@ function advance(state: GameState, bundle: EditionBundle, run0: RunCtx): StepRes
   if (run.stage === 'dodge') {
     run.stage = 'crit'
     // LUCK-003: the target may dodge a successful attack, never a critical one.
-    if (!plan.critical && test.success && B.luck > 0 && isOnTable(B)) return { state: raiseLuck(state, 'dodge', run) }
+    if (!plan.critical && test.success && B && B.luck > 0 && isOnTable(B)) return { state: raiseLuck(state, 'dodge', run) }
   }
   if (run.stage === 'crit') {
     run.stage = 'done'
     const ref = weaponRef(state, bundle, plan.attackerId, plan.weaponUid)
     const rating = ref?.def.critical?.rating
     if (!plan.critical && test.success && run.ns !== 'throw' && A.luck > 0 && !run.noAttackerLuck && rating !== undefined
-      && (ref?.item?.cp ?? 0) < rating && critCapable(state, bundle, A.id) && A.owner !== B.owner) {
+      && (ref?.item?.cp ?? 0) < rating && critCapable(state, bundle, A.id) && B && hostile(state, A.owner, B.owner)) {
       return { state: raiseLuck(state, 'crit', run) }
     }
   }
@@ -493,7 +525,7 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
   if (test.success) {
     const h = resolveHit(s, bundle, run)
     s = h.state
-    if (!plan.free) {
+    if (!plan.free && !plan.targetMarkerId) {
       triggers.push({ kind: 'hit', sourceId: plan.attackerId, targetId: h.victimId, attack: true })
       if (h.tookDamage) triggers.push({ kind: 'damaged', sourceId: plan.attackerId, targetId: h.victimId, attack: true })
     }
@@ -501,7 +533,7 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
   s = pushEvents(s, [{ type: 'attack', ns, attackerId: plan.attackerId, targetId: plan.targetId, weaponId: plan.weaponId, success: test.success, critical: plan.critical, result: test.result, sv: plan.sv }])
 
   // ---- bookkeeping ----
-  const hostile = s.models[plan.targetId] ? s.models[plan.targetId]!.owner !== A.owner : false
+  const hostileTarget = s.models[plan.targetId] ? hostile(s, s.models[plan.targetId]!.owner, A.owner) : false
   if (!plan.quick && !plan.reaction && !plan.free && test.ap > 0 && s.activation?.modelId === plan.attackerId) { // AP-004/005
     s = { ...s, activation: { ...s.activation, ap: s.activation.ap + test.ap } }
   }
@@ -509,7 +541,7 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
     const patch: Partial<CarriedItem> = {}
     const rating = ref.def.critical?.rating
     if (plan.critical && rating !== undefined) patch.cp = Math.max(0, (ref.item.cp ?? 0) - rating) // CRIT-005
-    else if (test.success && hostile && ns !== 'throw' && rating !== undefined && critCapable(s, bundle, plan.attackerId)) {
+    else if (test.success && hostileTarget && ns !== 'throw' && rating !== undefined && critCapable(s, bundle, plan.attackerId)) {
       patch.cp = Math.min(rating, (ref.item.cp ?? 0) + 1 + test.cp + run.extraCp) // CRIT-002/004
     }
     if (ref.def.slowFiring) patch.loaded = false
@@ -596,6 +628,10 @@ function resolveHit(state: GameState, bundle: EditionBundle, run: RunCtx): HitOu
   }
   const cover = victimId === plan.targetId ? plan.cover.cover : coverOf(s, bundle, plan.attackerId, victimId).cover
   let tookDamage = false
+  if (plan.targetMarkerId) { // SHOT-003: armor comes from the object's props; blast splash on an object is not modelled (RULING)
+    const o = hitObject(s, bundle, plan.targetMarkerId, { attackerId: plan.attackerId, damage, dmg: baseHit.dmg, ar: baseHit.ar, direct })
+    return { state: o.state, victimId, tookDamage: o.applied > 0 }
+  }
   const hit = applyHit(s, bundle, { ...baseHit, targetId: victimId, cover })
   s = hit.state
   tookDamage = hit.report.tookDamage
@@ -714,7 +750,7 @@ export const attack: ModuleDef = {
       const ref = weaponRef(state, bundle, modelId, uid)
       if (!ref) continue
       const ns = ref.def.skill === 'throw' ? 'throw' : 'shoot'
-      const targets = legalTargets(state, bundle, modelId, uid)
+      const targets = [...legalTargets(state, bundle, modelId, uid), ...legalObjectTargets(state, bundle, modelId, uid)]
       if (!targets.length) continue
       const verb = ns === 'throw' ? 'Throw' : 'Shoot'
       out.push(option(`${ns}:${uid}`, `${verb}: ${ref.def.name}`, `${ns}.begin`, { modelId, weaponUid: uid }, m.owner))
@@ -743,17 +779,22 @@ export const attack: ModuleDef = {
       const wantBand = action.band === 'short' || action.band === 'long' ? action.band : undefined
       const flags = actionFlags(state, modelId)
       const targets = legalTargets(state, bundle, modelId, uid).filter((t) => !wantBand || t.band === wantBand)
-      const rows: { id: string; targetId: ModelId; band: 'short' | 'long'; pHit: number; sv: number }[] = []
+      const rows: { id: string; targetId: ModelId; targetMarkerId?: Id; band: 'short' | 'long'; pHit: number; sv: number }[] = []
       for (const t of targets) {
         const plan = attackPlan(state, bundle, modelId, t.targetId, { weaponUid: uid, band: t.band, critical, ...flags })
         if (isRejection(plan)) continue
         rows.push({ id: `${t.targetId}:${t.band}`, targetId: t.targetId, band: t.band, pHit: plan.pHit, sv: plan.sv })
       }
+      for (const t of legalObjectTargets(state, bundle, modelId, uid).filter((o) => !wantBand || o.band === wantBand)) {
+        const plan = objectAttackPlan(state, bundle, modelId, t.markerId, { weaponUid: uid, band: t.band, critical, ...flags })
+        if (isRejection(plan)) continue
+        rows.push({ id: `${t.markerId}:${t.band}`, targetId: t.markerId, targetMarkerId: t.markerId, band: t.band, pHit: plan.pHit, sv: plan.sv })
+      }
       if (!rows.length) return reject('E_BAD_TARGET', 'No legal target.')
       const s0 = discardChargeBonus(state, modelId) // CHG-005
       const options = rows.map((r) => option(
-        r.id, `${ns === 'throw' ? 'Throw at' : 'Fire at'} ${nameOf(s0, bundle, r.targetId)} (${r.band}, ${Math.round(r.pHit * 100)}%)`,
-        `${ns}.target`, { modelId, weaponUid: uid, targetId: r.targetId, band: r.band, critical }, m.owner,
+        r.id, `${ns === 'throw' ? 'Throw at' : 'Fire at'} ${r.targetMarkerId ? (markerById(s0, r.targetMarkerId)?.face ?? 'the object') : nameOf(s0, bundle, r.targetId)} (${r.band}, ${Math.round(r.pHit * 100)}%)`,
+        `${ns}.target`, { modelId, weaponUid: uid, ...(r.targetMarkerId ? { targetMarkerId: r.targetMarkerId } : { targetId: r.targetId }), band: r.band, critical }, m.owner,
       ))
       return { state: raiseDecision(s0, { seat: m.owner, kind: `${ns}.target`, canPass: false, context: { modelId, weaponUid: uid, critical, targets: rows }, options }) }
     }
@@ -761,10 +802,11 @@ export const attack: ModuleDef = {
       const modelId = String(action.modelId ?? '')
       const m = state.models[modelId]
       if (!m || m.owner !== action.seat) return reject('E_WRONG_SEAT', 'That model belongs to another seat.')
-      const band = action.band === 'short' || action.band === 'long' ? action.band : undefined
-      const plan = attackPlan(state, bundle, modelId, String(action.targetId ?? ''), {
-        weaponUid: String(action.weaponUid ?? ''), band, critical: action.critical === true, ...actionFlags(state, modelId),
-      })
+      const band: 'short' | 'long' | undefined = action.band === 'short' || action.band === 'long' ? action.band : undefined
+      const opts = { weaponUid: String(action.weaponUid ?? ''), band, critical: action.critical === true, ...actionFlags(state, modelId) }
+      const plan = action.targetMarkerId !== undefined
+        ? objectAttackPlan(state, bundle, modelId, String(action.targetMarkerId), opts)
+        : attackPlan(state, bundle, modelId, String(action.targetId ?? ''), opts)
       if (isRejection(plan)) return plan
       return startAttack(state, bundle, ns, plan)
     }

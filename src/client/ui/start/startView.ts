@@ -1,35 +1,24 @@
 // Pure helpers for the start screen (no engine or data imports: the start chunk stays small).
 import type { NewGameOptions, ScenarioChoice, SeatController } from '../../store/launch'
 
-export type PlayMode = 'bot' | 'hotseat' | 'watch' | 'solo' | 'coop'
+export type PlayMode = 'bot' | 'hotseat' | 'watch'
 
 export const MODES: readonly { id: PlayMode; label: string; blurb: string }[] = [
   { id: 'bot', label: 'Versus bot', blurb: 'You take the near edge; the bot plays the rest.' },
   { id: 'hotseat', label: 'Hot-seat', blurb: 'Two people, one screen, taking turns.' },
   { id: 'watch', label: 'Watch bots', blurb: 'Sit back and watch the bots fight it out.' },
-  { id: 'solo', label: 'Solo against the game', blurb: 'You against the card-driven game AI.' },
-  { id: 'coop', label: 'Co-op', blurb: 'Two players share one screen against the game AI.' },
 ]
 
-/** Modes played against the official AI cards (the AI force is seat 0 in the AI and co-op scenarios). */
-export const isOfficialMode = (m: PlayMode): boolean => m === 'solo' || m === 'coop'
-export const scenarioModeFor = (m: PlayMode): 'ai' | 'coop' | null => (m === 'solo' ? 'ai' : m === 'coop' ? 'coop' : null)
-/** The mode an AI or co-op scenario is played in, else null. */
-export const modeForScenario = (s: Pick<ScenarioChoice, 'mode'> | undefined): PlayMode | null => (s?.mode === 'ai' ? 'solo' : s?.mode === 'coop' ? 'coop' : null)
-/** Keep scenario and mode consistent: solo/co-op need a scenario of their kind; other modes may not use one. */
-export function scenarioForMode(list: readonly ScenarioChoice[], mode: PlayMode, current: string): string {
-  const want = scenarioModeFor(mode)
-  const cur = list.find((s) => s.id === current)
-  if (want) return cur?.mode === want ? current : (list.find((s) => s.mode === want)?.id ?? current)
-  return cur && (cur.mode === 'ai' || cur.mode === 'coop') ? (pickDefaultScenario(list) ?? current) : current
-}
-
-export type OpponentTier = 'easy' | 'normal' | 'random'
+export type OpponentTier = 'easy' | 'normal' | 'random' | 'official'
 export const OPPONENTS: readonly { id: OpponentTier; label: string; blurb: string }[] = [
   { id: 'easy', label: 'Easy', blurb: 'Plays sensibly but makes mistakes.' },
   { id: 'normal', label: 'Normal', blurb: 'Uses cover, picks fights it can win.' },
   { id: 'random', label: 'Random', blurb: 'Moves and shoots without a plan.' },
+  { id: 'official', label: 'Wasteland AI (official cards)', blurb: 'The tabletop AI deck plays the other side: solo, or co-op for two.' },
 ]
+export const OFFICIAL_TIER: OpponentTier = 'official'
+export type TeamSize = 1 | 2
+export const asTeam = (v: unknown): TeamSize => (v === 2 ? 2 : 1)
 export const DEFAULT_TIER: OpponentTier = 'normal'
 export const asTier = (v: unknown): OpponentTier => (OPPONENTS.some((o) => o.id === v) ? (v as OpponentTier) : DEFAULT_TIER)
 
@@ -37,15 +26,20 @@ export const DEFAULT_SCENARIO_ID = 'box-1'
 
 /** Controllers in seat order for a mode, padded to the scenario's side count (extra sides are bots). */
 export function seatsFor(mode: PlayMode, sides = 2): SeatController[] {
-  if (mode === 'solo') return padSeats(['bot', 'human'], sides)
-  if (mode === 'coop') return padSeats(['bot', 'human', 'human'], sides)
   const base: SeatController[] = mode === 'hotseat' ? ['human', 'human'] : mode === 'watch' ? ['bot', 'bot'] : ['human', 'bot']
-  return padSeats(base, sides)
-}
-function padSeats(base: SeatController[], sides: number): SeatController[] {
   const out = base.slice(0, Math.max(1, sides))
   while (out.length < sides) out.push('bot')
   return out
+}
+
+/** Seats for the official AI: one or two people (hot-seat co-op) against the AI seat, which always sits last. */
+export function officialSeats(team: TeamSize): SeatController[] {
+  return team === 2 ? ['human', 'human', 'official'] : ['human', 'official']
+}
+
+/** With the official AI as opponent only scenarios with an AI side apply: the solo and co-op groups. */
+export function aiScenarios(list: readonly ScenarioChoice[]): ScenarioChoice[] {
+  return list.filter((s) => s.mode === 'ai' || s.mode === 'coop')
 }
 
 /** Trim the seed; blank means a random seed (omit it). */
@@ -89,9 +83,10 @@ export function scenarioSummary(s: ScenarioChoice): string {
 }
 
 /** Build the launch options from the picker state. */
-export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier }): NewGameOptions & { tier?: OpponentTier; official?: boolean } {
+export function buildOptions(p: { scenarioId: string | null; mode: PlayMode; seed: string; sides: number; tier?: OpponentTier; team?: TeamSize }): NewGameOptions & { tier?: OpponentTier } {
   const seed = cleanSeed(p.seed)
-  return { ...(isOfficialMode(p.mode) ? { official: true } : {}), ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats: seatsFor(p.mode, p.sides), ...(seed ? { seed } : {}) }
+  const seats = p.tier === OFFICIAL_TIER ? officialSeats(asTeam(p.team)) : seatsFor(p.mode, p.sides)
+  return { ...(p.tier ? { tier: asTier(p.tier) } : {}), ...(p.scenarioId ? { scenarioId: p.scenarioId } : {}), seats, ...(seed ? { seed } : {}) }
 }
 
 /** "3 min ago" style label for the autosave line. */

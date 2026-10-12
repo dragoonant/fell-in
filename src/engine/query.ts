@@ -3,12 +3,13 @@
 // rangeBandOf/coverOf, melee.ts meleePlan, dice.ts skillOdds/poolJoint, damage.ts damageDistribution/healthOf/tokensOn),
 // so a shown figure is the same plan the roll resolves against. An attack that is not legal now reports pHit 0, band null.
 import type { Colour, DicePool, EditionBundle, Skill } from '../data/types'
-import { attackPlan, coverOf, engagedWith, rangeBandOf, rangedWeapons, weaponRef, type AttackPlan } from './attack'
+import { attackPlan, coverOf, objectAttackPlan, engagedWith, rangeBandOf, rangedWeapons, weaponRef, type AttackPlan } from './attack'
 import { damageDistribution, healthOf, tokensOn } from './damage'
 import { poolJoint, skillOdds } from './dice'
 import { isOnTable } from './geometry'
 import { modelDistance } from './measure'
-import { meleePlan } from './melee'
+import { meleePlan, objectMeleePlan } from './melee'
+import { healthLeft, inObjectContact, isMeleeable, markerTarget, objectDamageDistribution, withProbe } from './objects'
 import { isRejection } from './registry'
 import type { GameState, Id, ModelId, Mod, WastelandDamageType } from './types'
 
@@ -68,12 +69,21 @@ export interface DamageOdds {
 
 /** The plan the attack would resolve with: close combat when the two are in base contact (or band 'melee'), else ranged. */
 function planFor(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId, opts: AttackOpts): AttackPlan | null {
+  const mk = markerTarget(state, targetId) // a scenario object named by its marker id (SHOT-003)
+  if (mk) {
+    const strike = opts.band === 'melee' || (opts.band === undefined && isMeleeable(mk) && inObjectContact(state, attackerId, mk) && !objectAttackPlanOk(state, bundle, attackerId, targetId, opts))
+    const op = strike ? objectMeleePlan(state, bundle, attackerId, targetId, opts) : objectAttackPlan(state, bundle, attackerId, targetId, { ...opts, band: opts.band === 'melee' ? undefined : opts.band })
+    return isRejection(op) ? null : op
+  }
   const melee = opts.band === 'melee' || engagedWith(state, attackerId).includes(targetId)
   const band = opts.band === 'melee' ? undefined : opts.band
   const o = { ...opts, ...(band ? { band } : { band: undefined }) }
   const plan = melee ? meleePlan(state, bundle, attackerId, targetId, o) : attackPlan(state, bundle, attackerId, targetId, o)
   return isRejection(plan) ? null : plan
 }
+
+const objectAttackPlanOk = (state: GameState, bundle: EditionBundle, attackerId: ModelId, markerId: Id, opts: AttackOpts): boolean =>
+  !isRejection(objectAttackPlan(state, bundle, attackerId, markerId, { ...opts, band: undefined }))
 
 /** Joint (dmg, ar) outcomes on a hit for a plan (a Critical Attack always hits, so it is the bare pool). */
 function onHitOf(bundle: EditionBundle, plan: AttackPlan): { dmg: number; ar: number; p: number }[] {
@@ -100,6 +110,8 @@ export function hitOdds(state: GameState, bundle: EditionBundle, attackerId: Mod
 /** Range band of the target for a weapon (RANGE-*). */
 export function rangeBand(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId, weaponUid?: string): RangeInfo {
   const uid = weaponUid ?? rangedWeapons(state, bundle, attackerId)[0]
+  const mk = markerTarget(state, targetId)
+  if (mk && uid) { const p = withProbe(state, mk); return rangeBandOf(p.state, bundle, attackerId, p.probeId, uid) }
   const A = state.models[attackerId], B = state.models[targetId]
   if (!uid || !A || !B) return { band: null, distance: A && B ? modelDistance(A, B) : Infinity }
   return rangeBandOf(state, bundle, attackerId, targetId, uid)
@@ -107,6 +119,8 @@ export function rangeBand(state: GameState, bundle: EditionBundle, attackerId: M
 
 /** Cover the target has against the attacker (COVER-*). */
 export function coverFor(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId): CoverInfo {
+  const mk = markerTarget(state, targetId)
+  if (mk) { const p = withProbe(state, mk); return coverOf(p.state, bundle, attackerId, p.probeId) }
   return coverOf(state, bundle, attackerId, targetId)
 }
 
@@ -115,6 +129,13 @@ export function expectedDamage(state: GameState, bundle: EditionBundle, attacker
   const plan = planFor(state, bundle, attackerId, targetId, opts)
   if (!plan) return { dist: [1], expected: 0, byType: [] }
   const onHit = onHitOf(bundle, plan)
+  const mk = markerTarget(state, targetId)
+  if (mk) {
+    const dist = objectDamageDistribution(bundle, mk, { damage: plan.damage, onHit })
+    const types = [...new Set(plan.damage.map((d) => d.type))]
+    const byType = types.map((type) => ({ type, expected: mean(objectDamageDistribution(bundle, mk, { damage: plan.damage.filter((d) => d.type === type), onHit })) }))
+    return { dist, expected: mean(dist), byType }
+  }
   const cover = plan.cover.cover
   const dist = damageDistribution(state, bundle, targetId, { damage: plan.damage, onHit, cover })
   const types = [...new Set(plan.damage.map((d) => d.type))]
@@ -128,6 +149,13 @@ export function expectedDamage(state: GameState, bundle: EditionBundle, attacker
 export function killOdds(state: GameState, bundle: EditionBundle, attackerId: ModelId, targetId: ModelId, opts: AttackOpts = {}): number {
   const B = state.models[targetId]
   const plan = planFor(state, bundle, attackerId, targetId, opts)
+  const mk = markerTarget(state, targetId)
+  if (plan && mk) {
+    const hp = healthLeft(mk)
+    if (hp === null) return 0
+    const { dist } = expectedDamage(state, bundle, attackerId, targetId, opts)
+    return plan.pHit * dist.reduce((a, p, i) => (i >= hp ? a + p : a), 0)
+  }
   if (!plan || !B || !isOnTable(B)) return 0
   // tokensOn counts tokens parked on an undegraded Power Armor card; healthOf includes its Health bonus.
   const left = healthOf(state, bundle, targetId) - tokensOn(bundle, B)

@@ -84,7 +84,13 @@ export function isHumanDecision(s: GameStoreState = useGameStore.getState()): bo
 export function isBotDecision(s: GameStoreState = useGameStore.getState()): boolean {
   if (!s.state || s.state.phase === 'over' || s.fatal) return false
   const seat = ownerSeat(s.state.pending, s)
-  return !!seat && s.controllers[seat] === 'bot'
+  return !!seat && s.controllers[seat] !== undefined && s.controllers[seat] !== 'human'
+}
+/** The decision belongs to a seat run by the official AI cards. */
+export function isOfficialDecision(s: GameStoreState = useGameStore.getState()): boolean {
+  if (!s.state || s.state.phase === 'over' || s.fatal) return false
+  const seat = ownerSeat(s.state.pending, s)
+  return !!seat && s.controllers[seat] === 'official'
 }
 /** Two or more human seats at one screen. */
 export const isHotSeat = (s: GameStoreState = useGameStore.getState()): boolean => s.seatOrder.filter((x) => s.controllers[x] === 'human').length > 1
@@ -100,7 +106,11 @@ export function legalFor(state: GameState | null): Action[] {
 
 // ---------- internals ----------
 const randomSeed = () => Math.random().toString(36).slice(2, 10)
-const seatIds = (n: number): SeatId[] => Array.from({ length: n }, (_, i) => String.fromCharCode(65 + i))
+/** Seat ids in order: people and bots are A, B, ...; the official AI seat is 'ai' (the engine's name for it, spec 18 s8.2). */
+const seatIds = (seats: readonly SeatController[]): SeatId[] => {
+  let n = 0
+  return seats.map((c) => (c === 'official' ? 'ai' : String.fromCharCode(65 + n++)))
+}
 
 function newEvents(before: GameState, after: GameState): SeqEvent[] {
   const from = before.events.length
@@ -123,8 +133,11 @@ export function newGame(opts: NewGameOptions = {}): ClientRejection | null {
   let bundle: EditionBundle, state: GameState
   try {
     bundle = edition(opts.edition)
-    const ids = seatIds(seats.length)
-    state = createGame(bundle, { seed, seats: ids, ...(opts.scenarioId ? { scenarioId: opts.scenarioId } : {}) })
+    const ids = seatIds(seats)
+    state = createGame(bundle, {
+      seed, seats: ids, ...(opts.scenarioId ? { scenarioId: opts.scenarioId } : {}),
+      ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
+    })
   } catch (e) {
     return reject('E_CLIENT', e instanceof Error ? e.message : String(e), null, 'The game could not be set up with those choices.')
   }
@@ -214,7 +227,11 @@ export function importSave(data: unknown): ClientRejection | null {
   try {
     bundle = edition(d.edition)
     const seats = d.seats && d.seats.length >= 2 ? d.seats : (['human', 'bot'] as SeatController[])
-    state = createGame(bundle, { seed: d.seed, seats: seatIds(seats.length), ...(d.scenarioId ? { scenarioId: d.scenarioId } : {}) })
+    const ids = seatIds(seats)
+    state = createGame(bundle, {
+      seed: d.seed, seats: ids, ...(d.scenarioId ? { scenarioId: d.scenarioId } : {}),
+      ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
+    })
     for (const a of d.log) {
       const r = apply(state, bundle, a)
       if (!r.ok) return reject(r.rejection.code, `replay stopped at ${a.decisionId}: ${r.rejection.message}`, a, 'That save no longer matches the rules; start a new game.')

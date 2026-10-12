@@ -4,7 +4,7 @@
 // 3. a step that reports `done` goes through the controller's afterAction() (reactions, next menu, end of activation).
 // 4. the accepted action is appended to state.log (modules never append it themselves).
 import type { EditionBundle } from '../data/types'
-import { controller, isRejection, moduleFor, reject, TodoError } from './registry'
+import { controller, isRejection, moduleFor, pushEvents, reject, TodoError } from './registry'
 import type { Action, GameState, Rejection } from './types'
 
 export type ApplyResult = { ok: true; state: GameState } | { ok: false; state: GameState; rejection: Rejection }
@@ -30,8 +30,17 @@ export function matchesOption(action: Action, template: Action): boolean {
   return true
 }
 
-export function apply(state: GameState, bundle: EditionBundle, action: Action): ApplyResult {
+export function apply(state: GameState, bundle: EditionBundle, action0: Action): ApplyResult {
   const no = (rejection: Rejection): ApplyResult => ({ ok: false, state, rejection })
+  // AI-015: the official AI attaches its decision log as `aiLog`. It becomes an 'ai.decision' event and is stripped before
+  // anything validates or logs the action, so modules and the replay log see the plain action.
+  let aiLog: Record<string, unknown> | null = null
+  let action: Action = action0
+  if (action0 && typeof action0 === 'object' && 'aiLog' in action0) {
+    const { aiLog: attached, ...plain } = action0 as Action & { aiLog?: unknown }
+    action = plain as Action
+    if (attached && typeof attached === 'object') aiLog = attached as Record<string, unknown>
+  }
   if (state.phase === 'over') return no(reject('E_GAME_OVER', 'The game is over.'))
   const p = state.pending
   if (!action || typeof action !== 'object' || typeof action.type !== 'string') return no(reject('E_BAD_PARAM', 'Malformed action.'))
@@ -47,6 +56,7 @@ export function apply(state: GameState, bundle: EditionBundle, action: Action): 
     if (isRejection(r)) return no(r)
     let next = r.state
     if (r.done) next = controller().afterAction(next, bundle, r.done)
+    if (aiLog) next = pushEvents(next, [{ ...aiLog, type: 'ai.decision' }])
     return { ok: true, state: { ...next, log: [...state.log, action] } }
   } catch (e) {
     if (e instanceof TodoError) return no(reject('E_TODO', e.message))

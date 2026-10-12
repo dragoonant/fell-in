@@ -1,23 +1,28 @@
 export const meta = {
   name: 'm4b-official-ai',
-  description: 'M4b: official AI card system for solo/co-op (spec, AI card data, procedure decider, client mode), verified',
+  description: 'M4b: official AI card system (solo/co-op) from the Campaign Handbook: design, engine, decider, scenarios, verify, fix',
   phases: [
-    { title: 'Design', detail: 'spec 18 addendum, interfaces, data plan' },
-    { title: 'Build', detail: 'AI card data, procedure decider, solo/co-op client' },
-    { title: 'Verify', detail: 'rules fidelity + legality review, then fix' },
+    { title: 'Design', detail: 'spec 18 impl notes, frozen src/ai/official interfaces, placeholder AI cards' },
+    { title: 'Build', detail: 'engine hooks + official decider + client mode, then AI scenarios' },
+    { title: 'Verify', detail: 'adversarial rules-fidelity and legality review' },
+    { title: 'Fix', detail: 'route findings to owners' },
   ],
 }
 
 const ROOT = args && args.root
-if (!ROOT) throw new Error('pass args.root')
+const SRC = args && args.src
+if (!ROOT || !SRC) throw new Error('pass args.root and args.src')
 
 const COMMON = `Project root: ${ROOT} (use absolute paths; the cwd resets). Orient from STATUS.md only.
-IP rule: mechanics 1:1; AI card names may match; ALL card text, response wording and UI copy in our own words from one-line mechanical summaries; never copy card or handbook sentences.
-Frozen: src/engine/{types,decider,view,rng,pending,registry,apply}.ts, src/data/types.ts (data schema FROZEN M1; AiCardDef exists), src/ai/{types,decider}.ts. Report needed changes in issues.
-Run long commands in the FOREGROUND. Never npm install or git commit; never edit STATUS.md or package.json.
-Never write the owner's real name or a C:\\Users\\<name> path into any repo file.
-Sources (gitignored, extract with PyMuPDF; render pages to PNG and Read them when layout matters): docs/sources/ai_handbook_v1.0.pdf, coop_handbook_v1.0.pdf, errata_faq_v10.pdf, red_rocket_ai_scenario.pdf, ai_response_flowcharts.pdf (fan-made flowcharts, Fan-source), and research notes docs/spec/sources/R1-archives.md, R2-photos.md (photos in docs/sources/research/photos/). Spec: docs/spec/18-ai-system.md, checklist AI-* and COOP-* in docs/spec/12-rules-test-checklist.md, rulings log docs/needs-rules-check.md.
-Every AI matrix value gets a source and status: Confirmed (official), Fan-source, or Unsourced (our placeholder, built from the unit's card and the published response rules). Starter-unit AI matrices are NOT in any free source; build Unsourced matrices that follow the published card structure and mark them so they can be swapped when the owner photographs the real cards.`
+Free 1st-edition source PDFs (gitignored, read-only, never copy into the repo): ${SRC} (ai_handbook_v1.0.pdf, coop_handbook_v1.0.pdf, ai_response_flowcharts.pdf, red_rocket_ai_scenario.pdf, errata_faq_v10.pdf (overrides older text), rules_of_play.pdf). Extract with PyMuPDF (python -I); render a page to PNG and Read it when layout garbles.
+PRIMARY SOURCE: ${SRC}/foww-campaign-handbook-digital-final_compress.pdf = the official Campaign Handbook (cite "CH p<book page>"; PDF page index = book page + 2, e.g. book p10 is PDF page 12). Section 3 "Against the Wasteland" (book p8-17: Solo/Co-op Mode, Activating AI Models, Responses, Other Rules for AI Play) and the AI scenarios (section 5) override any fan-source ruling or blog-derived text in docs/spec/18-ai-system.md.
+OWNER RULE FOR THIS MILESTONE: official rules only, no house rules, never invent behaviour. New ambiguities: add a RULING line to docs/needs-rules-check.md (status Unsourced/Fan-source).
+IP rule: mechanics 1:1, all prose (card text, scenario text, UI copy, comments) in our own words; never paste source sentences.
+Frozen contracts: src/engine/{types,decider,view,rng,pending}.ts and the data schema (docs/spec/20-data-schema.md, src/data/types.ts). Change them only if unavoidable, with a matching edit to docs/spec/00-architecture.md (or 20) and a note in your issues.
+Deciders only ever receive view(state, seat) and legalActions; all AI randomness (number tokens, blue die, ties) from the seeded RNG / deriveSeed, never Math.random.
+Tests are named by checklist ID from docs/spec/12-rules-test-checklist.md (AI-001..015, COOP-001..002, SCN-*).
+Run long commands in the FOREGROUND. Never npm install or git commit; never edit STATUS.md or package.json unless told.
+Never write the owner's real name or a C:\\Users\\<name> path into any repo file.`
 
 const RESULT = {
   type: 'object',
@@ -33,56 +38,98 @@ const FINDINGS = {
   properties: {
     ok: { type: 'boolean' },
     findings: { type: 'array', items: { type: 'object', properties: {
+      owner: { type: 'string', enum: ['engine', 'decider', 'client', 'scenarios', 'data'] },
       where: { type: 'string' }, problem: { type: 'string' }, fix: { type: 'string' },
-      severity: { type: 'string', enum: ['high', 'medium', 'low'] } }, required: ['where', 'problem', 'fix', 'severity'] } },
+      severity: { type: 'string', enum: ['high', 'medium', 'low'] } }, required: ['owner', 'where', 'problem', 'fix', 'severity'] } },
   },
   required: ['ok', 'findings'],
 }
 const KEEP = 'Return the schema object; summary and each issue 1-2 sentences; 300 tokens or fewer overall.'
 
+// ---------------- Design ----------------
 phase('Design')
 const design = await agent(`${COMMON}
-You are the architect for the official AI card system (solo and co-op play against AI-driven forces). Read spec 18 fully, the AI and co-op handbooks, the errata AI pages, the fan flowcharts PDF (all 5 pages, rendered), R2-photos.md, src/data/types.ts (AiCardDef), the engine decision kinds, and src/ai/decider.ts.
-1. Add a section "8. Implementation (M4b)" to docs/spec/18-ai-system.md: the AI turn procedure step by step (readying, unit order, settings Objective/Subject, column predicate, row die, response letters A/O/D/M etc. and how each maps onto engine actions and decision kinds), co-op seat rules, where the flowcharts fill gaps (Fan-source), and every remaining guess as a numbered RULING.
-2. Freeze interfaces: src/ai/official/types.ts and src/ai/official/decider.ts (createOfficialAiDecider(bundle, opts): Decider; deterministic, uses only view + legal, randomness via deriveSeed, every AI die roll visible through an event or pending context so the client can show it), plus stubs src/ai/official/{procedure,responses,targeting}.ts with exact exports.
-3. Data plan: list in issues the AiCardDef records needed (11 starter units plus generic response/reference cards) and the file path data/1e/ai/<faction>.json.
-Typecheck + test green. You own ONLY: docs/spec/18-ai-system.md, src/ai/official/. ${KEEP}`,
-  { label: 'design', phase: 'Design', schema: RESULT, effort: 'high' })
-if (!design || !design.ok) return { design, stopped: 'design not ok' }
+You are the architect for M4b, the official AI card system (solo and co-op). FIRST read the Campaign Handbook section 3 (book p8-17) in full, and its AI scenarios. Rewrite docs/spec/18-ai-system.md sections 1-6 in our own words so they match CH exactly (cite CH p<n>), and update every AI ruling in docs/needs-rules-check.md: status Confirmed or Corrected with the CH page, and remove the Fan-source labels CH now settles. Update the AI- checklist lines in docs/spec/12-rules-test-checklist.md where CH changes them (add new AI-0xx IDs for rules CH adds). If CH contains real AI card matrices or examples for any starter unit, use them. Then read docs/spec/18-ai-system.md, 17-scenarios.md section 4, 00-architecture.md, 20-data-schema.md (AiCardDef and scenario defs), the AI-/COOP-/SCN- checklist lines, the AI rulings in docs/needs-rules-check.md, src/engine/{types,registry,turnflow,scenario,setup}.ts (skim exports), src/ai/{types,decider}.ts, and the free PDFs ai_response_flowcharts.pdf and ai_handbook_v1.0.pdf (mechanics only).
+1. Append a section "## 8. Implementation (M4b)" to docs/spec/18-ai-system.md: module layout, the seat model (an AI-controlled side and a player team of 1-2 human seats), how the engine raises AI turns (number-token readying, AI never passes), how co-op team readying works (COOP-001), object targets (the Red Rocket, the Missile sled: Health, armor, shootable/meleeable, not an engagement), objective switches and phases as scenario data, and the event log shape for AI decisions (AI-015). Fold in anything the flowcharts PDF adds to the response procedures, cited "AIRF".
+2. Freeze interfaces with exact exports and TODO bodies: src/ai/official/types.ts (AiSettings {objective, subject}, ResolvedCell, TargetRanking, AiDecisionLog), src/ai/official/decider.ts (createOfficialAiDecider(opts): Decider), stubs src/ai/official/{matrix,targeting,responses,objectives}.ts. List the engine hooks the decider needs (new decision kinds, query helpers, events) in your issues as precise TODOs for the engine agent.
+3. Data: data/1e/ai/starter.json with one AiCardDef per starter unit (Super Mutant, Brute, Aviator, Mutant Hound, Settler, Enslaved Tech, Sole Survivor, Dogmeat, Aspirant Goddard, Deathclaw). Use any real values that the free PDFs (AI handbook examples, errata AI card fixes, Red Rocket sheet) actually give, cited; every other value is a placeholder matrix marked source "placeholder" with a RULING. npm run validate:data must pass.
+Run npm run typecheck. ${KEEP}`, { label: 'design', phase: 'Design', schema: RESULT, effort: 'high' })
+log(`design: ${design ? design.summary : 'FAILED'}`)
+if (!design || !design.ok) return { stage: 'design', design }
+const HOOKS = (design.issues || []).join('\n- ')
 
+// ---------------- Build, wave 1: engine + data in parallel with nothing else touching engine ----------------
 phase('Build')
-const NOTES = JSON.stringify(design.issues)
-const OWNERS = [
-  { key: 'data', own: 'data/1e/ai/, docs/spec/sources/AI-CARDS-sources.md', task: 'Enter the AI card data per the design notes: one AiCardDef per starter unit (11) and the generic reference/response records. Matrices: use any official value found in R2 photos or handbooks (Confirmed), flowchart-derived logic (Fan-source), else an Unsourced matrix following the published structure and the unit card (melee units favour Charge/Close Combat responses, shooters favour Attack/ranged, hounds and Deathclaw are Reckless). Every record has source and a status per cell or per card. Write docs/spec/sources/AI-CARDS-sources.md: per unit, which cells are Confirmed / Fan-source / Unsourced, and a short "photograph these cards to confirm" list for the owner. npm run validate:data must pass.', model: 'sonnet' },
-  { key: 'proc', own: 'src/ai/official/ (except types.ts and decider.ts), tests/ai/official.test.ts', task: 'Implement procedure.ts, responses.ts, targeting.ts per spec 18 section 8: the AI turn, column predicate, row die, each response mapped to engine actions through the legal list (never invent actions), target priorities, Reckless/Careful variants, V.A.T.S. and Luck rules for the AI Heroic per the RULING lines. Tests named AI-0xx / COOP-0xx by checklist ID (about 10).', model: 'sonnet' },
-  { key: 'client', own: 'src/client/bot/ (official AI brain wiring), src/client/ui/start/ and StartScreen.tsx (solo/co-op modes), src/client/ui/AiCardPanel.tsx (new), src/client/ui/Hud.tsx (mount line only), tests/client/official-*.test.ts', task: 'Solo mode ("Solo against the game": human vs official AI) and Co-op (2 humans hot-seat vs official AI) from the start screen with the AI scenarios (Red Rocket and the AI handbook scenarios in data/1e/scenarios). botDriver uses createOfficialAiDecider for AI seats in these modes. AiCardPanel shows the AI card being resolved in OUR design: unit, column chosen and why, the row die, the response and its plain-words meaning, so the player can follow the AI. Keep data-testids stable (start-mode-solo, start-mode-coop, ai-card-panel).', model: 'sonnet' },
-]
-const build = await parallel(OWNERS.map(o => () => agent(`${COMMON}
-You are M4b build owner "${o.key}". Interfaces are FROZEN in src/ai/official/types.ts and decider.ts and spec 18 section 8; do not edit them.
-Architect notes: ${NOTES}
-Build: ${o.task}
-Finish with npm run typecheck and npm test green for your files.
-You own ONLY: ${o.own}. ${KEEP}`, { label: `build:${o.key}`, phase: 'Build', schema: RESULT, model: o.model })))
+const engine = await agent(`${COMMON}
+You own ONLY: src/engine/** except the frozen contracts (edit those only if unavoidable, per the rule), plus new engine test files. Implement the engine side of M4b from docs/spec/18-ai-system.md sections 4, 6 and 8:
+- AI side turn flow: number-token readying (draw one token per AI turn, Ready that model, Use all Ready AI models in ascending number order, AI never passes; no more AI turns once all are Used) (AI-001).
+- Co-op team readying: the player team readies one model per team turn, then each player uses all or none of their Ready models (COOP-001); co-op reaction triggers (COOP-002).
+- Object/point targets (SHOT-003): scenario objects with Health, armor, immunities, shootable and meleeable in contact, never an engagement; push actions where a scenario defines them.
+- Whatever query helpers and decision kinds the architect listed:
+- ${HOOKS}
+Tests by checklist ID. npm run typecheck && npm test && npm run sim -- --games 20 must pass. ${KEEP}`, { label: 'engine', phase: 'Build', schema: RESULT, model: 'sonnet' })
+log(`engine: ${engine ? engine.summary : 'FAILED'}`)
+if (!engine || !engine.ok) return { stage: 'engine', design, engine }
 
+// ---------------- Build, wave 2: decider and client (disjoint) ----------------
+const [decider, client] = await parallel([
+  () => agent(`${COMMON}
+You own ONLY: src/ai/official/** and its tests. Implement the official AI procedure from docs/spec/18-ai-system.md sections 1-4 and 8 against the frozen src/ai/official/types.ts: settings and objective switches, column selection, blue-die row (use the special-die face weights from data/1e/dice.json), cell reading with reckless/stayEngaged, responses A M O F D S, Careful vs Reckless, target priority factors (Nearest, Vulnerable, Leader, Importance, Prepared, Most damaged, Highest max Health, class-first lists), weapon choice (Improvised only if nothing better), reactions, seeded tie-breaks with a logged tie, and an AiDecisionLog event per choice. Use engine query helpers (src/engine/query.ts) for odds, range and cover; never re-derive rules. Tests AI-001..015. npm run typecheck && npm test must pass. ${KEEP}`, { label: 'decider', phase: 'Build', schema: RESULT, model: 'sonnet' }),
+  () => agent(`${COMMON}
+You own ONLY: src/client/** (not contract.ts unless the engine changed it) and e2e tests. Add the solo/co-op mode to the start screen: an "Opponent" choice "Wasteland AI (official cards)" that uses createOfficialAiDecider from src/ai/official/decider.ts for the AI side (run it in the existing worker if practical, else main thread behind the watchdog), a 1 or 2 player team toggle (2 = hot-seat co-op), and a scenario list filtered to AI/co-op scenarios when that opponent is picked. Show the AI's choice in the feed in our own words (column, die row, response, target), from the AiDecisionLog event. Test hook ?seats=human,official works. npm run typecheck && npm test && npm run build must pass. ${KEEP}`, { label: 'client', phase: 'Build', schema: RESULT, model: 'sonnet' }),
+])
+log(`decider: ${decider ? decider.summary : 'FAILED'}; client: ${client ? client.summary : 'FAILED'}`)
+
+// ---------------- Build, wave 3: AI scenarios ----------------
+const scenarios = await agent(`${COMMON}
+You own ONLY: data/1e/scenarios/** (AI and co-op entries), scenario hook code under src/engine/scenario*.ts or a new src/engine/scenarios/ folder, and their tests. Make the free-source AI and co-op scenarios playable end to end from docs/spec/17-scenarios.md section 4, re-entering numbers from the Campaign Handbook AI scenarios (section 5.6) where present, then ${SRC}/red_rocket_ai_scenario.pdf, ai_handbook_v1.0.pdf and coop_handbook_v1.0.pdf: AI-RR first, then AI-MISSILE, AI-BREAKIN, AI-TECH, COOP-SEWER, COOP-CAGE, COOP-MUNITIONS. Each gets deployment, objects, AI settings/switches/phases as data, round limit and victory with caps. Add a sim flag so npm run sim -- --official --games 20 runs every AI scenario with the official decider on the AI side and random/normal bots on the player side, with 0 errors and every game reaching a result. Scenarios you cannot finish: list them in issues. ${KEEP}`, { label: 'scenarios', phase: 'Build', schema: RESULT, model: 'sonnet' })
+log(`scenarios: ${scenarios ? scenarios.summary : 'FAILED'}`)
+
+// ---------------- Verify ----------------
 phase('Verify')
-const LENSES = [
-  'RULES FIDELITY: compare spec 18 section 8 and src/ai/official against the AI handbook, co-op handbook, errata and the fan flowcharts (render the PDF pages). Find responses mapped wrongly, wrong column/row logic, missing steps, Confirmed cells that disagree with sources, and copied card wording.',
-  'LEGALITY and PLAY: run npm run sim with the official AI on both an AI seat vs random and vs the normal bot across the AI scenarios (write a small script under tools/ if the sim lacks a flag; do not commit it to the repo: put it in docs/sources/extract/). Find rejected actions, stalls, crashes, hidden-info reads beyond view, and responses that never fire.',
-]
-const verdicts = await parallel(LENSES.map((lens, i) => () => agent(`${COMMON}
-You are an adversarial reviewer. NEVER edit repo files. Lens: ${lens}
-Report only real, verified defects with a precise fix and the owner file.`,
-  { label: `verify:${i + 1}`, phase: 'Verify', schema: FINDINGS, effort: 'high' })))
-const findings = verdicts.filter(Boolean).flatMap(v => v.findings).filter(f => f.severity !== 'low')
-let fix = null
-if (findings.length) {
-  fix = await agent(`${COMMON}
-Apply these verified findings (re-check each; skip and report any you can refute):
-${JSON.stringify(findings)}
-Also append every RULING line from spec 18 section 8 and the build reports to docs/needs-rules-check.md:
-${JSON.stringify(build.map(b => b && b.issues))}
-Then run npm run typecheck, npm test, npm run validate:data, npm run sim -- --games 20, npm run bench:ai -- --games 40 --a normal --b random (must not regress below 0.9 on this short run).
-You own ONLY: src/ai/official/, data/1e/ai/, src/client/bot/, src/client/ui/AiCardPanel.tsx, src/client/ui/start/, tests/, docs/spec/18-ai-system.md, docs/spec/sources/AI-CARDS-sources.md, docs/needs-rules-check.md. ${KEEP}`,
-    { label: 'fix', phase: 'Verify', schema: RESULT, model: 'sonnet' })
+const reviews = await parallel([
+  () => agent(`${COMMON}
+Adversarial rules-fidelity review; you never edit files. Compare src/ai/official/**, the AI turn flow and co-op readying in src/engine/**, and the AI scenario data against docs/spec/18-ai-system.md, 17-scenarios.md section 4, the AI rulings, the Campaign Handbook section 3 and AI scenarios (primary), and the free PDFs (ai_handbook, coop_handbook, ai_response_flowcharts, red_rocket, errata). Hunt for: behaviour that is invented rather than sourced (owner rule: official only), wrong response procedures, wrong target-priority semantics, Careful/Reckless/stayEngaged errors, scenario numbers that differ from the PDFs, any copied source prose. Report only concrete, verifiable findings with an owner. 300 tokens or fewer.`, { label: 'verify:rules', phase: 'Verify', schema: FINDINGS, effort: 'high' }),
+  () => agent(`${COMMON}
+Adversarial legality, determinism and play review; you never edit files. Run npm run typecheck, npm test, npm run sim -- --official --games 30 --seed v1 and the same seed twice (results must match). Check: the official decider only reads view(state, seat); it never returns an illegal action or stalls an open decision; every AI decision emits the log event; no Math.random; co-op 2-seat games and the client mode path (?seats=human,official) reach game over; the AI actually pursues its scenario objective (e.g. reaches and damages the Red Rocket). Report only concrete findings with an owner. 300 tokens or fewer.`, { label: 'verify:play', phase: 'Verify', schema: FINDINGS, effort: 'high' }),
+])
+const findings = reviews.filter(Boolean).flatMap(r => r.findings).filter(f => f.severity !== 'low')
+log(`verify: ${findings.length} medium/high findings`)
+
+// ---------------- Fix ----------------
+phase('Fix')
+const OWNS = {
+  engine: 'src/engine/** (frozen-contract rule applies) and engine tests',
+  decider: 'src/ai/official/** and its tests',
+  client: 'src/client/** and e2e tests',
+  scenarios: 'data/1e/scenarios/**, scenario hook code and tests',
+  data: 'data/1e/ai/** and docs/needs-rules-check.md',
 }
-return { design, build, findingsCount: findings.length, findings: findings.map(f => f.problem.slice(0, 120)), fix }
+const byOwner = {}
+for (const f of findings) (byOwner[f.owner] = byOwner[f.owner] || []).push(f)
+const owners = Object.keys(byOwner)
+// engine first (others may depend on it), then the rest in parallel on disjoint files
+const fixes = []
+if (byOwner.engine) {
+  fixes.push(await agent(`${COMMON}
+You own ONLY: ${OWNS.engine}. Fix these review findings:
+${JSON.stringify(byOwner.engine)}
+npm run typecheck && npm test must pass. ${KEEP}`, { label: 'fix:engine', phase: 'Fix', schema: RESULT, model: 'sonnet' }))
+}
+const rest = owners.filter(o => o !== 'engine')
+fixes.push(...await parallel(rest.map(o => () => agent(`${COMMON}
+You own ONLY: ${OWNS[o]}. Fix these review findings:
+${JSON.stringify(byOwner[o])}
+npm run typecheck && npm test must pass. ${KEEP}`, { label: `fix:${o}`, phase: 'Fix', schema: RESULT, model: 'sonnet' }))))
+
+const final = await agent(`${COMMON}
+Final gate; you may fix only trivial breakages in files the M4b stage touched. Run npm run typecheck, npm test, npm run validate:data, npm run build, npm run sim -- --official --games 20 and npm run sim -- --games 20. Then take a Playwright screenshot of a ?seats=human,official game on AI-RR a few AI activations in, saved as screenshots/m4b-official-ai.png. Report pass/fail per command in summary. ${KEEP}`, { label: 'final-gate', phase: 'Fix', schema: RESULT, model: 'sonnet' })
+
+return {
+  design: design.summary, engine: engine.summary,
+  decider: decider && decider.summary, client: client && client.summary, scenarios: scenarios && scenarios.summary,
+  findings: findings.map(f => `${f.owner}: ${f.problem}`),
+  fixes: fixes.filter(Boolean).map(f => f.summary),
+  final: final && final.summary,
+  issues: [design, engine, decider, client, scenarios, final].filter(Boolean).flatMap(r => r.issues),
+}

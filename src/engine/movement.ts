@@ -15,6 +15,7 @@ import {
 import { engagedWith } from './attack'
 import { freeAttack } from './melee'
 import { isRejection, option, pushEvents, raiseDecision, reject, updateModel, type ModuleDef, type StepResult } from './registry'
+import { sameTeam } from './sides'
 import { terrainPieces } from './terrain'
 import { gainAp } from './turnflow'
 import type { Action, DecisionOption, GameState, ModelId, Rejection, Vec2 } from './types'
@@ -46,7 +47,7 @@ function walk(
     return reject('E_BAD_PARAM', 'A move needs at least one waypoint.')
   }
   const r = baseRadius(m.base)
-  const friendly = Object.values(state.models).filter((o) => o.id !== m.id && o.owner === m.owner).map((o) => o.id) // MOVE-003
+  const friendly = Object.values(state.models).filter((o) => o.id !== m.id && sameTeam(state, o.owner, m.owner)).map((o) => o.id) // MOVE-003
   const pts = [m.pos, ...path]
   let used = 0, difficult = false, contacted: ModelId | null = null
   let end = m.pos

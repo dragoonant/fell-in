@@ -31,6 +31,7 @@ src/engine/   pure TypeScript, no DOM, no Math.random. State in, state out.
   forces.ts     I: (no decisions)           stat lookups (unitOf, attrOf, skillBase), force cost/validation
 src/data/     (M1) JSON bundle + schemas
 src/ai/       (M4) deciders: random, easy, normal; Web Worker host
+  official/     (M4b) official AI card decider (spec 18 s8): matrix, targeting, responses, objectives
 src/client/   React 19 + R3F + zustand; never mutates GameState, never computes a rules number
 tools/        sim, audio pipeline, model optimizer, workflows
 ```
@@ -96,3 +97,21 @@ Per-decision AI time sits behind an env var (CI is slow). Engine step under 5 ms
     menu picks to `moduleFor(action.type)`. Unimplemented bodies throw `TodoError`, which `apply` reports as E_TODO.
   - `createGame(bundle, {seed, seats, scenarioId, forces})`: default scenario box-1 with the starter Survivors vs Super
     Mutants forces, automatic deployment and simple terrain; first decision `turn.start`.
+- M4b (official AI, spec 18 s8; additive):
+  - `PlayerView` gains optional `round`, `maxRounds`, `scenarioId` and `markers`. `view()` removes `face` (and secret props)
+    from Searchable and Investigation markers until they are revealed or a seat on the viewer's team has peeked; objects and
+    shootable markers are open. This replaces the pass-through note in section 4 for markers.
+  - `SeatState` gains optional `controller` ('human' | 'bot' | 'official') and `team`. Seats on one team take turns together
+    (turnflow alternates by team; the team's first seat answers `turn.ready` and `turn.pick`, context `team`), are never
+    hostile to each other, and win or lose together (`sides.ts`: teamOf, sameTeam, hostile, teamSeats, isAiSeat). The AI seat
+    is never offered `turn.useNone`, and `turn.pick` offers only its lowest `tokens.aiNumber` (AI-001).
+  - `createGame` gains `controllers`. A seat named `ai` defaults to 'official' and plays the scenario side with an `ai`
+    block; other seats take the remaining sides (several humans split the last side's force). AI set-up rolls `tokens.aiNumber`
+    (a permutation through `roll()`), shuffles the deployment spots and keeps `tokens.deployX/deployZ` (Fall Back). The AI
+    takes its AI card's standard equipment. A human seat opens the game (`turn.start`).
+  - Objects (`objects.ts`, SHOT-003): `shoot.target` / `throw.target` / `melee.attack` options may carry `targetMarkerId`
+    instead of `targetId`. Marker props: `health` (Health left), `maxHealth`, `damage`, `armor`, `shootable`, `meleeable`,
+    `baseMm`, `destroyed`, `offTable`, `hit`, `damaged`. A destroyed object stays in `state.markers` with `destroyed: true`;
+    events `objectDamage`, `objectRemoved`, `objectPushed`. `query.hitOdds/rangeBand/coverFor/expectedDamage/killOdds` accept
+    a marker id as the target. New scenario Action `scenario.push` (Str test, scenario-defined).
+  - `apply` moves an attached `action.aiLog` into an `{type:'ai.decision', ...}` event and strips it from the action and log.

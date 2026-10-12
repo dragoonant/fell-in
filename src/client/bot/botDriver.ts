@@ -9,8 +9,6 @@ import { skipAll } from '../presentation/director'
 import { isPresentationIdle, usePresentedStore } from '../presentation/presentedStore'
 import { dispatch, isBotDecision, legalFor, ownerSeat, preview, useGameStore } from '../store/gameStore'
 import { scaled } from '../store/settingsStore'
-import { useAiPanelStore } from './aiPanelStore'
-import { createOfficialBrain, isOfficialScenario } from './officialBrain'
 import { completeAction, PARAMETERISED, randomBrain, type BotBrain, type BotContext } from './randomBot'
 
 export const WATCHDOG_MS = 5000
@@ -34,27 +32,13 @@ export function launchTier(): Tier {
   return typeof t === 'string' && (TIER_IDS as readonly string[]).includes(t) ? (t as Tier) : DEFAULT_TIER
 }
 
-/** True when AI seats follow the official AI cards: Solo/Co-op launches, or any AI or co-op scenario. */
-export function launchOfficial(): boolean {
-  const l = useLaunchStore.getState().launch
-  if (l && l.mode === 'new' && (l.opts as { official?: unknown }).official === true) return true
-  return isOfficialScenario()
-}
-
 let tiered: { tier: Tier; key: string; brain: BotBrain; dispose?: () => void } | null = null
 /** The brain for a tier: random uses the placeholder bot; easy and normal use the AI worker (loaded on demand). */
 function brainFor(tier: Tier): BotBrain {
   if (override) return override
-  const official = launchOfficial()
-  const key = `${official ? 'official' : tier}:${useGameStore.getState().seed}:${useLaunchStore.getState().launch?.id ?? 0}`
+  const key = `${tier}:${useGameStore.getState().seed}`
   if (tiered && tiered.key === key) return tiered.brain
   tiered?.dispose?.()
-  if (official) {
-    useAiPanelStore.getState().reset()
-    const b = createOfficialBrain()
-    tiered = { tier, key, brain: b, dispose: b.dispose }
-    return b
-  }
   if (tier === 'random') { tiered = { tier, key, brain: randomBrain }; return randomBrain }
   let inner: Promise<BotBrain & { dispose(): void }> | null = null
   const lazy: BotBrain = async (v, p, l, c) => {
@@ -63,6 +47,13 @@ function brainFor(tier: Tier): BotBrain {
   }
   tiered = { tier, key, brain: lazy, dispose: () => { void inner?.then((b) => b.dispose()) } }
   return lazy
+}
+
+/** Brain for a seat: the official AI cards for 'official' seats (loaded on demand), else the tier brain. */
+function brainForSeat(controller: string | undefined): BotBrain {
+  if (override) return override
+  if (controller !== 'official') return brainFor(launchTier())
+  return async (v, p, l, c) => (await import('./officialBrain')).officialBrain(v, p, l, c)
 }
 
 export interface BotDriverOptions {
@@ -151,7 +142,7 @@ export function createBotDriver(opts: BotDriverOptions = {}): BotDriver {
     // Headroom over the AI's own budget (worker start-up, clone, edition load): the search ends well before this gives up.
     const raceMs = Math.max(budgetMs, aiBudgetMs() * 3 + 1000)
     const timeout = new Promise<null>((res) => { setT(() => res(null), raceMs) })
-    Promise.race([Promise.resolve().then(() => brainFor(launchTier())(aiViewOf(s.state!, seat), p, legal, ctx)), timeout])
+    Promise.race([Promise.resolve().then(() => brainForSeat(s.controllers[seat])(aiViewOf(s.state!, seat), p, legal, ctx)), timeout])
       .catch(() => null)
       .then((a) => {
         if (inflight === key) inflight = null

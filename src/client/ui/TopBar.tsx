@@ -21,7 +21,7 @@ export function TopBar() {
       <div className="topbar-main">
         <b data-testid="hud-round">Round {turn.round}{state?.maxRounds ? ` of ${state.maxRounds}` : ''}</b>
         <span data-testid="hud-turn">{turn.seat ? `${seatLabel(turn.seat)} is taking a turn` : 'Setting up'}</span>
-        {waiting && <span className="dim" data-testid="hud-waiting">{waiting.controller === 'bot' ? `${waiting.label} is thinking` : waiting.hotSeat ? `${waiting.label}: your decision` : 'Your decision'}</span>}
+        {waiting && <span className="dim" data-testid="hud-waiting">{waiting.controller !== 'human' ? `${waiting.label} is thinking` : waiting.hotSeat ? `${waiting.label}: your decision` : 'Your decision'}</span>}
       </div>
       <div className="topbar-seats">
         {g.seatOrder.map((seat) => {

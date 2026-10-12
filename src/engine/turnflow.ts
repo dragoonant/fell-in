@@ -22,6 +22,7 @@ import {
 } from './registry'
 import { roll } from './rng'
 import { checkVictory, endOfRound } from './scenario'
+import { hostile, isAiSeat, sameTeam, teamSeats } from './sides'
 import type { Action, ActionContext, DecisionOption, GameState, ModelId, ModelState, SeatId } from './types'
 
 // ---------- small helpers ----------
@@ -29,6 +30,14 @@ const alive = (s: GameState, id: ModelId): boolean => { const m = s.models[id]; 
 const liveOf = (s: GameState, seat: SeatId): ModelState[] => Object.values(s.models).filter((m) => m.owner === seat && isOnTable(m))
 const withReadiness = (s: GameState, seat: SeatId, r: ModelState['readiness']): ModelState[] => liveOf(s, seat).filter((m) => m.readiness === r)
 const ownerOf = (s: GameState, id: ModelId): SeatId => s.models[id]?.owner ?? ''
+/** Models of a seat's whole team with this readiness (a team of one seat is just that seat; COOP-001). */
+const teamWith = (s: GameState, seat: SeatId, r: ModelState['readiness']): ModelState[] => teamSeats(s, seat).flatMap((x) => withReadiness(s, x, r))
+/** First seat of each team in seat order: the seat that answers team-level decisions (spec 18 s8.4). */
+const teamReps = (s: GameState): SeatId[] => s.seatOrder.filter((x, i) => s.seatOrder.findIndex((y) => sameTeam(s, x, y)) === i)
+const repOf = (s: GameState, seat: SeatId): SeatId => teamSeats(s, seat)[0] ?? seat
+/** AI Number Token of a model (CH p8); models without one sort last. */
+const aiNumberOf = (m: ModelState): number => m.tokens.aiNumber ?? Number.MAX_SAFE_INTEGER
+const byAiNumber = (a: ModelState, b: ModelState): number => aiNumberOf(a) - aiNumberOf(b) || a.id.localeCompare(b.id)
 const setStep = (s: GameState, step: string): GameState => (s.turn ? { ...s, turn: { ...s.turn, step } } : s)
 
 /** Which AP-use icon buys a Quick Action of this action type (spec 11 s5); null = cannot be bought. */
@@ -66,8 +75,9 @@ export function startRound(state: GameState, bundle: EditionBundle): GameState {
   const models = Object.fromEntries(Object.entries(state.models).map(([id, m]) => [id, { ...m, readiness: 'unready' as const }]))
   const seats = Object.fromEntries(Object.entries(state.seats).map(([id, st]) => [id, { ...st, done: false }]))
   let s: GameState = { ...state, phase: 'play', round, models, seats, turn: null, activation: null, action: null }
-  const counts = Object.fromEntries(s.seatOrder.map((seat) => [seat, liveOf(s, seat).length]))
-  const live = s.seatOrder.filter((seat) => counts[seat]! > 0)
+  const reps = teamReps(s)
+  const counts = Object.fromEntries(reps.map((rep) => [rep, teamSeats(s, rep).reduce((n, x) => n + liveOf(s, x).length, 0)]))
+  const live = reps.filter((seat) => counts[seat]! > 0)
   if (live.length === 0) return { ...s, phase: 'over', result: s.result ?? { winner: null, reason: 'No models are left on the table.' } }
   const fewest = Math.min(...live.map((x) => counts[x]!))
   const tied = live.filter((x) => counts[x] === fewest)
@@ -87,16 +97,18 @@ export function startRound(state: GameState, bundle: EditionBundle): GameState {
   if (live.length === 1) return beginTurn(s, bundle, live[0]!, live[0]!)
   return raiseDecision(s, {
     seat: holder, kind: 'turn.first', context: { round }, canPass: false,
-    options: live.map((seat) => option(`first:${seat}`, `Seat ${seat} takes the first turn`, 'turn.first', { firstSeat: seat })),
+    options: live.map((seat) => option(`first:${seat}`, `${teamSeats(s, seat).length > 1 ? 'Team' : 'Seat'} ${seat} takes the first turn`, 'turn.first', { firstSeat: seat })),
   })
 }
 
-function beginTurn(state: GameState, bundle: EditionBundle, seat: SeatId, firstSeat: SeatId): GameState {
-  const unready = withReadiness(state, seat, 'unready')
+function beginTurn(state: GameState, bundle: EditionBundle, seat0: SeatId, firstSeat: SeatId): GameState {
+  const seat = repOf(state, seat0)
+  const unready = teamWith(state, seat, 'unready')
   const s = { ...state, activation: null, action: null, turn: { seat, step: 'ready', readied: null, firstSeat } }
   if (unready.length === 0) return nextTurn(s, bundle, seat)
+  const team = teamSeats(s, seat)
   return raiseDecision(s, {
-    seat, kind: 'turn.ready', context: { round: s.round }, canPass: false,
+    seat, kind: 'turn.ready', context: team.length > 1 ? { round: s.round, team } : { round: s.round }, canPass: false,
     options: unready.map((m) => option(`ready:${m.id}`, `Ready ${m.id}`, 'turn.ready', { modelId: m.id })),
   })
 }
@@ -108,11 +120,11 @@ export function startTurn(state: GameState, bundle: EditionBundle, seat: SeatId)
 
 /** The next seat (cyclic, after `from`) with an Unready model takes a turn; if nobody has one the round ends (TURN-008/009). */
 function nextTurn(state: GameState, bundle: EditionBundle, from: SeatId): GameState {
-  const order = state.seatOrder
-  const start = order.indexOf(from)
+  const order = teamReps(state) // turns alternate between teams, not seats (COOP-001)
+  const start = order.indexOf(repOf(state, from))
   for (let i = 1; i <= order.length; i++) {
     const seat = order[(start + i) % order.length]!
-    if (withReadiness(state, seat, 'unready').length > 0) return beginTurn(state, bundle, seat, state.turn?.firstSeat ?? seat)
+    if (teamWith(state, seat, 'unready').length > 0) return beginTurn(state, bundle, seat, state.turn?.firstSeat ?? seat)
   }
   const ended = endOfRound(state, bundle)
   return ended.phase === 'over' ? ended : startRound(ended, bundle)
@@ -123,9 +135,10 @@ function endTurn(state: GameState, bundle: EditionBundle): GameState {
   if (!seat) return state
   // TURN-007: Ready models left over become Used.
   let s = state
-  for (const m of withReadiness(state, seat, 'ready')) s = updateModel(s, m.id, { readiness: 'used' })
-  const done = withReadiness(s, seat, 'unready').length === 0
-  s = { ...s, activation: null, action: null, seats: { ...s.seats, [seat]: { ...s.seats[seat]!, done } } }
+  for (const m of teamWith(state, seat, 'ready')) s = updateModel(s, m.id, { readiness: 'used' })
+  const seats = { ...s.seats }
+  for (const x of teamSeats(s, seat)) seats[x] = { ...seats[x]!, done: withReadiness(s, x, 'unready').length === 0 }
+  s = { ...s, activation: null, action: null, seats }
   return nextTurn(s, bundle, seat)
 }
 
@@ -133,15 +146,50 @@ function endTurn(state: GameState, bundle: EditionBundle): GameState {
 function pickNext(state: GameState, bundle: EditionBundle): GameState {
   const seat = state.turn?.seat
   if (!seat) return state
-  const ready = withReadiness(state, seat, 'ready')
+  // Seats that chose "use none" already turned their Ready models Used, so every Ready team model is up for use.
+  const ready = teamWith(state, seat, 'ready')
   if (ready.length === 0) return endTurn(state, bundle)
   if (ready.length === 1) {
     const r = beginActivation(state, bundle, ready[0]!.id)
     return isRejection(r) ? state : r.state
   }
+  // The AI Uses its Ready models in ascending Number order (AI-001, CH p8); players interleave freely.
+  const ai = isAiSeat(state, seat)
+  const offered = ai ? [[...ready].sort(byAiNumber)[0]!] : ready
+  const team = teamSeats(state, seat)
+  const asker = team.find((x) => ready.some((m) => m.owner === x)) ?? seat
   return raiseDecision(setStep(state, 'pick'), {
-    seat, kind: 'turn.pick', context: { round: state.round }, canPass: false,
-    options: ready.map((m) => option(`pick:${m.id}`, `Use ${m.id}`, 'turn.pick', { modelId: m.id })),
+    seat: asker, kind: 'turn.pick', context: team.length > 1 ? { round: state.round, team } : { round: state.round }, canPass: false,
+    options: offered.map((m) => option(`pick:${m.id}`, `Use ${m.id}`, 'turn.pick', { modelId: m.id }, asker)),
+  })
+}
+
+// ---------- use-all-or-none choice (TURN-003, COOP-001) ----------
+const CHOOSE = 'choose:'
+interface Choice { asking: SeatId; todo: SeatId[] }
+function choiceState(s: GameState): Choice | null {
+  const step = s.turn?.step
+  if (!step || !step.startsWith(CHOOSE)) return null
+  try { return JSON.parse(step.slice(CHOOSE.length)) as Choice } catch { return null }
+}
+
+/**
+ * Ask the next team seat that still holds Ready models whether to Use them all or none (each player decides alone,
+ * COOP-001). The AI seat is never offered "use none" (AI-001, CH p8). When nobody is left to ask, the Ready models
+ * (those of seats that chose use all) are taken in turn, or the turn ends.
+ */
+function askNextChoice(state: GameState, bundle: EditionBundle, seats: readonly SeatId[]): GameState {
+  const rest = seats.filter((x) => withReadiness(state, x, 'ready').length > 0)
+  if (rest.length === 0) return pickNext(setStep(state, 'pick'), bundle)
+  const [asking, ...todo] = rest as [SeatId, ...SeatId[]]
+  const ai = isAiSeat(state, asking)
+  const opts = [
+    option('useAll', 'Use the Ready models', 'turn.useAll'),
+    ...(ai ? [] : [option('useNone', 'Use none (they become Used)', 'turn.useNone')]),
+  ]
+  return raiseDecision(setStep(state, CHOOSE + JSON.stringify({ asking, todo } satisfies Choice)), {
+    seat: asking, kind: 'turn.choose', context: { modelId: state.turn?.readied ?? null, seat: asking }, canPass: false,
+    options: opts.map((o) => ({ ...o, action: { ...o.action, seat: asking } })),
   })
 }
 
@@ -290,10 +338,10 @@ function notices(s: GameState, bundle: EditionBundle, r: ModelState, t: Trigger)
   const u = unitOf(s, bundle, r.id)
   if (!u) return false
   if (t.kind === 'damaged') return t.targetId === r.id && isEngaged(s, r.id) // engaged models may Move after taking damage
-  if (t.kind === 'action' && r.owner === src.owner) return false
+  if (t.kind === 'action' && !hostile(s, r.owner, src.owner)) return false // COOP-002: only the opposing side's Actions
   if (t.kind === 'hit') {
     const tgt = t.targetId ? s.models[t.targetId] : undefined
-    if (!tgt || tgt.owner !== r.owner) return false
+    if (!tgt || !sameTeam(s, tgt.owner, r.owner)) return false // PREP-009 / COOP-002: a model of the team being hit
   }
   const one = rulerInches(bundle, u.awareness)
   const reach = t.movement || t.attack ? one * 2 : one
@@ -397,7 +445,7 @@ function afterActionTokens(state: GameState, bundle: EditionBundle, done: Action
   let s = KEEPS_CHARGE.has(namespaceOf(done.type)) ? state : discardChargeBonus(state, id)
   const primedGain = m.carried.some((c) => c.kind === 'weapon' && typeof recordOf(bundle, 'weapons', c.defId)?.primed?.gain === 'string')
   if (primedGain) {
-    const seen = Object.values(s.models).some((o) => o.owner !== m.owner && isOnTable(o) && hasLos(s, id, o.id))
+    const seen = Object.values(s.models).some((o) => hostile(s, o.owner, m.owner) && isOnTable(o) && hasLos(s, id, o.id))
     s = gainPrimed(s, bundle, id, seen)
   }
   return s
@@ -442,25 +490,23 @@ export const turnflow: Controller = {
       }
       case 'turn.ready': {
         const m = state.models[String(action.modelId)]
-        if (!m || m.owner !== action.seat || m.readiness !== 'unready' || !isOnTable(m)) return reject('E_BAD_TARGET', 'That model cannot be made Ready.')
+        if (!m || !sameTeam(state, m.owner, action.seat) || m.readiness !== 'unready' || !isOnTable(m)) return reject('E_BAD_TARGET', 'That model cannot be made Ready.')
         let s = updateModel(state, m.id, { readiness: 'ready' })
-        s = { ...s, turn: s.turn ? { ...s.turn, readied: m.id, step: 'choose' } : s.turn }
-        if (withReadiness(s, m.owner, 'unready').length === 0) return { state: pickNext(s, bundle) } // TURN-004
-        return {
-          state: raiseDecision(s, {
-            seat: m.owner, kind: 'turn.choose', context: { modelId: m.id }, canPass: false,
-            options: [
-              option('useAll', 'Use the Ready models', 'turn.useAll'),
-              option('useNone', 'Use none (they become Used)', 'turn.useNone'),
-            ].map((o) => ({ ...o, action: { ...o.action, seat: m.owner } })),
-          }),
-        }
+        s = { ...s, turn: s.turn ? { ...s.turn, readied: m.id } : s.turn }
+        if (teamWith(s, m.owner, 'unready').length === 0) return { state: pickNext(s, bundle) } // TURN-004
+        return { state: askNextChoice(s, bundle, teamSeats(s, m.owner)) }
       }
-      case 'turn.useAll': return { state: pickNext(state, bundle) }
-      case 'turn.useNone': return { state: endTurn(state, bundle) }
+      case 'turn.useAll':
+      case 'turn.useNone': {
+        const cs = choiceState(state)
+        if (!cs || cs.asking !== action.seat) return reject('E_NOT_LEGAL', 'Nobody is choosing whether to use their Ready models.')
+        let s = state
+        if (t === 'turn.useNone') for (const m of withReadiness(s, cs.asking, 'ready')) s = updateModel(s, m.id, { readiness: 'used' }) // TURN-007
+        return { state: askNextChoice(s, bundle, cs.todo) }
+      }
       case 'turn.pick': {
         const m = state.models[String(action.modelId)]
-        if (!m || m.owner !== action.seat || m.readiness !== 'ready' || !isOnTable(m)) return reject('E_BAD_TARGET', 'That model is not Ready.')
+        if (!m || !sameTeam(state, m.owner, action.seat) || m.readiness !== 'ready' || !isOnTable(m)) return reject('E_BAD_TARGET', 'That model is not Ready.')
         return beginActivation(state, bundle, m.id)
       }
       case 'turn.end': return state.activation ? { state: endActivation(state, bundle) } : reject('E_NOT_LEGAL', 'No activation to end.')

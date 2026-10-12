@@ -1,41 +1,27 @@
-// Brain for AI seats in Solo and Co-op: the official AI-card decider (spec 18 s8), run on the main thread (cheap, no
-// search). It sees only view(state, seat), the open decision and the legal actions; every answer carries aiTrace,
-// which is also pushed to the AI card panel store.
+// Brain for seats run by the official AI cards (CH p8-16). Runs the deterministic decider on the main thread: it is a
+// table lookup plus target ranking, so it needs no worker, and the bot driver's watchdog still guards every answer.
+// Each answer carries the decision log as `aiLog`; the engine turns it into an 'ai.decision' event for the feed.
 import { createOfficialAiDecider, type OfficialAiDecider } from '../../ai/official/decider'
-import { recordOf } from '../../engine/edition'
+import type { Action } from '../../engine/types'
 import { preview, useGameStore } from '../store/gameStore'
-import { useAiPanelStore } from './aiPanelStore'
-import { traceOf } from './officialView'
 import type { BotBrain } from './randomBot'
 
-/** True when the running scenario is an AI or co-op scenario (its AI force is driven by AI cards). */
-export function isOfficialScenario(): boolean {
-  const s = useGameStore.getState()
-  if (!s.scenarioId || !s.bundle) return false
-  const sc = recordOf(s.bundle, 'scenarios', s.scenarioId)
-  return sc?.mode === 'ai' || sc?.mode === 'coop'
-}
+const deciders = new Map<string, OfficialAiDecider>()
 
-export function createOfficialBrain(): BotBrain & { dispose(): void } {
-  const deciders = new Map<string, OfficialAiDecider>()
-  const brain: BotBrain = (view, pending, legal, ctx) => {
-    const st = useGameStore.getState()
-    if (!st.bundle) throw new Error('official ai: no bundle')
-    const key = `${ctx.seed}:${st.scenarioId ?? ''}:${view.seat}`
-    let d = deciders.get(key)
-    if (!d) {
-      d = createOfficialAiDecider(st.bundle, {
-        seed: ctx.seed, scenarioId: st.scenarioId, accepts: (a) => preview(a).ok,
-        budgetMs: ctx.budgetMs > 0 ? ctx.budgetMs * 0.5 : undefined,
-      })
-      deciders.set(key, d)
-    }
-    const { action } = d.decideSync(view, pending, legal)
-    const t = traceOf(action)
-    if (t) useAiPanelStore.getState().push(t)
-    return action
+/** Forget cached deciders (new game, tests). */
+export function resetOfficialBrain(): void { deciders.clear() }
+
+export const officialBrain: BotBrain = (view, pending, legal, ctx) => {
+  const bundle = useGameStore.getState().bundle
+  if (!bundle) throw new Error('official ai: no bundle')
+  const key = `${ctx.seed}:${view.seat}`
+  let d = deciders.get(key)
+  if (!d) {
+    // Keep only the current game's deciders.
+    if (deciders.size > 4) deciders.clear()
+    d = createOfficialAiDecider({ seed: ctx.seed, bundle, accepts: (a: Action) => preview(a).ok })
+    deciders.set(key, d)
   }
-  const out = brain as BotBrain & { dispose(): void }
-  out.dispose = () => { deciders.clear() }
-  return out
+  const out = d.decideSync(view, pending, legal)
+  return out.log && !('aiLog' in out.action) ? { ...out.action, aiLog: out.log } : out.action
 }
