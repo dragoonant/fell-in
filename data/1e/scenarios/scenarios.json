@@ -49,6 +49,22 @@
         "when": "The model reaches the crate and then the exit without touching a hazard zone."
       }
     ],
+    "briefing": {
+      "story": "You have just stepped out into the wasteland with nothing but a jumpsuit and your wits. Patches of glowing green ground will burn anyone who walks through them. Learn to move safely before something bigger finds you.",
+      "goals": {
+        "player": "Walk to the supply crate, then reach the exit without setting foot in a green hazard zone."
+      },
+      "howToWin": [
+        "Touch the crate first, then reach the exit.",
+        "Touching a green hazard zone on the way spoils the run.",
+        "No round limit: take as many turns as you need.",
+        "There is no opponent in this practice scenario."
+      ],
+      "tips": [
+        "Select your model and drag to move; the coloured ruler shows how far one move reaches.",
+        "Plan a route around the green patches before you commit to it."
+      ]
+    },
     "source": "GA PDF p.2-3 (A1); spec 17 s2 GA-1"
   },
   {
@@ -131,6 +147,21 @@
         "when": "Every can has been hit once."
       }
     ],
+    "briefing": {
+      "story": "An old scrapyard makes a handy practice range. Someone has lined up five tin cans for you. Time to learn how shooting works before it matters.",
+      "goals": {
+        "player": "Hit each of the five cans at least once with your pistol."
+      },
+      "howToWin": [
+        "Every can must be hit once; a can that has been hit stays done.",
+        "No round limit: take as many turns as you need.",
+        "In tutorials only numbers and X count on the skill die; any icon face counts as a 1, which always succeeds."
+      ],
+      "tips": [
+        "If a can is out of range, move closer first and shoot on a later Action.",
+        "The odds panel shows your chance to hit before you commit to a shot."
+      ]
+    },
     "source": "GA PDF p.4-5 (A2); spec 17 s2 GA-2"
   },
   {
@@ -213,6 +244,21 @@
         "when": "Every plant has been hit once."
       }
     ],
+    "briefing": {
+      "story": "Something strange is growing in the old allotments, and it is not food. Five swollen plants need to be cut down before they spread. Close in and get your hands dirty.",
+      "goals": {
+        "player": "Get into contact with each of the five plants and strike it once in melee."
+      },
+      "howToWin": [
+        "Every plant must be hit once in close combat.",
+        "No round limit: take as many turns as you need.",
+        "In tutorials only numbers and X count on the skill die; any icon face counts as a 1, which always succeeds."
+      ],
+      "tips": [
+        "Use Move or Charge to get your base touching a plant, then attack with your bat.",
+        "A Charge moves you and attacks in one go, which saves Actions."
+      ]
+    },
     "source": "GA PDF p.6 (A3); spec 17 s2 GA-3"
   },
   {
@@ -325,6 +371,21 @@
         "when": "Every mound has taken at least 1 damage after armor."
       }
     ],
+    "briefing": {
+      "story": "Giant rats have dug burrows all around the settlement. Each mound is tough, packed earth. Put a rifle round into every one of them to drive the rats out.",
+      "goals": {
+        "player": "Shoot each of the five mounds and do at least 1 damage to it after its armor."
+      },
+      "howToWin": [
+        "Every mound must take at least 1 damage that gets past its armor.",
+        "Each mound has 3 Health and 1 point of physical armor, so a hit doing only 1 damage is stopped.",
+        "No round limit: take as many turns as you need."
+      ],
+      "tips": [
+        "Watch the damage readout: armor is taken off before damage counts.",
+        "In tutorials only numbers and X count on the skill die; icon faces count as a 1 and succeed."
+      ]
+    },
     "source": "GA PDF p.7-8 (A4); spec 17 s2 GA-4"
   },
   {
@@ -416,6 +477,23 @@
         "caps": 200
       }
     ],
+    "briefing": {
+      "story": "A scavenger crew has stumbled on a cache of Power Armor in the ruins. The Brotherhood of Steel wants those suits and has come to take them back. Three suits stand in a line across the middle of the table.",
+      "goals": {
+        "scavengers": "Wipe out the Brotherhood squad, and wreck any unclaimed suits before they can be worn.",
+        "brotherhood": "Wipe out the scavengers, and claim the Power Armor suits along the way so your fighters wear them."
+      },
+      "howToWin": [
+        "The game lasts 6 rounds.",
+        "Destroy every enemy model to win outright.",
+        "The Brotherhood earns extra caps for each claimed suit still worn and unbroken at the end.",
+        "If both sides still stand after round 6, the side with more points of models left wins (house rule)."
+      ],
+      "tips": [
+        "Brotherhood: a model touching a suit marker spends an Action to put on a random suit.",
+        "Scavengers: shoot or smash suits nobody has claimed yet; each suit has its own armor."
+      ]
+    },
     "source": "box_scenarios_1-5.pdf p1-2 (SCP-001); spec 17 s3"
   },
   {
@@ -489,6 +567,24 @@
         "caps": 0
       }
     ],
+    "briefing": {
+      "story": "Big John's salvage yard is a maze of stacked containers, and in the middle sits a live nuke. A Super Mutant crew guards it while raiders try to steal it. One unlucky hit and the whole yard goes up.",
+      "goals": {
+        "defender": "Keep the nuke out of enemy hands: still be holding it when round 9 arrives.",
+        "attacker": "Grab the nuke from the centre and carry it off any table edge."
+      },
+      "howToWin": [
+        "The attackers win when the nuke leaves the table over any edge.",
+        "The defenders win if they still hold the nuke when round 9 arrives.",
+        "If the nuke explodes, both sides lose.",
+        "There is no other round limit."
+      ],
+      "tips": [
+        "A model touching the nuke spends an Action to pick it up; a carrier hands it on by Action or drops it on death.",
+        "When the carrier, or anyone within Orange (2 in) of the nuke, is hit, the armor die is rolled: a 1 sets it off, so shoot with care near it.",
+        "The containers block line of sight; use them to get close unseen."
+      ]
+    },
     "source": "box_scenarios_1-5.pdf p3-4 (SCP-002); spec 17 s3"
   },
   {
@@ -593,6 +689,23 @@
         "caps": 200
       }
     ],
+    "briefing": {
+      "story": "An old school still holds a handful of intact books, and knowledge is worth more than caps out here. The defenders have barricaded themselves inside with five of them. The attackers want those books.",
+      "goals": {
+        "defender": "Hold the school and kill every attacking model.",
+        "attacker": "Get inside the school, grab books and carry at least three of them off the table."
+      },
+      "howToWin": [
+        "The attackers win once three or more books have left the table over any edge.",
+        "The defenders win by killing every attacker.",
+        "No round limit: play until one side wins.",
+        "The attackers get 20% more caps to build their force."
+      ],
+      "tips": [
+        "A model touching a book spends an Action to take it; if the carrier dies, the book drops where it fell.",
+        "The school walls block line of sight, so use them to close in unseen."
+      ]
+    },
     "source": "box_scenarios_1-5.pdf p5-6 (SCP-003); spec 17 s3"
   },
   {
@@ -668,6 +781,23 @@
         "caps": 150
       }
     ],
+    "briefing": {
+      "story": "Whoever holds the radio tower holds the airwaves for miles around. The defenders are dug in around it with reinforcements on call. The attackers are closing in from the table edges.",
+      "goals": {
+        "defender": "End round 6 with more of your models touching the tower than the attackers.",
+        "attacker": "End round 6 with more of your models touching the tower than the defenders."
+      },
+      "howToWin": [
+        "The game lasts 6 rounds, and only the end of round 6 decides it.",
+        "More models touching the tower at the end is a major win.",
+        "If the count is level, the side with more points of models left on the table takes a minor win.",
+        "Defenders who control the tower for 3 turns in a row bring in their held-back reserves."
+      ],
+      "tips": [
+        "You control the tower when you have a model touching it and no enemy does.",
+        "The attackers get 20% more caps; the defenders may hold back up to half their caps as reserves."
+      ]
+    },
     "source": "box_scenarios_1-5.pdf p7-8 (SCP-004); the printed Defender rows name 'the enemy' by mistake, read as own side; spec 17 s3"
   },
   {
@@ -746,6 +876,23 @@
         "caps": 200
       }
     ],
+    "briefing": {
+      "story": "A gang has snatched Sarah and is holding her in the middle of a ring of ruined buildings. Flip, a Super Mutant she once helped, has come to get her out. He is outnumbered, but he is not leaving without her.",
+      "goals": {
+        "kidnappers": "Stop the rescue: kill Sarah, or better still kill both Flip and Sarah.",
+        "flip": "Reach Sarah at the centre, free her, and get her off any table edge alive."
+      },
+      "howToWin": [
+        "The game lasts 6 rounds.",
+        "Flip wins when Sarah leaves the table over any edge.",
+        "The kidnappers win if Sarah is killed, and win bigger if Flip dies too.",
+        "If none of that has happened by the end of round 6, nobody wins."
+      ],
+      "tips": [
+        "Flip spends an Action touching the centre marker to free Sarah; she then fights for Flip with a Laser Rifle.",
+        "The kidnappers get double points to spend, while Flip gets a free Heroic upgrade."
+      ]
+    },
     "source": "box_scenarios_1-5.pdf p9-10 (SCP-005); spec 17 s3"
   },
   {
@@ -908,6 +1055,23 @@
         "caps": 70
       }
     ],
+    "briefing": {
+      "story": "Your survivors have parked a huge scrap rocket in their corner of the truck stop. A Super Mutant band camped by the old diner is sure it is a real weapon pointed at them. They are coming to smash it.",
+      "goals": {
+        "super-mutants": "The Super Mutants, run by the game, will try to batter the Red Rocket until it is destroyed.",
+        "survivors": "Keep the Red Rocket standing: protect it for 4 rounds, or push it past the diner and off the table at that corner."
+      },
+      "howToWin": [
+        "The game lasts 4 rounds.",
+        "Major win: push the rocket past the diner and off the table edge at that corner.",
+        "Minor win: the rocket still has 4 or more of its 10 Health after round 4.",
+        "You lose if the rocket is destroyed; with 1 to 3 Health left at the end, nobody wins."
+      ],
+      "tips": [
+        "A model within Orange (2 in) of the rocket can spend an Action on a Strength test to push it Yellow (4 in).",
+        "The rocket has only 1 armor, so every mutant that reaches it hurts; drop the closest attackers first."
+      ]
+    },
     "source": "RR p.1-2; spec 17 s4",
     "terrain": [
       {
@@ -1159,6 +1323,24 @@
         "when": "The sled leaves the table."
       }
     ],
+    "briefing": {
+      "story": "Super Mutants are hauling a missile on a sled across the table, and nobody wants to learn where they are taking it. Stop the sled before it rolls off the far edge. Just try not to set off the warhead while you do it.",
+      "goals": {
+        "super-mutants": "The Super Mutants, run by the game, will guard the sled while it rolls toward the far edge.",
+        "player": "Sabotage the missile sled by doing 5 damage to it before it leaves the table."
+      },
+      "howToWin": [
+        "No round limit: the game ends when the sled is sabotaged, rolls off the table, or the missile goes off.",
+        "You win when the sled has taken 5 damage.",
+        "The Super Mutants win if the sled rolls off the far edge.",
+        "If the missile detonates, nobody wins."
+      ],
+      "tips": [
+        "The sled rolls Red (6 in) at the end of every round and shoves or crushes anyone in its path.",
+        "A model touching the sled can Interact with a Lockpick test for 1 sure damage that ignores armor.",
+        "Shots at the sled, or at anyone within Yellow (4 in) of it, can hit the missile; the risk of a blast grows with each hit."
+      ]
+    },
     "source": "AIH p.5; spec 17 s4",
     "terrain": [
       {
@@ -1768,6 +1950,22 @@
         "when": "The valve is working and at least half of the player models have left the table."
       }
     ],
+    "briefing": {
+      "story": "The settlement's water valve sits inside a walled compound that Super Mutants now patrol with captured settlers. Your team must slip in, get the water flowing again and get back out. Stay quiet and the patrols just walk their rounds.",
+      "goals": {
+        "super-mutants": "The patrols, run by the game, walk their routes until they spot you, then hunt everyone they have seen.",
+        "player": "Sneak to the valve, get it working, and get at least half of your team off the table."
+      },
+      "howToWin": [
+        "The game lasts 6 rounds.",
+        "You win when the valve is working and at least half of your models have left the table.",
+        "If round 6 ends before that, you have not won."
+      ],
+      "tips": [
+        "A patrolling model only goes on alert if it notices something or sees one of your models within its Awareness range.",
+        "A model touching the valve uses Interact to fix it; the compound walls and the hut block line of sight."
+      ]
+    },
     "source": "AIH p.6; spec 17 s4"
   },
   {
@@ -2139,6 +2337,22 @@
         "when": "The Tech, controlled by the AI, leaves through the exit near the player start corner, or the Tech is removed."
       }
     ],
+    "briefing": {
+      "story": "A tech has escaped from the Super Mutants and is hiding somewhere among the scattered wreckage. Both sides are checking the face-down markers to find them. Whoever finds the tech first gets to lead them home.",
+      "goals": {
+        "super-mutants": "The game runs the Super Mutants: their hounds sniff out the markers to find the tech, then they try to drag the tech out past your corner.",
+        "player": "Find the tech among the face-down markers, then lead them out through the exit near the Super Mutant corner."
+      },
+      "howToWin": [
+        "No round limit: play until the tech escapes, the tech dies, or one side is wiped out.",
+        "You win if the tech you control leaves by the exit near the AI corner, or if every AI model is removed once the tech has appeared.",
+        "You lose if the tech is killed, or if the AI leads the tech out through the exit near your corner."
+      ],
+      "tips": [
+        "Move a model close to a face-down marker to look at it; only one of the eight hides the tech.",
+        "The tech has no weapon; keep your fighters between them and the hounds."
+      ]
+    },
     "source": "AIH p.7; spec 17 s4",
     "terrain": [
       {
@@ -2521,6 +2735,25 @@
         "when": "The Sole Survivor leaves through the sewer."
       }
     ],
+    "briefing": {
+      "story": "A Brotherhood patrol is hunting the Sole Survivor, and the only way out is a locked sewer hatch in the middle of the table. The keys are hidden in emergency boxes scattered around. Something much bigger may come sniffing around later.",
+      "goals": {
+        "ai": "The Brotherhood patrol, run by the game, is out to kill the Sole Survivor.",
+        "p1": "Find both keys, unlock the sewer hatch, and get the Sole Survivor out along with two others.",
+        "p2": "Escort the Sole Survivor: help find the keys and hold off the Brotherhood until the hatch is open."
+      },
+      "howToWin": [
+        "The game lasts 8 rounds.",
+        "Major win: the Sole Survivor and two other player models escape down the hatch.",
+        "Minor win: the Sole Survivor escapes.",
+        "If the Sole Survivor dies or round 8 ends first, the players have not won."
+      ],
+      "tips": [
+        "Look at face-down markers to find the two key boxes; open one with Lockpick or Computers, whichever it needs.",
+        "A model holding a key unlocks a lock just by touching the hatch; once both locks are off, touch it to climb down.",
+        "From round 4 a Deathclaw may turn up and attack anyone nearby."
+      ]
+    },
     "source": "COOP p.4; spec 17 s4",
     "terrain": [
       {
@@ -3050,6 +3283,24 @@
         "when": "Every player model has been removed."
       }
     ],
+    "briefing": {
+      "story": "Two prisoners wake up chained together in a raider fighting pit, with junk scattered at their feet. The crowd wants blood. Fresh fighters are sent in from round 2.",
+      "goals": {
+        "ai": "The pit fighters, run by the game, will attack the prisoners until none are left.",
+        "p1": "Survive the pit: arm yourself from the junk piles and beat every fighter sent in.",
+        "p2": "Stick with your chained partner, scavenge a weapon and help beat every fighter sent in."
+      },
+      "howToWin": [
+        "No round limit: the last side standing wins.",
+        "The players win when every AI model has been removed, including any still to arrive.",
+        "The players lose when both prisoners are down.",
+        "An Aviator and a Hound enter in round 2; a Brute and a Super Mutant may join in rounds 3 to 6."
+      ],
+      "tips": [
+        "You are chained: the two distances from each prisoner to their own hole together can't pass Black (12 in), or the other one gets dragged.",
+        "Search the markers for weapons; any ranged weapon you find has only 3 uses."
+      ]
+    },
     "source": "COOP p.5; spec 17 s4",
     "terrain": [
       {
@@ -3378,6 +3629,23 @@
         "when": "Every AI model has been removed, or the players are still standing when round 8 ends."
       }
     ],
+    "briefing": {
+      "story": "A stack of unstable munitions sits in one corner of the base, and a Super Mutant band is marching straight for it. Two long walls split the ground between them and you. If they reach it, the whole place goes up.",
+      "goals": {
+        "ai": "The Super Mutants, run by the game, march on the munitions to set them off.",
+        "p1": "Keep every Super Mutant away from the munitions: wipe them out or hold until round 8 ends.",
+        "p2": "Keep every Super Mutant away from the munitions: wipe them out or hold until round 8 ends."
+      },
+      "howToWin": [
+        "The game lasts 8 rounds.",
+        "The players win by removing every AI model, or by still having models on the table when round 8 ends.",
+        "The players lose if, at the end of any round, a non-dog AI model is touching the munitions and free to use them."
+      ],
+      "tips": [
+        "Hounds can't set off the munitions, so focus on the Brute and the Super Mutants.",
+        "The two walls can't be climbed, so the mutants must go around them; guard the gaps."
+      ]
+    },
     "source": "COOP p.6; spec 17 s4"
   }
 ]

@@ -10,6 +10,7 @@ export function TopBar() {
   const { speed } = useSettings()
   const leftOpen = useUiStore((s) => s.leftOpen)
   const rightOpen = useUiStore((s) => s.rightOpen)
+  const setBriefing = useUiStore((s) => s.setBriefing)
   const toggleLeft = useUiStore((s) => s.toggleLeft)
   const toggleRight = useUiStore((s) => s.toggleRight)
   const counts = (seat: string) => {
@@ -37,6 +38,7 @@ export function TopBar() {
         <select aria-label="Animation speed" data-testid="hud-speed" value={String(speed)} onChange={(e) => presentation.setSpeed(Number(e.target.value))}>
           {SPEED_PRESETS.map((p) => <option key={p.id} value={String(p.speed)}>{p.label}</option>)}
         </select>
+        <button data-testid="hud-briefing" title="Scenario goals and how to win" onClick={() => setBriefing(true)}>Briefing</button>
         <button data-testid="hud-skip" onClick={() => presentation.skipAll()}>Skip</button>
         <button data-testid="hud-rail-left" aria-pressed={leftOpen} title="Units rail ([)" onClick={toggleLeft}>Units [</button>
         <button data-testid="hud-rail-right" aria-pressed={rightOpen} title="Log rail (])" onClick={toggleRight}>Log ]</button>

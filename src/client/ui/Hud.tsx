@@ -2,6 +2,8 @@
 // panel, rejection toast, banner, thinking indicator and the game-over recap.
 import { useEffect } from 'react'
 import { game, useBanner, useFatal, useGameResult, useNarration, usePending, useRejection, useSettings, useWaitingFor } from '../contract'
+import { Briefing, useBriefingEpoch } from './Briefing'
+import { ObjectiveTracker } from './ObjectiveTracker'
 import { AiCardPanel } from './AiCardPanel'
 import { ActivationPanel } from './ActivationPanel'
 import { EventFeed } from './EventFeed'
@@ -11,6 +13,7 @@ import { Roster } from './Roster'
 import { TopBar } from './TopBar'
 import { useUiStore } from './uiStore'
 import './hud.css'
+import './briefing.css'
 
 function useRailKeys() {
   const toggleLeft = useUiStore((s) => s.toggleLeft)
@@ -39,12 +42,14 @@ export function Hud() {
   const { narration: narrationOn } = useSettings()
   const leftOpen = useUiStore((s) => s.leftOpen)
   const rightOpen = useUiStore((s) => s.rightOpen)
+  const epoch = useBriefingEpoch()
   const lastLine = narrationOn ? narration[narration.length - 1]?.text : null
   return (
     <div className="hud-root" data-testid="hud">
       <TopBar />
       {lastLine && <div className="ticker" data-testid="hud-narration">{lastLine}</div>}
       {banner && <div className={`banner banner-${banner.tone}`} data-testid="hud-banner">{banner.text}</div>}
+      <ObjectiveTracker />
       <AiCardPanel />
       {leftOpen && <Roster />}
       {rightOpen && <EventFeed />}
@@ -63,6 +68,7 @@ export function Hud() {
         )}
       </div>
       <GameOver />
+      <Briefing key={epoch} />
     </div>
   )
 }

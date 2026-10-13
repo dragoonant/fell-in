@@ -41,10 +41,12 @@ export interface GameStoreState {
   fatal: string | null
   /** Bumps on every accepted step, new game and load. */
   version: number
+  /** Bumps on every new game or load (the briefing opens once per epoch). */
+  epoch: number
 }
 
 const INITIAL: GameStoreState = {
-  state: null, bundle: null, controllers: {}, seatOrder: [], seed: '', scenarioId: null, lastRejection: null, fatal: null, version: 0,
+  state: null, bundle: null, controllers: {}, seatOrder: [], seed: '', scenarioId: null, lastRejection: null, fatal: null, version: 0, epoch: 0,
 }
 export const useGameStore = create<GameStoreState>(() => ({ ...INITIAL }))
 
@@ -123,7 +125,7 @@ export let gameEpoch = 0
 function begin(state: GameState, bundle: EditionBundle, controllers: Record<SeatId, SeatController>, seed: string, scenarioId: string | null): void {
   gameEpoch++
   useGameStore.setState({
-    ...INITIAL, state, bundle, controllers, seatOrder: [...state.seatOrder], seed, scenarioId, version: useGameStore.getState().version + 1,
+    ...INITIAL, state, bundle, controllers, seatOrder: [...state.seatOrder], seed, scenarioId, version: useGameStore.getState().version + 1, epoch: gameEpoch,
   })
   setLabelContext({ bundle, controllers, seatOrder: state.seatOrder })
   resetPresentation(state)

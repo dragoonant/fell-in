@@ -18,6 +18,7 @@ export function ActivationPanel({ pending }: { pending: PendingDecision }) {
   return (
     <section className="panel prompt activation" data-testid="activation-panel" data-kind={pending.kind}>
       <h3 data-testid="prompt-title">{copy.title}</h3>
+      {copy.tip && <p className="tip" data-testid="prompt-tip">{copy.tip}</p>}
       <div className="chips">
         <span className="chip" data-testid="actions-left">Actions left {left}</span>
         <span className="chip" data-testid="ap-count">AP {ap}</span>

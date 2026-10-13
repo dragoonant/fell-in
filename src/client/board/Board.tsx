@@ -7,6 +7,7 @@ import { InteractionScene } from '../interaction/Interaction'
 import { CameraRig } from './Camera'
 import { FpsMeter, FpsProbe, fpsEnabled } from './FpsMeter'
 import { Mat } from './Mat'
+import { ObjectiveLabels } from './ObjectiveLabels'
 import { ModelProxies, ProxySync } from './ModelProxies'
 import { TerrainPieces } from './Terrain'
 import { TerrainTooltip } from './TerrainTooltip'
@@ -39,6 +40,7 @@ export function Board(): ReactElement {
         <Mat w={table.w} d={table.d} />
         <Zones />
         <TerrainPieces />
+        <ObjectiveLabels />
         <Figures />
         <InteractionScene />
         <CameraRig />

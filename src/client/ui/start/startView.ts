@@ -99,3 +99,14 @@ export function ageLabel(savedAt: string, now = Date.now()): string {
   const h = Math.round(m / 60)
   return h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`
 }
+
+/** What the start screen shows beside the list for the chosen scenario: story, your goal, round count. */
+export interface ScenarioPreview { story: string; goal: string; rounds: string }
+export function scenarioPreview(s: ScenarioChoice): ScenarioPreview {
+  const b = s.briefing ?? null
+  const rounds = s.rounds ? `${s.rounds} rounds` : 'No round limit, play until a side wins'
+  const first = s.sideIds?.find((x) => x !== s.aiSideId)
+  const goal = (first ? b?.goals[first] : undefined) ?? Object.entries(b?.goals ?? {}).find(([k]) => k !== s.aiSideId)?.[1] ?? 'Beat the other side. Defeat its units before it defeats yours.'
+  const story = b?.story ?? `${s.name}: ${scenarioSummary(s)}.`
+  return { story, goal, rounds }
+}

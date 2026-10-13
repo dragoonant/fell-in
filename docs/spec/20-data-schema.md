@@ -240,17 +240,27 @@ interface ScenarioDef { id: string; name: string; mode: 'tutorial'|'versus'|'ai'
   terrain?: object[]; wastelandDecks?: { items?: string[] };
   rules: { id: string; text: string; effects?: Effect[] }[];
   victory: { side: string; level?: 'major'|'minor'; when: string; caps?: number }[];
+  briefing?: { story: string; goals: Record<string, string>; howToWin: string[]; tips: string[] };  // M4c
   source: Source }
 ```
 `Code` names are implemented in `src/engine/hooks` (M2). An unknown code is a runtime error, not a
 validation error, until the hook registry exists.
 
+`briefing` (M4c) is the player-facing summary the client shows before and during a scenario; all prose is
+our own words. `story`: 2-3 sentences of flavour and situation. `goals`: one sentence per side id, written
+to that side's player (an AI side's goal says what the AI will try to do). `howToWin`: 2-5 short bullets
+covering the round limit, scoring and what counts as a draw. `tips`: 1-3 practical bullets for a new player.
+Rulers are glossed in inches where a briefing names one, e.g. "Orange (2 in)". The type marks it optional,
+but the validator requires it on every scenario record.
+
 ### 3.2 Validator checks (`npm run validate:data`)
 Every record has `id` + `source`; ids are kebab-case and unique per edition; cross-references resolve
 (unit faction/equipped/versionGroup peers, leader factionLock, restriction units/factions, AI unitId
 and equipment, scenario forces); enum fields hold listed values; `Effect` ops carry their required
-fields; prose fields (`name`, ability/rule `text`, item/mod/perk `text`) are non-empty. Exit code 1
-with one readable line per error.
+fields; prose fields (`name`, ability/rule `text`, item/mod/perk `text`) are non-empty. Every scenario
+has a `briefing` with a non-empty `story`, a non-empty goal for each of its side ids and no goal for any
+other key, 2-5 `howToWin` strings and 1-3 `tips` strings (`checkBriefings` in `tools/validate-data.ts`).
+Exit code 1 with one readable line per error.
 
 ## 4. M1 card list (Two Player Starter Set, names only)
 Sources: CARDS (free print-and-play selection), RoP, COST. "Physical only" = in the boxed set but not

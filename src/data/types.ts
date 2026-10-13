@@ -159,6 +159,8 @@ export interface AiCardDef {
   targetPriority: string[]; preferFirst?: string; notes?: string[]; source: Source
 }
 
+/** Player-facing scenario briefing (M4c). goals: one sentence per side id, addressed to that side's player. */
+export interface ScenarioBriefing { story: string; goals: Record<string, string>; howToWin: string[]; tips: string[] }
 export interface ScenarioForce { unit: string; count: number; items: string[]; heroic?: boolean; leader?: string }
 export interface ScenarioDef {
   id: string; name: string; mode: typeof SCENARIO_MODES[number]
@@ -172,6 +174,7 @@ export interface ScenarioDef {
   terrain?: object[]; wastelandDecks?: { items?: string[] }
   rules: { id: string; text: string; effects?: Effect[] }[]
   victory: { side: string; level?: 'major' | 'minor'; when: string; caps?: number }[]
+  briefing?: ScenarioBriefing
   source: Source
 }
 

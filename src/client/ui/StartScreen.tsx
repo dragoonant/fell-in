@@ -6,7 +6,7 @@ import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
 import './start/start.css'
 import {
-  aiScenarios, ageLabel, asTeam, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OFFICIAL_TIER, OPPONENTS, pickDefaultScenario, scenarioSummary,
+  aiScenarios, ageLabel, asTeam, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OFFICIAL_TIER, OPPONENTS, pickDefaultScenario, scenarioPreview, scenarioSummary,
   type OpponentTier, type PlayMode, type TeamSize,
 } from './start/startView'
 
@@ -74,6 +74,16 @@ export function StartScreen() {
             </details>
           ))}
           <p className="sc-note" data-testid="scenario-note">{chosen ? scenarioSummary(chosen) : ''}</p>
+          {chosen && (() => {
+            const pv = scenarioPreview(chosen)
+            return (
+              <div className="sc-brief" data-testid="scenario-preview">
+                <p className="sc-story">{pv.story}</p>
+                <p><b>Your goal:</b> {pv.goal}</p>
+                <p><b>Length:</b> {pv.rounds}</p>
+              </div>
+            )
+          })()}
         </section>
 
         {!official && <section className="sc-sec" aria-label="Mode">

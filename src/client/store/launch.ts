@@ -56,8 +56,12 @@ export function readAutosaveSummary(): AutosaveSummary | null {
 export const hasAutosave = (): boolean => readAutosaveSummary() !== null
 
 /** Scenario choices for the start screen (loads the data chunk on demand). */
-export interface ScenarioChoice { id: string; name: string; mode: string; rounds: number | null; sides: number }
+export interface BriefingInfo { story: string; goals: Record<string, string>; howToWin: string[]; tips: string[] }
+export interface ScenarioChoice { id: string; name: string; mode: string; rounds: number | null; sides: number; /** Side ids in seat order. */ sideIds?: string[]; /** The AI-controlled side, if any. */ aiSideId?: string; briefing?: BriefingInfo | null }
 export async function loadScenarioChoices(): Promise<ScenarioChoice[]> {
   const data = await import('../../data/index')
-  return data.all('scenarios').map((s) => ({ id: s.id, name: s.name, mode: s.mode, rounds: s.rounds, sides: s.sides.length }))
+  return data.all('scenarios').map((s) => ({
+    id: s.id, name: s.name, mode: s.mode, rounds: s.rounds, sides: s.sides.length, sideIds: s.sides.map((x) => x.id), ...(s.sides.find((x) => x.ai) ? { aiSideId: s.sides.find((x) => x.ai)!.id } : {}),
+    briefing: (s as { briefing?: BriefingInfo }).briefing ?? null,
+  }))
 }

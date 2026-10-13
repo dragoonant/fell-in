@@ -5,7 +5,7 @@ import { kindTitle } from './format'
 
 export type PromptForm = 'list' | 'targets' | 'activation' | 'path'
 export interface PromptOption { id: string; label: string; tone: 'normal' | 'quiet'; action: Action }
-export interface PromptCopy { title: string; hint: string; form: PromptForm; options: PromptOption[] }
+export interface PromptCopy { title: string; hint: string; /** Plain-words first-timer line for turn-flow decisions. */ tip?: string; form: PromptForm; options: PromptOption[] }
 export interface Namers { name: (id: string) => string; seat: (id: string) => string; humanise: (label: string) => string }
 
 const str = (v: unknown): string => (typeof v === 'string' ? v : '')
@@ -15,7 +15,23 @@ function opt(o: DecisionOption, label: string, tone: PromptOption['tone'] = 'nor
   return { id: o.id, label, tone, action: o.action }
 }
 
+/** One plain-words line per turn-flow decision a new player meets first. */
+export const TURN_TIPS: Readonly<Record<string, string>> = {
+  'turn.start': 'Check the Briefing button at the top if you forget the goal. Press the button to begin round 1.',
+  'turn.first': 'Going first lets you grab the best ground, but the other side then gets the last word in the round.',
+  'turn.ready': 'Each round, sides take turns making one unit Ready. Ready units are the ones you get to use afterwards.',
+  'turn.pick': 'Pick which Ready unit moves and fights next. Each unit can be Used once per round.',
+  'turn.choose': 'Use means take your actions now. Skipping keeps the unit out of the fight until next round.',
+  'turn.activation': 'Spend action points to move, attack or use an item. When you are done, choose End activation.',
+}
+
 export function promptView(p: PendingDecision, n: Namers): PromptCopy {
+  const copy = baseView(p, n)
+  const tip = TURN_TIPS[p.kind]
+  return tip ? { ...copy, tip } : copy
+}
+
+function baseView(p: PendingDecision, n: Namers): PromptCopy {
   const ctx = p.context
   const who = n.name(str(ctx.modelId))
   const list = (title: string, hint: string, label: (o: DecisionOption) => string, form: PromptForm = 'list'): PromptCopy =>
@@ -34,6 +50,7 @@ export function promptView(p: PendingDecision, n: Namers): PromptCopy {
     return list('Spend a luck token?', hint, (o) => (o.action.use === true ? 'Spend the token' : 'Keep the token'))
   }
   switch (p.kind) {
+    case 'turn.start': return list('Ready to begin?', 'The table is set. Press the button when you are ready to play round 1.', (o) => o.label)
     case 'turn.first': return list('Who goes first?', 'You hold the Advantage this round. Choose which side takes the first turn.', (o) => `${n.seat(str(o.action.firstSeat))} goes first`)
     case 'turn.ready': return list('Make a unit Ready', 'Choose one unit that has not been readied to become Ready this turn.', (o) => `Ready ${n.name(str(o.action.modelId))}`)
     case 'turn.pick': return list('Use a Ready unit', 'Choose which Ready unit to Use next.', (o) => `Use ${n.name(str(o.action.modelId))}`)

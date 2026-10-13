@@ -43,6 +43,11 @@ Milestone reached: **M4 AI** (versus bot + official AI card system; owner playte
 - Gaps: ai-tech Presence/peek rules, AI spending AP on card effects, Luck "Tough", no-re-contact after a declined
   follow, coop-cage Stuffed Monkey card. E2E "activate, move by drag" fails on main too (pre-existing).
 
+## Scenario briefings (M4c)
+- Every scenario has a `briefing` (story, goal per side, how to win, tips; spec 20). Start-screen preview, opening
+  briefing modal (Briefing button reopens it), live objective tracker from `objectiveStatus(view)`
+  (`src/engine/scenarios/status.ts`), 3D labels on objective markers, plain-words hints on the first turn steps.
+
 ## AI (M4a)
 - `src/ai/`: decider (dispatch by decision kind, validates, falls back to random), eval, threat, nav, moves,
   policies, world (view shim), worker. Tiers random / easy / normal; start-screen Opponent picker. Spec 30.

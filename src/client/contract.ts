@@ -16,6 +16,8 @@ import * as edition from '../engine/edition'
 import { losVerdict } from '../engine/los'
 import { distanceBetween } from '../engine/measure'
 import * as query from '../engine/query'
+import type { ObjectiveStatus } from '../engine/scenarios/status'
+import { view as playerView } from '../engine/view'
 import type { AttackOpts, CoverInfo, DamageOdds, HitOdds, RangeInfo } from '../engine/query'
 import type { Action, GameResult, GameState, LosVerdict, ModelId, ModelState, PendingDecision, SeatId, Vec2 } from '../engine/types'
 import { getBotDriver, setBotBrain, startBotDriver } from './bot/botDriver'
@@ -254,6 +256,18 @@ export const useRangeBand = (a: ModelId | null, t: ModelId | null, weaponUid?: s
 export const useCover = (a: ModelId | null, t: ModelId | null) => useQuery((s, b) => (a && t ? query.coverFor(s, b, a, t) : null), [a, t])
 export const useLos = (a: ModelId | null, t: ModelId | null) => useQuery((s) => (a && t ? losVerdict(s, a, t) : null), [a, t])
 
+/** Scenario objectives (lines + marker positions) as the first human seat sees them; null when the scenario has none. */
+export function useObjectiveStatus(): ObjectiveStatus | null {
+  const state = usePresented()
+  const seatOrder = useGameStore((g) => g.seatOrder)
+  const controllers = useGameStore((g) => g.controllers)
+  return useMemo(() => {
+    if (!state) return null
+    const seat = seatOrder.find((x) => controllers[x] === 'human') ?? seatOrder[0]
+    return seat ? query.objectiveStatus(playerView(state, seat)) : null
+  }, [state, seatOrder, controllers])
+}
+
 // ---------- labels (our words; names from data) ----------
 export { conditionWord, dataName, modelName, narrate, rollLabel, seatLabel }
 
@@ -295,3 +309,4 @@ export function startLaunch(launch: Launch, params: Params): ClientRejection | n
 
 // Additive changes after the M3 freeze:
 //  - useGame() also returns scenarioId (Play again keeps the scenario).
+//  - useObjectiveStatus(): objectiveStatus for the first human seat's view of the presented state (briefing tracker, scene labels).

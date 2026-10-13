@@ -164,3 +164,5 @@ export function killOdds(state: GameState, bundle: EditionBundle, attackerId: Mo
   const pKill = dist.reduce((a, p, i) => (i >= left ? a + p : a), 0)
   return plan.pHit * pKill
 }
+
+export { objectiveStatus, type ObjectiveLine, type ObjectiveStatus } from './scenarios/status'

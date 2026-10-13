@@ -17,3 +17,6 @@
 .sc-actions .go.alt { background: transparent; border: 2px solid var(--teal); }
 .sc .fine { text-align: center; margin-top: 14px; }
 .sc-err { color: #e0a080; font-size: 13px; text-align: center; }
+.sc-brief { margin-top: 10px; padding: 8px 12px; border-left: 3px solid var(--teal); background: #1d1812; font-size: 13px; line-height: 1.45; }
+.sc-brief p { margin: 3px 0; }
+.sc-brief .sc-story { opacity: .9; font-style: italic; }
