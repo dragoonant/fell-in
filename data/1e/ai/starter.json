@@ -582,7 +582,10 @@
   {
     "id": "ai-deathclaw",
     "unitId": "deathclaw",
-    "standardEquipment": [],
+    "standardEquipment": [
+      "deathclaw-swipe",
+      "deathclaw-crush"
+    ],
     "columns": [
       {
         "label": "9+",
@@ -611,14 +614,14 @@
         ],
         "cells": [
           {
-            "response": "O",
-            "reckless": false,
-            "stayEngaged": false
+            "response": "A",
+            "reckless": true,
+            "stayEngaged": true
           },
           {
-            "response": "O",
-            "reckless": false,
-            "stayEngaged": false
+            "response": "A",
+            "reckless": true,
+            "stayEngaged": true
           },
           {
             "response": "A",
@@ -640,16 +643,16 @@
         "cells": [
           {
             "response": "A",
+            "reckless": true,
+            "stayEngaged": true
+          },
+          {
+            "response": "F",
             "reckless": false,
             "stayEngaged": false
           },
           {
-            "response": "M",
-            "reckless": true,
-            "stayEngaged": false
-          },
-          {
-            "response": "O",
+            "response": "F",
             "reckless": true,
             "stayEngaged": true
           }
@@ -666,14 +669,14 @@
         ],
         "cells": [
           {
-            "response": "A",
+            "response": "F",
             "reckless": true,
-            "stayEngaged": false
+            "stayEngaged": true
           },
           {
-            "response": "M",
+            "response": "A",
             "reckless": true,
-            "stayEngaged": false
+            "stayEngaged": true
           },
           {
             "response": "A",
@@ -688,19 +691,22 @@
     ],
     "targetPriority": [
       "nearest",
-      "healthiest",
-      "bestChance"
+      "wounded"
     ],
     "notes": [
-      "Placeholder cells copied from the Brute card; fights with the claws on its unit card."
+      "Printed special line (R2 #14): the card lets it add a gear to Crush; not modelled, tracked as an open card-text hook."
     ],
-    "source": "placeholder"
+    "source": [
+      "R2 card photo (Wave1Crop photo, medium resolution): columns, cell letters, shading, underline, row methods, standard equipment, target priority (Confirmed)",
+      "Blue-die icon grouping follows CH p10 (BOT/BOT2, STAR/BOT+STAR/STAR2, BLAST); for two-method star rows the BOT+STAR method is assumed equal to STAR (Unsourced)"
+    ]
   },
   {
     "id": "ai-aviator",
     "unitId": "aviator",
     "standardEquipment": [
-      "pipe-pistol"
+      "pipe-pistol",
+      "aviator-cap"
     ],
     "columns": [
       {
@@ -731,23 +737,23 @@
         "cells": [
           {
             "response": "O",
-            "reckless": false,
-            "stayEngaged": false
-          },
-          {
-            "response": "O",
-            "reckless": false,
-            "stayEngaged": true
-          },
-          {
-            "response": "O",
             "reckless": true,
             "stayEngaged": false
+          },
+          {
+            "response": "M",
+            "reckless": true,
+            "stayEngaged": false
+          },
+          {
+            "response": "A",
+            "reckless": false,
+            "stayEngaged": true
           }
         ],
         "method": [
           "ranged",
-          "ranged"
+          "close"
         ]
       },
       {
@@ -763,14 +769,14 @@
             "stayEngaged": false
           },
           {
-            "response": "A",
-            "reckless": false,
+            "response": "O",
+            "reckless": true,
             "stayEngaged": false
           },
           {
-            "response": "M",
+            "response": "O",
             "reckless": true,
-            "stayEngaged": true
+            "stayEngaged": false
           }
         ],
         "method": [
@@ -785,17 +791,17 @@
         ],
         "cells": [
           {
-            "response": "A",
+            "response": "O",
             "reckless": false,
-            "stayEngaged": true
-          },
-          {
-            "response": "F",
-            "reckless": false,
-            "stayEngaged": true
+            "stayEngaged": false
           },
           {
             "response": "A",
+            "reckless": false,
+            "stayEngaged": false
+          },
+          {
+            "response": "O",
             "reckless": true,
             "stayEngaged": true
           }
@@ -810,17 +816,16 @@
       "importance",
       "wounded"
     ],
-    "notes": [
-      "Placeholder cells copied from Sole Survivor Day One; columns and priorities from a product photo (R2-photos.md); Pipe Pistol per COOP s4."
-    ],
-    "source": "placeholder"
+    "source": [
+      "R2 card photo (Image9 photo, medium resolution): columns, cell letters, shading, underline, row methods, standard equipment, target priority (Confirmed)",
+      "Blue-die icon grouping follows CH p10 (BOT/BOT2, STAR/BOT+STAR/STAR2, BLAST); for two-method star rows the BOT+STAR method is assumed equal to STAR (Unsourced)"
+    ]
   },
   {
     "id": "ai-sole-survivor",
     "unitId": "sole-survivor",
     "standardEquipment": [
-      "combat-rifle",
-      "baseball-bat"
+      "hunting-rifle"
     ],
     "columns": [
       {
@@ -856,12 +861,12 @@
           },
           {
             "response": "O",
-            "reckless": false,
+            "reckless": true,
             "stayEngaged": true
           },
           {
             "response": "O",
-            "reckless": true,
+            "reckless": false,
             "stayEngaged": false
           }
         ],
@@ -889,13 +894,13 @@
           },
           {
             "response": "M",
-            "reckless": true,
-            "stayEngaged": true
+            "reckless": false,
+            "stayEngaged": false
           }
         ],
         "method": [
-          "close",
-          "close",
+          "ranged",
+          "ranged",
           "ranged"
         ]
       },
@@ -907,16 +912,16 @@
           {
             "response": "A",
             "reckless": false,
-            "stayEngaged": true
+            "stayEngaged": false
           },
           {
             "response": "F",
-            "reckless": false,
+            "reckless": true,
             "stayEngaged": true
           },
           {
             "response": "A",
-            "reckless": true,
+            "reckless": false,
             "stayEngaged": true
           }
         ],
@@ -930,23 +935,23 @@
       "capable",
       "bestChance"
     ],
-    "notes": [
-      "Placeholder cells copied from Sole Survivor Day One; columns and priorities from a product photo (R2-photos.md); kit per AIH s4."
-    ],
-    "source": "placeholder"
+    "source": [
+      "R2 card photo (Image9 photo, medium resolution): columns, cell letters, shading, underline, row methods, standard equipment, target priority (Confirmed)",
+      "Blue-die icon grouping follows CH p10 (BOT/BOT2, STAR/BOT+STAR/STAR2, BLAST); for two-method star rows the BOT+STAR method is assumed equal to STAR (Unsourced)"
+    ]
   },
   {
     "id": "ai-aspirant-goddard",
     "unitId": "aspirant-goddard",
     "standardEquipment": [
-      "plasma-rifle",
-      "pipe-wrench"
+      "baseball-bat",
+      "t-60-power-armor"
     ],
     "columns": [
       {
-        "label": "4-4",
+        "label": "4+",
         "when": {
-          "other": "health:4-4"
+          "other": "health:4+"
         }
       },
       {
@@ -964,19 +969,19 @@
         ],
         "cells": [
           {
-            "response": "O",
-            "reckless": false,
+            "response": "A",
+            "reckless": true,
             "stayEngaged": false
           },
           {
             "response": "O",
-            "reckless": true,
-            "stayEngaged": false
+            "reckless": false,
+            "stayEngaged": true
           }
         ],
         "method": [
-          "ranged",
-          "ranged"
+          "close",
+          "close"
         ]
       },
       {
@@ -987,20 +992,20 @@
         ],
         "cells": [
           {
-            "response": "A",
-            "reckless": false,
+            "response": "O",
+            "reckless": true,
             "stayEngaged": false
           },
           {
-            "response": "M",
-            "reckless": true,
+            "response": "A",
+            "reckless": false,
             "stayEngaged": true
           }
         ],
         "method": [
           "close",
           "close",
-          "ranged"
+          "close"
         ]
       },
       {
@@ -1009,18 +1014,18 @@
         ],
         "cells": [
           {
-            "response": "A",
-            "reckless": false,
-            "stayEngaged": true
+            "response": "M",
+            "reckless": true,
+            "stayEngaged": false
           },
           {
-            "response": "A",
-            "reckless": true,
-            "stayEngaged": true
+            "response": "M",
+            "reckless": false,
+            "stayEngaged": false
           }
         ],
         "method": [
-          "ranged"
+          "close"
         ]
       }
     ],
@@ -1029,10 +1034,10 @@
       "bestChance",
       "vulnerable"
     ],
-    "notes": [
-      "Placeholder cells from Sole Survivor Day One (outer columns); columns and priorities from a product photo (R2-photos.md); kit per AIH s4."
-    ],
-    "source": "placeholder"
+    "source": [
+      "R2 card photo (Image9 photo, medium resolution): columns, cell letters, shading, underline, row methods, standard equipment, target priority (Confirmed)",
+      "Blue-die icon grouping follows CH p10 (BOT/BOT2, STAR/BOT+STAR/STAR2, BLAST); for two-method star rows the BOT+STAR method is assumed equal to STAR (Unsourced)"
+    ]
   },
   {
     "id": "ai-settler",

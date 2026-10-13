@@ -787,8 +787,12 @@
           }
         ],
         "deploy": {
-          "markers": "exactly orange from the diner, Yellow apart",
-          "diner": "yellow from a corner"
+          "zone": {
+            "kind": "ring",
+            "of": "diner",
+            "gap": "orange",
+            "apart": "yellow"
+          }
         },
         "ai": {
           "objective": "defeat",
@@ -831,8 +835,13 @@
           }
         ],
         "deploy": {
-          "corner": "opposite the diner",
-          "area": "blue x blue"
+          "zone": {
+            "kind": "box",
+            "corner": "se",
+            "w": "blue",
+            "d": "blue",
+            "apart": 0.3
+          }
         }
       }
     ],
@@ -841,8 +850,13 @@
         "kind": "object",
         "face": "red-rocket",
         "place": {
-          "zone": "survivor deployment",
-          "length": "yellow"
+          "zone": {
+            "kind": "box",
+            "corner": "se",
+            "w": "blue",
+            "d": "blue"
+          },
+          "r": 2
         },
         "props": {
           "health": 10,
@@ -850,7 +864,18 @@
             "physical": 1,
             "energy": 1,
             "radiation": "immune"
-          }
+          },
+          "baseMm": 100,
+          "solid": true,
+          "pushable": true,
+          "pushReach": "orange",
+          "pushDistance": "yellow",
+          "departEdges": [
+            "n",
+            "w"
+          ],
+          "shootable": true,
+          "meleeable": true
         }
       }
     ],
@@ -883,7 +908,83 @@
         "caps": 70
       }
     ],
-    "source": "RR p.1-2; spec 17 s4"
+    "source": "RR p.1-2; spec 17 s4",
+    "terrain": [
+      {
+        "id": "diner",
+        "piece": "collapsed-house-corner",
+        "rulesType": "building",
+        "at": {
+          "corner": "nw",
+          "inset": [
+            "yellow + 3.5",
+            "yellow + 3"
+          ]
+        },
+        "w": 7,
+        "d": 6,
+        "h": 5
+      },
+      {
+        "id": "junk-1",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": -1,
+          "dz": 2
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
+      },
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 4,
+          "dz": -4
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 25
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "corner": "ne",
+          "inset": [
+            "orange + 1.5",
+            "red + 2"
+          ]
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2,
+        "rot": 80
+      },
+      {
+        "id": "barrier-1",
+        "piece": "concrete-jersey-barrier",
+        "rulesType": "obstacle",
+        "at": {
+          "corner": "sw",
+          "inset": [
+            "red + 2",
+            "orange + 1"
+          ]
+        },
+        "w": 4,
+        "d": 1,
+        "h": 1.2,
+        "rot": -20
+      }
+    ]
   },
   {
     "id": "ai-missile",
@@ -923,7 +1024,12 @@
           }
         ],
         "deploy": {
-          "within": "yellow"
+          "zone": {
+            "kind": "disc",
+            "of": "missile-sled",
+            "within": "yellow",
+            "apart": 0.3
+          }
         },
         "ai": {
           "objective": "protect",
@@ -958,9 +1064,36 @@
           }
         ],
         "deploy": {
-          "zones": [
-            "A at start",
-            "B at round 2"
+          "groups": [
+            {
+              "units": [
+                "sole-survivor",
+                "dogmeat"
+              ],
+              "zone": {
+                "kind": "box",
+                "corner": "nw",
+                "w": "blue + yellow",
+                "d": "yellow",
+                "apart": 0.3
+              }
+            },
+            {
+              "units": [
+                "settler",
+                "settler"
+              ],
+              "zone": {
+                "kind": "box",
+                "corner": "se",
+                "w": "blue + yellow",
+                "d": "yellow",
+                "apart": 0.3
+              },
+              "enters": {
+                "round": 2
+              }
+            }
           ]
         }
       }
@@ -970,8 +1103,11 @@
         "kind": "object",
         "face": "missile-sled",
         "place": {
-          "start": "black from an edge",
-          "exit": "opposite edge"
+          "at": {
+            "edge": "w",
+            "along": 0.5,
+            "inset": "black"
+          }
         },
         "props": {
           "health": 5,
@@ -979,22 +1115,38 @@
             "physical": 3,
             "energy": 1,
             "radiation": "immune"
+          },
+          "baseMm": 50,
+          "solid": true,
+          "blocksMove": true,
+          "blocksLos": false,
+          "shootable": true,
+          "meleeable": true,
+          "skill": "lockpick",
+          "hitWithin": "yellow",
+          "movesAt": "round",
+          "moves": {
+            "colour": "red",
+            "towards": {
+              "edge": "e",
+              "along": 0.5
+            }
           }
         }
       }
     ],
     "rules": [
       {
-        "id": "sled-move",
-        "text": "At the end of every turn the sled moves Red along the shortest route, ignoring difficult terrain, and pushes or crushes models in its path. It counts as cover and impassable but does not block LoS."
+        "id": "sled",
+        "text": "At the end of every round the sled rolls Red towards the exit point on the far edge, taking the shortest clear heading and ignoring rough ground. A model in its way is pushed clear by the shortest shove; if there is no room it is run over and removed. The sled is cover and cannot be walked through, but it does not block line of sight."
       },
       {
         "id": "sabotage",
-        "text": "A Lockpick Use in contact deals 1 damage that ignores armor."
+        "text": "The sled is sabotaged once it has taken 5 damage. A model touching it can attempt Lockpick as an Interact: a success does 1 damage with no armor roll. Armor: 3 physical, 1 energy, immune to radiation."
       },
       {
         "id": "detonation",
-        "text": "A missile hit happens on an X when shooting at or within Yellow of the sled, or on any area damage; then roll the armor die and detonate if it shows no more than the number of earlier hits."
+        "text": "The missile is hit when a Shooting test aimed at the sled, or at a model within Yellow of it, shows an X, or when area damage reaches it. After each hit roll the armor die: a result no higher than the number of earlier hits sets the missile off, ending the game with no winner."
       }
     ],
     "victory": [
@@ -1004,15 +1156,92 @@
       },
       {
         "side": "super-mutants",
-        "when": "The sled exits the table."
-      },
-      {
-        "side": "player",
-        "when": "The missile detonates: nobody wins.",
-        "caps": 0
+        "when": "The sled leaves the table."
       }
     ],
-    "source": "AIH p.5; spec 17 s4"
+    "source": "AIH p.5; spec 17 s4",
+    "terrain": [
+      {
+        "id": "wreck-n",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 2,
+          "dz": -7
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 10
+      },
+      {
+        "id": "wall-n",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 9,
+          "dz": -6.5
+        },
+        "w": 6,
+        "d": 1,
+        "h": 3.5
+      },
+      {
+        "id": "crates-s",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 4,
+          "dz": 6
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2,
+        "rot": 70
+      },
+      {
+        "id": "container-s",
+        "piece": "shipping-container-rusted",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -4,
+          "dz": 8
+        },
+        "w": 8,
+        "d": 3.2,
+        "h": 3.2
+      },
+      {
+        "id": "junk-s",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": 11,
+          "dz": 6
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
+      },
+      {
+        "id": "drums-n",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -3,
+          "dz": -6
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      }
+    ]
   },
   {
     "id": "ai-breakin",
@@ -1055,17 +1284,77 @@
           }
         ],
         "deploy": {
-          "patrols": "looping routes of numbered and lettered markers"
+          "groups": [
+            {
+              "units": [
+                "super-mutant",
+                "mutant-hound"
+              ],
+              "route": 1,
+              "zone": {
+                "kind": "disc",
+                "of": "route-1-1",
+                "within": "orange",
+                "apart": 0.3
+              }
+            },
+            {
+              "units": [
+                "super-mutant",
+                "mutant-hound"
+              ],
+              "route": 2,
+              "zone": {
+                "kind": "disc",
+                "of": "route-2-1",
+                "within": "orange",
+                "apart": 0.3
+              }
+            },
+            {
+              "units": [
+                "brute",
+                "enslaved-tech"
+              ],
+              "route": 3,
+              "zone": {
+                "kind": "disc",
+                "of": "route-3-1",
+                "within": "orange",
+                "apart": 0.3
+              }
+            },
+            {
+              "units": [
+                "settler",
+                "settler"
+              ],
+              "route": 4,
+              "zone": {
+                "kind": "disc",
+                "of": "route-4-1",
+                "within": "orange",
+                "apart": 0.3
+              }
+            }
+          ]
         },
         "ai": {
           "objective": "goTo",
           "subject": "next-route-marker",
           "switches": [
             {
+              "when": "always",
+              "set": {
+                "forceResponse": "O"
+              }
+            },
+            {
               "when": "aware of a trigger or sees a player model within one Awareness length",
               "set": {
                 "objective": "defeat",
-                "subject": "any enemy seen this or last round"
+                "subject": "any-enemy-seen",
+                "forceResponse": "matrix"
               }
             }
           ]
@@ -1100,8 +1389,12 @@
           }
         ],
         "deploy": {
-          "within": "orange",
-          "of": "any edge"
+          "zone": {
+            "kind": "edges",
+            "edges": "any",
+            "within": "orange",
+            "apart": 0.3
+          }
         }
       }
     ],
@@ -1110,35 +1403,369 @@
         "kind": "object",
         "face": "valve",
         "place": {
-          "inside": "valve hut"
+          "at": {
+            "at": "centre",
+            "dx": 1,
+            "dz": 4.8
+          }
+        },
+        "props": {
+          "interact": true,
+          "interactBy": "players"
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-1-1",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -7,
+            "dz": -7
+          }
+        },
+        "props": {
+          "route": {
+            "id": 1,
+            "step": 1
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-1-2",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": 7,
+            "dz": -7
+          }
+        },
+        "props": {
+          "route": {
+            "id": 1,
+            "step": 2
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-1-3",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": 7,
+            "dz": 7
+          }
+        },
+        "props": {
+          "route": {
+            "id": 1,
+            "step": 3
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-1-4",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -7,
+            "dz": 7
+          }
+        },
+        "props": {
+          "route": {
+            "id": 1,
+            "step": 4
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-2-1",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -14,
+            "dz": -14
+          }
+        },
+        "props": {
+          "route": {
+            "id": 2,
+            "step": 1
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-2-2",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": 14,
+            "dz": -14
+          }
+        },
+        "props": {
+          "route": {
+            "id": 2,
+            "step": 2
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-3-1",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": 14,
+            "dz": 14
+          }
+        },
+        "props": {
+          "route": {
+            "id": 3,
+            "step": 1
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-3-2",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -14,
+            "dz": 14
+          }
+        },
+        "props": {
+          "route": {
+            "id": 3,
+            "step": 2
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-4-1",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -14,
+            "dz": 1
+          }
+        },
+        "props": {
+          "route": {
+            "id": 4,
+            "step": 1
+          }
+        }
+      },
+      {
+        "kind": "object",
+        "face": "route-4-2",
+        "place": {
+          "at": {
+            "at": "centre",
+            "dx": -5,
+            "dz": 1
+          }
+        },
+        "props": {
+          "route": {
+            "id": 4,
+            "step": 2
+          }
         }
       }
     ],
     "terrain": [
       {
-        "kind": "compound",
-        "walled": true,
-        "blocksLos": true
+        "id": "wall-n1",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -10,
+          "dz": -10
+        },
+        "length": 8,
+        "dir": "e",
+        "thick": 1,
+        "h": 3.5
       },
       {
-        "kind": "valve-hut",
-        "blocksLos": true
+        "id": "wall-n2",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 2,
+          "dz": -10
+        },
+        "length": 8,
+        "dir": "e",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "wall-s1",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -10,
+          "dz": 10
+        },
+        "length": 14,
+        "dir": "e",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "wall-s2",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 8,
+          "dz": 10
+        },
+        "length": 2,
+        "dir": "e",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "wall-w1",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -10,
+          "dz": -10
+        },
+        "length": 9,
+        "dir": "s",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "wall-w2",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -10,
+          "dz": 3
+        },
+        "length": 7,
+        "dir": "s",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "wall-e",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 10,
+          "dz": -10
+        },
+        "length": 20,
+        "dir": "s",
+        "thick": 1,
+        "h": 3.5
+      },
+      {
+        "id": "hut",
+        "piece": "collapsed-house-corner",
+        "rulesType": "building",
+        "at": {
+          "at": "centre",
+          "dx": 1,
+          "dz": 1
+        },
+        "w": 7,
+        "d": 6,
+        "h": 5
+      },
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -14,
+          "dz": 8
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 20
+      },
+      {
+        "id": "wreck-2",
+        "piece": "burnt-bus-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 13,
+          "dz": -14
+        },
+        "w": 10,
+        "d": 3,
+        "h": 3.2
+      },
+      {
+        "id": "drums-1",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 14,
+          "dz": 10
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -4,
+          "dz": -5
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2,
+        "rot": 30
       }
     ],
     "rules": [
       {
         "id": "patrol",
-        "text": "Until alerted, the AI walks its patrol loops (hounds move Yellow per step). Once alerted the normal response matrix takes over."
+        "text": "Until an AI model is aware of something it does not use its matrix: it performs the Objective response, walking its own loop of route markers (it does not have to stop on a marker). Mutant Hounds keep each move to Yellow while patrolling. A model that becomes aware of a trigger, or sees a player model within one Awareness length, stops patrolling for good; from then on it uses its matrix and hunts the enemies the Super Mutants have seen."
       },
       {
         "id": "valve",
-        "text": "A player Interact action opens the valve."
+        "text": "A player model touching the valve can Interact with it to start the water flowing again."
       }
     ],
     "victory": [
       {
         "side": "player",
-        "when": "The valve is fixed and at least half the player models leave the table."
+        "when": "The valve is working and at least half of the player models have left the table."
       }
     ],
     "source": "AIH p.6; spec 17 s4"
@@ -1174,16 +1801,47 @@
           }
         ],
         "deploy": {
-          "corner": "yellow from one corner"
+          "zone": {
+            "kind": "corner",
+            "corner": "nw",
+            "reach": "yellow",
+            "apart": 0.3
+          }
         },
         "ai": {
           "objective": "use",
           "subject": "nearest-investigation-marker",
           "switches": [
             {
+              "when": "always",
+              "set": {
+                "who": "super-mutant",
+                "objective": "protect",
+                "subject": "mutant-hound"
+              }
+            },
+            {
+              "when": "always",
+              "set": {
+                "who": "mutant-hound",
+                "forceResponse": "O"
+              }
+            },
+            {
               "when": "a hound reveals marker 1",
               "set": {
-                "phase": 2
+                "phase": 2,
+                "objective": "protect",
+                "subject": "enslaved-tech"
+              }
+            },
+            {
+              "when": "a hound reveals marker 1",
+              "set": {
+                "phase": 2,
+                "who": "enslaved-tech",
+                "objective": "goTo",
+                "subject": "exit-near-players"
               }
             }
           ]
@@ -1216,7 +1874,12 @@
           }
         ],
         "deploy": {
-          "corner": "yellow from the opposite corner"
+          "zone": {
+            "kind": "corner",
+            "corner": "se",
+            "reach": "yellow",
+            "apart": 0.3
+          }
         }
       }
     ],
@@ -1225,100 +1888,355 @@
         "kind": "investigation",
         "face": "tech",
         "place": {
-          "spacing": "yellow",
-          "index": 1,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 2,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 3,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 4,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 5,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 6,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 7,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "spacing": "yellow",
-          "index": 8,
-          "avoid": "the two marked squares"
+          "zone": {
+            "kind": "table",
+            "margin": "red",
+            "except": [
+              {
+                "kind": "box",
+                "corner": "nw",
+                "w": "green",
+                "d": "green"
+              },
+              {
+                "kind": "box",
+                "corner": "se",
+                "w": "green",
+                "d": "green"
+              }
+            ]
+          },
+          "apart": "yellow"
         }
+      },
+      {
+        "kind": "object",
+        "face": "exit-near-ai",
+        "place": {
+          "at": {
+            "edge": "n",
+            "along": 0.1667,
+            "inset": 1
+          }
+        },
+        "props": {}
+      },
+      {
+        "kind": "object",
+        "face": "exit-near-players",
+        "place": {
+          "at": {
+            "edge": "s",
+            "along": 0.8333,
+            "inset": 1
+          }
+        },
+        "props": {}
       }
     ],
     "rules": [
       {
         "id": "phase-1",
-        "text": "Hounds Use the nearest marker (Awareness Red while peeking) and always respond with O; Super Mutants Protect their own hound. Player models peek at Yellow Awareness."
+        "text": "Hounds Use the nearest face-down marker (looking at it from no further than Red) and always perform the Objective response; Super Mutants Protect a hound. Player models can look at markers as usual."
       },
       {
         "id": "phase-2",
-        "text": "Once marker 1 is revealed the Tech appears. A player reveal gives the players the unarmed Tech (Move only; it will not move while a hound is within Yellow unless a player model is too) until it enters AI LoS. Hounds then Protect the Tech (always O) and Super Mutants Use Presence on it."
+        "text": "Once marker 1 is looked at, the Tech appears there, unarmed, under the control of the side that looked. Hounds Protect the Tech and always perform the Objective response. The Tech can leave through the exit marker near the other side start corner."
       },
       {
-        "id": "phase-3",
-        "text": "On a Presence success the hounds and Super Mutants Protect the Tech and the Tech goes to the exit, an edge within Black of the opposing starting corner."
+        "id": "tech",
+        "text": "The Tech and its exits.",
+        "params": {
+          "unit": "enslaved-tech",
+          "revealFace": "tech",
+          "exitNearAi": "exit-near-ai",
+          "exitNearPlayers": "exit-near-players"
+        }
       }
     ],
     "victory": [
       {
         "side": "player",
-        "when": "The player-controlled Tech exits (phases 1-2), or every AI model is removed (phases 2-3). Losing the Tech removes this win."
+        "when": "The Tech, controlled by the players, leaves through the exit near the AI start corner, or every AI model is removed once the Tech has appeared."
       },
       {
         "side": "super-mutants",
-        "when": "The AI-controlled Tech exits."
+        "when": "The Tech, controlled by the AI, leaves through the exit near the player start corner, or the Tech is removed."
       }
     ],
-    "source": "AIH p.7; spec 17 s4"
+    "source": "AIH p.7; spec 17 s4",
+    "terrain": [
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -6,
+          "dz": 5
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 30
+      },
+      {
+        "id": "wall-1",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 6,
+          "dz": -5
+        },
+        "w": 6,
+        "d": 1,
+        "h": 3.5,
+        "rot": 90
+      },
+      {
+        "id": "container-1",
+        "piece": "shipping-container-rusted",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": 0,
+          "dz": 0
+        },
+        "w": 8,
+        "d": 3.2,
+        "h": 3.2,
+        "rot": 20
+      },
+      {
+        "id": "junk-1",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": -10,
+          "dz": -2
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 10,
+          "dz": 3
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2
+      },
+      {
+        "id": "drums-1",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 3,
+          "dz": 9
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      },
+      {
+        "id": "barrier-1",
+        "piece": "concrete-jersey-barrier",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -3,
+          "dz": -9
+        },
+        "w": 4,
+        "d": 1,
+        "h": 1.2,
+        "rot": 15
+      }
+    ]
   },
   {
     "id": "coop-sewer",
@@ -1357,11 +2275,26 @@
           }
         ],
         "deploy": {
-          "note": "AI side"
+          "zone": {
+            "kind": "corner",
+            "corner": "nw",
+            "reach": "yellow",
+            "apart": 0.2
+          }
         },
         "ai": {
           "objective": "defeat",
-          "subject": "sole-survivor"
+          "subject": "sole-survivor",
+          "switches": [
+            {
+              "when": "always",
+              "set": {
+                "who": "deathclaw",
+                "objective": "defeat",
+                "subject": "any-enemy"
+              }
+            }
+          ]
         }
       },
       {
@@ -1383,7 +2316,12 @@
           }
         ],
         "deploy": {
-          "note": "player 1"
+          "zone": {
+            "kind": "disc",
+            "of": "hatch",
+            "within": "yellow",
+            "apart": 0.3
+          }
         }
       },
       {
@@ -1402,7 +2340,12 @@
           }
         ],
         "deploy": {
-          "note": "player 2"
+          "zone": {
+            "kind": "disc",
+            "of": "hatch",
+            "within": "yellow",
+            "apart": 0.3
+          }
         }
       }
     ],
@@ -1411,71 +2354,285 @@
         "kind": "object",
         "face": "hatch",
         "place": {
-          "at": "centre"
+          "at": {
+            "at": "centre"
+          }
         },
         "props": {
-          "locks": 2
+          "hatch": true,
+          "locks": 2,
+          "baseMm": 50
         }
       },
       {
         "kind": "investigation",
         "face": "key-1",
         "place": {
-          "index": 1
+          "zone": {
+            "kind": "table",
+            "margin": "orange",
+            "except": [
+              {
+                "kind": "disc",
+                "of": "hatch",
+                "within": "black + yellow"
+              },
+              {
+                "kind": "corner",
+                "corner": "nw",
+                "reach": "red + yellow"
+              }
+            ]
+          },
+          "apart": "red"
         }
       },
       {
         "kind": "investigation",
         "face": "key-2",
         "place": {
-          "index": 2
+          "zone": {
+            "kind": "table",
+            "margin": "orange",
+            "except": [
+              {
+                "kind": "disc",
+                "of": "hatch",
+                "within": "black + yellow"
+              },
+              {
+                "kind": "corner",
+                "corner": "nw",
+                "reach": "red + yellow"
+              }
+            ]
+          },
+          "apart": "red"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "index": 3
+          "zone": {
+            "kind": "table",
+            "margin": "orange",
+            "except": [
+              {
+                "kind": "disc",
+                "of": "hatch",
+                "within": "black + yellow"
+              },
+              {
+                "kind": "corner",
+                "corner": "nw",
+                "reach": "red + yellow"
+              }
+            ]
+          },
+          "apart": "red"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "index": 4
+          "zone": {
+            "kind": "table",
+            "margin": "orange",
+            "except": [
+              {
+                "kind": "disc",
+                "of": "hatch",
+                "within": "black + yellow"
+              },
+              {
+                "kind": "corner",
+                "corner": "nw",
+                "reach": "red + yellow"
+              }
+            ]
+          },
+          "apart": "red"
         }
       },
       {
         "kind": "investigation",
         "face": "blank",
         "place": {
-          "index": 5
+          "zone": {
+            "kind": "table",
+            "margin": "orange",
+            "except": [
+              {
+                "kind": "disc",
+                "of": "hatch",
+                "within": "black + yellow"
+              },
+              {
+                "kind": "corner",
+                "corner": "nw",
+                "reach": "red + yellow"
+              }
+            ]
+          },
+          "apart": "red"
         }
       }
     ],
     "rules": [
       {
         "id": "keys",
-        "text": "Revealing marker 1 or 2 turns it into a lock or terminal. A matching Expertise Use takes a shareable key; a key-holder removes a lock with a free Interact. With both locks gone, touching the hatch is the exit."
+        "text": "Five face-down markers hide two emergency boxes. Once one is looked at, a blank is discarded and a numbered one becomes a lock box or a terminal (chosen by the seeded draw). A model touching it can open it with Lockpick or Computers to match; success hands that model a key, which it can use on any lock of the hatch simply by touching the hatch. With both locks gone, player models touching the hatch leave through it.",
+        "params": {
+          "skills": [
+            "computers",
+            "lockpick"
+          ]
+        }
       },
       {
         "id": "deathclaw",
-        "text": "From round 4 to 6, when a luck token is flipped to its luck face, a Deathclaw (Defeat any model) enters once."
+        "text": "At the start of rounds 4, 5 and 6, flip a luck token. If it shows luck, a Deathclaw enters in the corner opposite the AI start and the flips stop. It plays for the AI with the Objective Defeat [any model].",
+        "params": {
+          "rounds": [
+            4,
+            6
+          ],
+          "unit": "deathclaw",
+          "zone": {
+            "kind": "corner",
+            "corner": "se",
+            "reach": "orange",
+            "apart": 0.3
+          }
+        }
       }
     ],
     "victory": [
       {
         "side": "p1",
         "level": "major",
-        "when": "Sole Survivor and two other player models exit."
+        "when": "The Sole Survivor and two other player models leave through the sewer."
       },
       {
         "side": "p1",
         "level": "minor",
-        "when": "Sole Survivor exits."
+        "when": "The Sole Survivor leaves through the sewer."
       }
     ],
-    "source": "COOP p.4; spec 17 s4"
+    "source": "COOP p.4; spec 17 s4",
+    "terrain": [
+      {
+        "id": "container-wall",
+        "piece": "shipping-container-rusted",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -9,
+          "dz": -9
+        },
+        "w": 8,
+        "d": 3.2,
+        "h": 3.2,
+        "rot": 45
+      },
+      {
+        "id": "wall-a",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -5,
+          "dz": -12
+        },
+        "w": 6,
+        "d": 1,
+        "h": 3.5,
+        "rot": -30
+      },
+      {
+        "id": "wall-b",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -12,
+          "dz": -5
+        },
+        "w": 6,
+        "d": 1,
+        "h": 3.5,
+        "rot": 60
+      },
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 8,
+          "dz": -8
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 20
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -7,
+          "dz": 7
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2,
+        "rot": 10
+      },
+      {
+        "id": "junk-1",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": 7,
+          "dz": 8
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
+      },
+      {
+        "id": "drums-1",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 10,
+          "dz": 0
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      },
+      {
+        "id": "barrier-1",
+        "piece": "concrete-jersey-barrier",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 0,
+          "dz": -9
+        },
+        "w": 4,
+        "d": 1,
+        "h": 1.2
+      }
+    ]
   },
   {
     "id": "coop-cage",
@@ -1517,21 +2674,88 @@
           }
         ],
         "deploy": {
-          "waves": [
+          "groups": [
             {
-              "round": 2,
               "units": [
-                "aviator",
-                "mutant-hound"
-              ]
+                "aviator"
+              ],
+              "zone": {
+                "kind": "disc",
+                "centre": {
+                  "edge": "n",
+                  "along": 0.5,
+                  "inset": "orange"
+                },
+                "within": "orange",
+                "apart": 0.3
+              },
+              "enters": {
+                "round": 2
+              }
             },
             {
-              "rounds": "3-6",
-              "when": "armor die lower than the round number minus 1",
               "units": [
-                "brute",
+                "mutant-hound"
+              ],
+              "zone": {
+                "kind": "disc",
+                "centre": {
+                  "edge": "s",
+                  "along": 0.5,
+                  "inset": "orange"
+                },
+                "within": "orange",
+                "apart": 0.3
+              },
+              "enters": {
+                "round": 2
+              }
+            },
+            {
+              "units": [
+                "brute"
+              ],
+              "zone": {
+                "kind": "disc",
+                "centre": {
+                  "edge": "n",
+                  "along": 0.5,
+                  "inset": "orange"
+                },
+                "within": "orange",
+                "apart": 0.3
+              },
+              "enters": {
+                "rounds": [
+                  3,
+                  6
+                ],
+                "armorDieBelowRoundMinus": 1,
+                "wave": "wave-2"
+              }
+            },
+            {
+              "units": [
                 "super-mutant"
-              ]
+              ],
+              "zone": {
+                "kind": "disc",
+                "centre": {
+                  "edge": "s",
+                  "along": 0.5,
+                  "inset": "orange"
+                },
+                "within": "orange",
+                "apart": 0.3
+              },
+              "enters": {
+                "rounds": [
+                  3,
+                  6
+                ],
+                "armorDieBelowRoundMinus": 1,
+                "wave": "wave-2"
+              }
             }
           ]
         },
@@ -1553,7 +2777,19 @@
           }
         ],
         "deploy": {
-          "note": "chained start"
+          "groups": [
+            {
+              "units": "rest",
+              "zone": {
+                "kind": "disc",
+                "of": "hole-1",
+                "within": 0.6
+              },
+              "tokens": {
+                "chain": 1
+              }
+            }
+          ]
         }
       },
       {
@@ -1569,116 +2805,334 @@
           }
         ],
         "deploy": {
-          "note": "chained start; carries the Mysterious Stranger perk"
+          "groups": [
+            {
+              "units": "rest",
+              "zone": {
+                "kind": "disc",
+                "of": "hole-2",
+                "within": 0.6
+              },
+              "tokens": {
+                "chain": 2
+              }
+            }
+          ]
         }
       }
     ],
     "markers": [
       {
-        "kind": "searchable",
-        "face": "item",
+        "kind": "object",
+        "face": "hole-1",
         "place": {
-          "index": 1
+          "at": {
+            "edge": "w",
+            "along": 0.5,
+            "inset": "yellow"
+          }
+        },
+        "props": {}
+      },
+      {
+        "kind": "object",
+        "face": "hole-2",
+        "place": {
+          "at": {
+            "edge": "e",
+            "along": 0.5,
+            "inset": "yellow"
+          }
+        },
+        "props": {}
+      },
+      {
+        "kind": "object",
+        "face": "chain",
+        "place": {
+          "at": {
+            "of": "hole-1",
+            "dz": -1.6
+          }
+        },
+        "props": {
+          "health": 2,
+          "armor": {
+            "physical": 3,
+            "energy": 3
+          },
+          "baseMm": 25,
+          "shootable": true,
+          "meleeable": true,
+          "slack": "black"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 2
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "yellow"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 3
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "yellow"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 4
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 5
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 6
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 7
+          "zone": {
+            "kind": "disc",
+            "of": "hole-1",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 8
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "yellow"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 9
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "yellow"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 10
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 11
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       },
       {
         "kind": "searchable",
         "face": "item",
         "place": {
-          "index": 12
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "green"
+          },
+          "apart": "orange"
+        }
+      },
+      {
+        "kind": "searchable",
+        "face": "item",
+        "place": {
+          "zone": {
+            "kind": "disc",
+            "of": "hole-2",
+            "within": "green"
+          },
+          "apart": "orange"
         }
       }
     ],
     "wastelandDecks": {
-      "items": []
+      "items": [
+        "baseball-bat",
+        "pipe-wrench",
+        "laser-pistol",
+        "combat-rifle",
+        "assault-rifle",
+        "combat-shotgun",
+        "fragmentation-grenade",
+        "missile-launcher",
+        "nuka-cola",
+        "psycho",
+        "patched-three-piece-suit"
+      ]
     },
     "rules": [
       {
         "id": "chain",
-        "text": "The two players are chained: their combined distance from their holes may not exceed Black, and they are pulled back otherwise. The chain has 2 Health, armor 2+1 against physical and energy, and gives +1 green die to hit it."
+        "text": "The two players are chained: the sum of how far each stands from his own hole may not exceed Black, and a model that would stretch it further pulls the other towards its hole. The chain has 2 Health and can be attacked with any weapon except the Improvised Weapon."
       },
       {
-        "id": "loot",
-        "text": "Twelve searchable markers draw from a fixed deck of twelve item cards. Improvised Weapon is only available at the start; non-melee weapons found have 3 uses."
+        "id": "weapon-uses",
+        "text": "Every searchable counts as an item find, drawn from the fixed deck of twelve cards. A found ranged weapon can only be used three times.",
+        "params": {
+          "limit": 3
+        }
       }
     ],
     "victory": [
       {
         "side": "p1",
-        "when": "The last side standing wins."
+        "when": "Every AI model has been removed."
+      },
+      {
+        "side": "ai",
+        "when": "Every player model has been removed."
       }
     ],
-    "source": "COOP p.5; spec 17 s4"
+    "source": "COOP p.5; spec 17 s4",
+    "terrain": [
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 0,
+          "dz": -8
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 90
+      },
+      {
+        "id": "wall-1",
+        "piece": "ruined-brick-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -3,
+          "dz": 7
+        },
+        "w": 6,
+        "d": 1,
+        "h": 3.5
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 5,
+          "dz": 3
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2
+      },
+      {
+        "id": "drums-1",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -6,
+          "dz": -3
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      },
+      {
+        "id": "junk-1",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": 8,
+          "dz": -5
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
+      },
+      {
+        "id": "barrier-1",
+        "piece": "concrete-jersey-barrier",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -8,
+          "dz": 4
+        },
+        "w": 4,
+        "d": 1,
+        "h": 1.2,
+        "rot": 90
+      }
+    ]
   },
   {
     "id": "coop-munitions",
@@ -1711,8 +3165,12 @@
           }
         ],
         "deploy": {
-          "within": "green",
-          "of": "opposite corner"
+          "zone": {
+            "kind": "corner",
+            "corner": "nw",
+            "reach": "green",
+            "apart": 0.3
+          }
         },
         "ai": {
           "objective": "goTo",
@@ -1738,8 +3196,12 @@
           }
         ],
         "deploy": {
-          "within": "red",
-          "of": "other corner"
+          "zone": {
+            "kind": "corner",
+            "corner": "ne",
+            "reach": "red",
+            "apart": 0.3
+          }
         }
       },
       {
@@ -1762,8 +3224,12 @@
           }
         ],
         "deploy": {
-          "within": "red",
-          "of": "other corner"
+          "zone": {
+            "kind": "corner",
+            "corner": "sw",
+            "reach": "red",
+            "apart": 0.3
+          }
         }
       }
     ],
@@ -1772,34 +3238,144 @@
         "kind": "object",
         "face": "munitions",
         "place": {
-          "from": "a corner",
-          "offset": "orange diagonally"
+          "at": {
+            "corner": "se",
+            "diag": "orange"
+          }
+        },
+        "props": {
+          "baseMm": 40
         }
       }
     ],
     "terrain": [
       {
-        "kind": "wall",
-        "climbable": false,
+        "id": "wall-w",
+        "piece": "impassable-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "edge": "w",
+          "along": 0.5
+        },
         "length": "black + orange",
-        "from": "edge midpoint",
-        "count": 2
+        "dir": "e",
+        "thick": 1,
+        "h": 3.5,
+        "props": {
+          "cannotClimb": true
+        }
+      },
+      {
+        "id": "wall-e",
+        "piece": "impassable-wall",
+        "rulesType": "obstruction",
+        "at": {
+          "edge": "e",
+          "along": 0.5
+        },
+        "length": "black + orange",
+        "dir": "w",
+        "thick": 1,
+        "h": 3.5,
+        "props": {
+          "cannotClimb": true
+        }
+      },
+      {
+        "id": "wreck-1",
+        "piece": "rusted-sedan-wreck",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": -6,
+          "dz": -9
+        },
+        "w": 5,
+        "d": 2.4,
+        "h": 1.8,
+        "rot": 15
+      },
+      {
+        "id": "crates-1",
+        "piece": "wooden-crate-stack",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 6,
+          "dz": -8
+        },
+        "w": 3,
+        "d": 2,
+        "h": 2,
+        "rot": 80
+      },
+      {
+        "id": "container-1",
+        "piece": "shipping-container-rusted",
+        "rulesType": "obstruction",
+        "at": {
+          "at": "centre",
+          "dx": -8,
+          "dz": 9
+        },
+        "w": 8,
+        "d": 3.2,
+        "h": 3.2
+      },
+      {
+        "id": "barrier-1",
+        "piece": "concrete-jersey-barrier",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 7,
+          "dz": 8
+        },
+        "w": 4,
+        "d": 1,
+        "h": 1.2
+      },
+      {
+        "id": "drums-1",
+        "piece": "oil-drum-cluster",
+        "rulesType": "obstacle",
+        "at": {
+          "at": "centre",
+          "dx": 0,
+          "dz": -6
+        },
+        "w": 2.5,
+        "d": 2.5,
+        "h": 1.4
+      },
+      {
+        "id": "junk-1",
+        "piece": "junk-pile",
+        "rulesType": "rough",
+        "at": {
+          "at": "centre",
+          "dx": 0,
+          "dz": 7
+        },
+        "w": 4,
+        "d": 4,
+        "h": 1.8
       }
     ],
     "rules": [
       {
         "id": "munitions",
-        "text": "The AI heads for the munitions marker. At round end, any non-dog AI model that can Interact with it triggers the AI win."
+        "text": "The AI heads for the munitions token. If, when a round ends, a model on the AI side that is not a dog is free to Interact with the token, the munitions go off and take the base with them. The two walls cannot be climbed."
       }
     ],
     "victory": [
       {
         "side": "ai",
-        "when": "A non-dog AI model interacts with the munitions at the end of a round."
+        "when": "At the end of a round a non-dog AI model could Interact with the munitions."
       },
       {
         "side": "p1",
-        "when": "All AI models are removed, or the players survive round 8."
+        "when": "Every AI model has been removed, or the players are still standing when round 8 ends."
       }
     ],
     "source": "COOP p.6; spec 17 s4"

@@ -42,7 +42,8 @@ export function promptView(p: PendingDecision, n: Namers): PromptCopy {
     case 'react.offer': return list(`${who} may react`, 'Something just happened in view of this unit. React now, or let it go.', (o) => (o.id === 'pass' ? 'Do not react' : fallback(o)))
     case 'melee.slide': return list('Slide after the attack?', `${who} may shift along the enemy, or stay put. Drag the figure to slide.`, () => 'Stay put', 'path')
     case 'charge.marker': return list('Charge bonus', `${who} earns a charge die against ${n.name(str(ctx.targetId))}. Choose its colour.`, (o) => `Take a ${o.id} charge die`)
-    case 'battleCry.push': return list('Battle cry follow-up', `${who} won the battle cry over ${n.name(str(ctx.targetId))}.`, (o) => (o.id === 'push' ? 'Shove them back and follow' : 'Hold position'))
+    case 'battleCry.follow': return list('Follow the push?', `${who} may step after ${n.name(str(ctx.targetId))} to stay in contact.`, (o) => (o.id === 'follow' ? 'Follow them' : 'Hold position'))
+    case 'battleCry.push': return list('Battle cry follow-up', `${who} won the battle cry over ${n.name(str(ctx.targetId))}.`, (o) => (o.id === 'push' ? 'Shove them back' : 'Hold position'))
     case 'move.path': {
       const inches = typeof ctx.inches === 'number' ? ctx.inches : null
       const hint = `Drag ${who} on the table${inches !== null ? ` (up to ${inches} in, ${str(ctx.colour)} ruler)` : ''}, then release to confirm.`

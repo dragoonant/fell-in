@@ -143,3 +143,8 @@
   .dock { bottom: 8px; width: calc(100vw - 16px); max-height: 44vh; }
   .banner { font-size: 22px; }
 }
+
+.ai-card { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); min-width: 190px; font-size: 13px; pointer-events: none; }
+.ai-card dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 2px 0 0; }
+.ai-card dt { color: var(--sand); opacity: .8; }
+.ai-card dd { margin: 0; }

@@ -198,7 +198,11 @@ describe('charge and battle cry', () => {
     expect(m.state.pending.kind).toBe('battleCry.push')
     const pushed = ok(melee.resolve(m.state, b, act(m.state, { type: 'battleCry.push', modelId: d.attackerId, targetId: d.targetId, push: true })))
     expect(mocks.pushes).toEqual([expect.objectContaining({ id: d.targetId, colour: 'yellow' })])
-    expect((pushed.done!.triggers[0] as unknown as { exempt: string[] }).exempt).toEqual([d.targetId])
+    expect(pushed.state.pending.kind).toBe('battleCry.follow') // CH p15: the follow-up is its own choice
+    const held = ok(melee.resolve(pushed.state, b, act(pushed.state, { type: 'battleCry.follow', modelId: d.attackerId, targetId: d.targetId, follow: false })))
+    expect(held.state.models[d.attackerId]!.tokens[`noFollow:${d.targetId}`]).toBe(1) // ERR p.16
+    const followed = ok(melee.resolve(pushed.state, b, act(pushed.state, { type: 'battleCry.follow', modelId: d.attackerId, targetId: d.targetId, follow: true })))
+    expect((followed.done!.triggers[0] as unknown as { exempt: string[] }).exempt).toEqual([d.targetId])
     const stay = ok(melee.resolve(m.state, b, act(m.state, { type: 'battleCry.push', modelId: d.attackerId, targetId: d.targetId, push: false })))
     expect(stay.done).toBeTruthy()
   })

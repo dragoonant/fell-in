@@ -305,6 +305,10 @@ engine `query.*` numbers; it never computes a rules number itself.
   are evaluated by the engine scenario module after each Action and at activation start, and write `aiPhase`.
 - Scenario overrides such as "do not roll, perform O" (Break-in patrols, Escaped Tech hounds) are a switch that sets
   `{ forceResponse: 'O' }`.
+  A later switch with `forceResponse: 'matrix'` clears it (patrol over). A model's `tokens.aiRouteId` (set at deployment from the
+  side's `groups[].route`) makes `next-route-marker` walk only the markers with that `props.route.id`, in `step` order; the
+  scenario module advances `tokens.aiRoute` when the model touches the marker it is heading for and sets `tokens.aiAware`
+  (spec 17 s4.2). Looking at an investigation marker needs no skill for Use.
 
 ### 8.7 AI decision log (AI-015)
 Each answer from the official decider produces one `AiDecisionLog` (shape in `src/ai/official/types.ts`): decision id

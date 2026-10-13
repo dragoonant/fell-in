@@ -20,7 +20,12 @@ read only the section a task needs. The source map is `docs/spec/sources/WW-SOUR
 - Resume: `git checkout wip/m4b`, `npm run typecheck && npm test`, then rerun `tools/workflows/m4b-official-ai.js`
   from the decider stage (pass `args.root` and `args.src`; skip design/engine/client which are done).
 
-## Current state (2026-10-11)
+## Current state (2026-10-12)
+- M0-M4 shipped; see STATUS.md. M4b (official AI cards, solo/co-op) is rebuilt from the Campaign Handbook, which is
+  in gitignored `docs/sources/`; it replaced the earlier fan-source M4b. **Next: the owner playtest gate for M4**
+  (versus bot and Wasteland AI), then fill the four placeholder AI cards from photos and the gaps in STATUS.md.
+
+## History (2026-10-11)
 - **M0 bootstrap shipped.** Public repo `dragoonant/fell-in`, Pages https://dragoonant.github.io/fell-in/ (deploy
   workflow green, also runs on `workflow_dispatch`). Start screen, 36x36 in wasteland table, camera presets,
   procedural terrain and 4 placeholder figures. `npm run typecheck`, `npm test` (12), `npm run build` and

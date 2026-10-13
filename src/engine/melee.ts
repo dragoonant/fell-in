@@ -24,6 +24,7 @@ import { conditionSvMods } from './conditions'
 import {
   actionFlags, composePlan, criticalProblem, dropCharged, engagedWith, isEngaged, nameOf, resolveImmediate, startAttack, resolveLuck,
   weaponRef, improvisedUid, type AttackOptsEx, type AttackPlan, type WeaponRef,
+  raiseFollow, raiseSlide,
 } from './attack'
 import type { Action, DecisionOption, GameState, Mod, ModelId, Rejection, Vec2 } from './types'
 import type { Band, CoverInfo } from './query'
@@ -226,7 +227,7 @@ function chargeMarker(state: GameState, bundle: EditionBundle, action: Action): 
     state: raiseDecision(s, {
       seat: m.owner, kind: 'battleCry.push', canPass: false, context: { modelId: id, targetId, colour: row.colour, done },
       options: [
-        option('push', `Shove ${nameOf(s, bundle, targetId)} back and follow`, 'battleCry.push', { modelId: id, targetId, push: true }, m.owner),
+        option('push', `Shove ${nameOf(s, bundle, targetId)} back`, 'battleCry.push', { modelId: id, targetId, push: true }, m.owner),
         option('stay', 'Hold position', 'battleCry.push', { modelId: id, targetId, push: false }, m.owner),
       ],
     }),
@@ -236,17 +237,30 @@ function chargeMarker(state: GameState, bundle: EditionBundle, action: Action): 
 function battleCryPush(state: GameState, bundle: EditionBundle, action: Action): StepResult {
   const ctx = state.pending.context as { modelId: ModelId; targetId: ModelId; colour: Colour; done: ActionDone }
   if (typeof action.push !== 'boolean') return reject('E_BAD_PARAM', 'Choose push or stay.')
+  if (!action.push) return { state, done: ctx.done }
+  const A = state.models[ctx.modelId]!
+  const s = pushBack(state, bundle, ctx.targetId, A.pos, ctx.colour).state // BC-005, CC-012
+  // The follow-up is a separate choice (CH p15): declining it still leaves the target pushed.
+  if (!isOnTable(s.models[ctx.targetId]!) || !isOnTable(s.models[ctx.modelId]!)) return { state: s, done: ctx.done }
+  return { state: raiseFollow(s, ctx.modelId, ctx.targetId, ctx.done, 'done') }
+}
+
+/** Answer to 'battleCry.follow': the pusher steps after its target, or declines (ERR p.16: that bars a new base-contact attack on it). */
+function pushFollow(state: GameState, _bundle: EditionBundle, action: Action): StepResult {
+  const ctx = state.pending.context as { modelId: ModelId; targetId: ModelId; done: ActionDone; then: 'slide' | 'done' }
+  if (typeof action.follow !== 'boolean') return reject('E_BAD_PARAM', 'Choose follow or hold.')
   let s = state
-  if (action.push) {
-    const A = s.models[ctx.modelId]!
-    s = pushBack(s, bundle, ctx.targetId, A.pos, ctx.colour).state // BC-005, CC-012
-    const a = s.models[ctx.modelId]!, b = s.models[ctx.targetId]!
+  const a = s.models[ctx.modelId], b = s.models[ctx.targetId]
+  if (action.follow && a && b && isOnTable(a) && isOnTable(b)) {
     const gap = modelDistance(a, b)
-    if (isOnTable(b) && gap > EPS) { // the charger may follow to stay in contact
+    if (gap > EPS) {
       const sw = sweepStraight(s, ctx.modelId, sub(b.pos, a.pos), gap)
       s = updateModel(s, ctx.modelId, { pos: sw.end })
     }
+  } else if (!action.follow && a) {
+    s = updateModel(s, ctx.modelId, { tokens: { ...a.tokens, [`noFollow:${ctx.targetId}`]: 1 } }) // cleared when the next activation begins
   }
+  if (ctx.then === 'slide' && s.models[ctx.modelId] && isOnTable(s.models[ctx.modelId]!)) return { state: raiseSlide(s, ctx.modelId, ctx.done) }
   return { state: s, done: ctx.done }
 }
 
@@ -317,6 +331,7 @@ export const melee: ModuleDef = {
       case 'charge.go': return chargeGo(state, bundle, action)
       case 'charge.marker': return chargeMarker(state, bundle, action)
       case 'battleCry.push': return battleCryPush(state, bundle, action)
+      case 'battleCry.follow': return pushFollow(state, bundle, action)
       default: return reject('E_UNKNOWN_KIND', `Unknown action ${action.type}.`)
     }
   },

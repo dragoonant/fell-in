@@ -10,7 +10,7 @@ import { hostile } from '../../src/engine/sides'
 import { activationMenu } from '../../src/engine/turnflow'
 import type { Action, GameState, MarkerState } from '../../src/engine/types'
 import { view } from '../../src/engine/view'
-import { loadBundle } from './helpers'
+import { loadBundle, rocketAtOrigin } from './helpers'
 
 const bundle = loadBundle()
 const pick = (s: GameState, type: string, match: Partial<Action> = {}): Action => {
@@ -23,7 +23,7 @@ const step = (s: GameState, a: Action): GameState => {
   if (!r.ok) throw new Error(`${a.type}: ${r.rejection.code} ${r.rejection.message}`)
   return r.state
 }
-const aiGame = (seed = 'ai1') => createGame(bundle, { seed, scenarioId: 'ai-rr', seats: ['p1', 'ai'] })
+const aiGame = (seed = 'ai1') => rocketAtOrigin(createGame(bundle, { seed, scenarioId: 'ai-rr', seats: ['p1', 'ai'] }))
 const coopGame = (seed = 'co1') => createGame(bundle, { seed, scenarioId: 'coop-munitions', seats: ['ai', 'p1', 'p2'] })
 const started = (s: GameState): GameState => step(s, pick(s, 'turn.start'))
 const set = (s: GameState, id: string, patch: Partial<GameState['models'][string]>): GameState => ({ ...s, models: { ...s.models, [id]: { ...s.models[id]!, ...patch } } })

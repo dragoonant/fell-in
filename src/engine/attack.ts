@@ -518,6 +518,7 @@ export function resolveLuck(state: GameState, bundle: EditionBundle, action: Act
 function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResult {
   const { plan, test, ns } = run
   let s = state
+  let pushedContact = false
   const triggers: Trigger[] = []
   if (!plan.free) triggers.push({ kind: 'action', sourceId: plan.attackerId, targetId: plan.targetId, attack: true })
   const ref = weaponRef(s, bundle, plan.attackerId, plan.weaponUid)
@@ -525,6 +526,7 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
   if (test.success) {
     const h = resolveHit(s, bundle, run)
     s = h.state
+    pushedContact = h.pushedContact === true
     if (!plan.free && !plan.targetMarkerId) {
       triggers.push({ kind: 'hit', sourceId: plan.attackerId, targetId: h.victimId, attack: true })
       if (h.tookDamage) triggers.push({ kind: 'damaged', sourceId: plan.attackerId, targetId: h.victimId, attack: true })
@@ -556,23 +558,42 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
     if (ref.def.heavy && s.activation?.modelId === plan.attackerId) s = { ...s, activation: { ...s.activation, heavyFired: true } }
   }
   const done: ActionDone = { modelId: plan.attackerId, type: actionType(ns), triggers }
+  const followable = pushedContact && isOnTable(s.models[plan.attackerId]!) && isOnTable(s.models[plan.targetId]!) // CH p15: a Push Back may be followed
   if (ns === 'melee' && !plan.free) {
     const me = s.models[plan.attackerId]!
     // Charge markers are spent by the attack either way (CHG-006).
     s = updateModel(s, plan.attackerId, { chargeBonus: [], tokens: dropCharged(me.tokens) })
     const after = s.models[plan.attackerId]!
     if (isOnTable(after)) {
-      const engagedBefore = engagedWith(s, plan.attackerId)
-      return {
-        state: raiseDecision(s, {
-          seat: after.owner, kind: 'melee.slide', canPass: false,
-          context: { modelId: plan.attackerId, engagedBefore, done },
-          options: [option('slide', 'Slide after the attack (give a path), or stay put', 'melee.slide', { modelId: plan.attackerId })],
-        }),
-      }
+      if (followable) return { state: raiseFollow(s, plan.attackerId, plan.targetId, done, 'slide') }
+      return { state: raiseSlide(s, plan.attackerId, done) }
     }
   }
+  if (followable) return { state: raiseFollow(s, plan.attackerId, plan.targetId, done, 'done') }
   return { state: s, done }
+}
+
+/** The Close Combat slide decision (CC-007). */
+export function raiseSlide(state: GameState, modelId: ModelId, done: ActionDone): GameState {
+  const owner = state.models[modelId]!.owner
+  return raiseDecision(state, {
+    seat: owner, kind: 'melee.slide', canPass: false,
+    context: { modelId, engagedBefore: engagedWith(state, modelId), done },
+    options: [option('slide', 'Slide after the attack (give a path), or stay put', 'melee.slide', { modelId })],
+  })
+}
+
+/** Push Back follow-up decision (CH p15): step into base contact again, or hold. `then` says what comes next. */
+export function raiseFollow(state: GameState, modelId: ModelId, targetId: ModelId, done: ActionDone, then: 'slide' | 'done'): GameState {
+  const owner = state.models[modelId]!.owner
+  return raiseDecision(state, {
+    seat: owner, kind: 'battleCry.follow', canPass: false,
+    context: { modelId, targetId, done, then },
+    options: [
+      option('follow', 'Follow the pushed model to stay in contact', 'battleCry.follow', { modelId, targetId, follow: true }, owner),
+      option('hold', 'Hold position', 'battleCry.follow', { modelId, targetId, follow: false }, owner),
+    ],
+  })
 }
 
 /** Remove the "charged:<id>" bookkeeping keys from a token map. */
@@ -591,7 +612,7 @@ function damageIcons(run: RunCtx): { dmg: number; ar: number } {
   return { dmg: run.test.icons.DMG, ar: run.test.icons.AR }
 }
 
-interface HitOutcome { state: GameState; victimId: ModelId; tookDamage: boolean }
+interface HitOutcome { state: GameState; victimId: ModelId; tookDamage: boolean; /** a weapon Push Back moved a victim that was in base contact (CH p15 follow-up applies) */ pushedContact?: boolean }
 
 function resolveHit(state: GameState, bundle: EditionBundle, run: RunCtx): HitOutcome {
   const { plan, ns } = run
@@ -654,18 +675,23 @@ function resolveHit(state: GameState, bundle: EditionBundle, run: RunCtx): HitOu
     }
   }
   // post-damage effects on the victim
+  let pushedContact = false
   const v = s.models[victimId]
   if (v && isOnTable(v)) {
     for (const p of fx.post) {
       if (p.kind === 'cond') s = addCondition(s, bundle, victimId, p.c).state
       else if (p.kind === 'removeReaction') s = updateModel(s, victimId, { reaction: false })
-      else if (p.kind === 'push') s = pushBack(s, bundle, victimId, s.models[plan.attackerId]!.pos, p.colour).state
+      else if (p.kind === 'push') {
+        const att = s.models[plan.attackerId]
+        if (att && ns === 'melee' && modelDistance(att, s.models[victimId]!) <= EPS) pushedContact = true
+        s = pushBack(s, bundle, victimId, att!.pos, p.colour).state
+      }
       else if (p.kind === 'ap' && !plan.quick && !plan.reaction && !plan.free && s.activation?.modelId === plan.attackerId) {
         s = { ...s, activation: { ...s.activation, ap: s.activation.ap + p.n } }
       }
     }
   }
-  return { state: s, victimId, tookDamage }
+  return { state: s, victimId, tookDamage, ...(pushedContact ? { pushedContact } : {}) }
 }
 
 /** A failed attack: scatter weapons land somewhere else (THR-002, WPN-001/002). */

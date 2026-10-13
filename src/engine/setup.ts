@@ -6,6 +6,7 @@ import { recordOf, rulerColours, rulerInches } from './edition'
 import { baseRadius } from './geometry'
 import { pushEvents, raiseDecision } from './registry'
 import { roll, seedRng } from './rng'
+import { deployScenario } from './scenarios/deploy'
 import { themedTerrain } from './terrainCatalog'
 import type { CarriedItem, CarriedKind, GameState, MarkerState, ModelState, SeatController, SeatId, SeatState, TerrainInstance } from './types'
 
@@ -65,7 +66,7 @@ function kindOf(bundle: EditionBundle, id: string): CarriedKind | null {
 }
 
 /** Carried instances for a model: the unit card's equipped list, then the force entry's items (deduplicated). */
-function carriedFor(bundle: EditionBundle, modelId: string, ids: readonly string[]): CarriedItem[] {
+export function carriedFor(bundle: EditionBundle, modelId: string, ids: readonly string[]): CarriedItem[] {
   const out: CarriedItem[] = []
   for (const defId of [...new Set(ids)]) {
     const kind = kindOf(bundle, defId)
@@ -226,7 +227,8 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     seatOrder,
     markers: placeMarkers(bundle, sc, w),
   }
-  const game = hasAi ? setUpAiForces(base, seatOrder.filter((x) => controllerOf(x) === 'official')) : base
+  // Scenario layout from data (terrain, markers, zones) comes last: it overrides the generic rows and the AI marker draw's positions.
+  const game = deployScenario(hasAi ? setUpAiForces(base, seatOrder.filter((x) => controllerOf(x) === 'official')) : base, bundle)
   // A human seat opens the game; the AI never has to answer the start prompt.
   const opener = seatOrder.find((x) => controllerOf(x) !== 'official') ?? seatOrder[0]!
   return raiseDecision(game, {

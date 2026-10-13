@@ -395,7 +395,7 @@ function foundChoice(state: GameState, bundle: EditionBundle, action: Action): S
   if (!m || !mk) return reject('E_BAD_TARGET', 'Stale search')
   const markers = state.markers.filter((x) => x.id !== mk.id)
   const kind: CarriedKind = recordOf(bundle, 'items', defId) ? 'item' : recordOf(bundle, 'weapons', defId) ? 'weapon' : recordOf(bundle, 'armor', defId) ? 'armor' : 'item'
-  const card: CarriedItem = { uid: `${modelId}/${defId}#${state.events.length}`, defId, kind, starting: false }
+  const card: CarriedItem = { uid: `${modelId}/${defId}#${state.rollSeq}`, defId, kind, starting: false }
   let s: GameState = { ...state, markers }
   if (action.type === 'search.keep') s = updateModel(s, modelId, { carried: [...m.carried, card] })
   else s = { ...s, markers: [...markers, { ...mk, id: `${mk.id}-item`, kind: 'object', face: `item:${defId}`, revealed: true, props: { dropped: { ...card, uid: `left/${mk.id}/${defId}` } } }] }

@@ -125,3 +125,7 @@ export async function runDeciders(state: GameState, bundle: EditionBundle, decid
   }
   return { state: s, steps: opts.maxSteps ?? 500, rejections, stoppedBy: 'maxSteps' }
 }
+
+/** Move the Red Rocket to the table centre at the old 40 mm size: AI unit tests measure everything from there, not from the scenario's corner layout. */
+export const rocketAtOrigin = <S extends { markers: { face?: string; pos: { x: number; z: number }; props: Record<string, unknown> }[] }>(s: S): S =>
+  ({ ...s, markers: s.markers.map((m) => (m.face === 'red-rocket' ? { ...m, pos: { x: 0, z: 0 }, props: { ...m.props, baseMm: 40 } } : m)) })

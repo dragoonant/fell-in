@@ -8,6 +8,7 @@ import { attrOf } from './forces'
 import { baseRadius, dist } from './geometry'
 import { isEngaged } from './attack'
 import { objectGap, pushObject } from './objects'
+import { exitedIds, isAiOwned, scenarioRoundEntries, scenarioRoundMoves, scenarioTurnEnd, scenarioUpkeep, techIdOf } from './scenarios/rules'
 import { teamOf } from './sides'
 import { gainAp } from './turnflow'
 import { option, pushEvents, reject, type ModuleDef, type StepResult } from './registry'
@@ -110,11 +111,49 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
     const sled = markersOf(c.state, 'missile-sled')[0]
     if (!sled) return null
     if (sled.props.detonated === true) return { side: null, reason: 'The missile detonated' }
-    if (sled.props.sabotaged === true) return { side: 'player', reason: 'The sled was sabotaged' }
-    if (markerGone(c.state, sled)) return { side: 'super-mutants', reason: 'The sled left the table' }
+    if (sled.props.sabotaged === true || sled.props.destroyed === true) return { side: sideOfSeat(c.state, playerSeat(c.state)), reason: 'The sled was sabotaged' }
+    if (markerGone(c.state, sled)) return { side: aiSide(c), reason: 'The sled left the table' }
+    return null
+  },
+  'ai-breakin': (c) => {
+    const valve = markersOf(c.state, 'valve')[0]
+    const players = Object.values(c.state.models).filter((m) => !isAiOwned(c.state, m))
+    const out = players.filter((m) => exitedIds(c.state).includes(m.id)).length
+    if (valve?.props.done === true && players.length > 0 && out * 2 >= players.length) return { side: sideOfSeat(c.state, playerSeat(c.state)), reason: 'The valve is running again and the team got out' }
+    return null
+  },
+  'coop-sewer': (c) => {
+    const out = Object.values(c.state.models).filter((m) => !isAiOwned(c.state, m) && exitedIds(c.state).includes(m.id))
+    const survivor = out.some((m) => m.profileId === 'sole-survivor')
+    const side = sideOfSeat(c.state, playerSeat(c.state))
+    if (survivor && out.length >= 3) return { side, level: 'major', reason: 'The Sole Survivor and two more got out through the sewer' }
+    if (survivor && c.phase === 'roundEnd' && c.state.maxRounds !== null && c.state.round >= c.state.maxRounds) return { side, level: 'minor', reason: 'Only the Sole Survivor got out through the sewer' }
+    return null
+  },
+  'ai-tech': (c) => {
+    const id = techIdOf(c.state)
+    const tech = id ? c.state.models[id] : undefined
+    if (!tech) return null
+    // The Tech walking out wins for whoever controls it; losing it ends the hunt for the players.
+    if (exitedIds(c.state).includes(tech.id)) return { side: sideOfSeat(c.state, tech.owner), reason: isAiOwned(c.state, tech) ? 'The AI got the Tech out' : 'The Tech got away' }
+    if (tech.life === 'dead') return { side: aiSide(c), reason: 'The Tech was lost' }
+    return null
+  },
+  'coop-munitions': (c) => {
+    const bomb = markersOf(c.state, 'munitions')[0]
+    if (c.phase !== 'roundEnd' || !bomb) return null
+    // An AI model that is not a dog, free of engagement and touching the token, could Interact with it: the base goes up.
+    const blast = Object.values(c.state.models).find((m) => onTable(m) && isAiOwned(c.state, m) && recordOf(c.bundle, 'units', m.profileId)?.types.includes('dog') !== true
+      && dist(m.pos, bomb.pos) - baseRadius(m.base) <= MARKER_REACH_IN && !isEngaged(c.state, m.id))
+    if (blast) return { side: aiSide(c), reason: 'The munitions went up' }
+    if (c.state.maxRounds !== null && c.state.round >= c.state.maxRounds) return { side: sideOfSeat(c.state, playerSeat(c.state)), reason: 'The base held until the reinforcements came' }
     return null
   },
 }
+
+/** The first seat that is not the AI (the player team's front seat) and the side id the AI plays. */
+const playerSeat = (state: GameState): SeatId => state.seatOrder.find((x) => state.seats[x]?.controller !== 'official') ?? state.seatOrder[0]!
+const aiSide = (c: Ctx): string => c.def.sides.find((x) => x.ai)?.id ?? 'ai'
 
 function tutorialAll(c: Ctx, flag: string, reason: string): Verdict | null {
   const targets = c.state.markers.filter((m) => m.kind === 'investigation')
@@ -129,7 +168,7 @@ function lastGroupStanding(c: Ctx): Verdict | null {
   const groups = new Set(c.state.seatOrder.map(group))
   if (groups.size < 2) return null
   const standing = new Set<string>()
-  for (const m of Object.values(c.state.models)) if (onTable(m) && !m.inert) standing.add(group(m.owner))
+  for (const m of Object.values(c.state.models)) if ((onTable(m) || (alive(m) && m.tokens.reserve)) && !m.inert) standing.add(group(m.owner)) // waiting reserves still count
   if (standing.size >= groups.size) return null
   if (standing.size === 0) return { side: null, reason: 'Nobody is left standing' }
   if (standing.size > 1) return null
@@ -183,13 +222,25 @@ function timeoutByPoints(state: GameState, bundle: EditionBundle): GameResult | 
   return { winner: ranked[0]![0], reason: 'Time ran out; the side with more surviving points wins', caps: 0 }
 }
 
+/** After every finished Action: counters, patrol steps, keys, chains and exits for the scenario's mechanics (spec 17 s4.2). */
+export function upkeep(state: GameState, bundle: EditionBundle): GameState {
+  return scenarioUpkeep(state, bundle)
+}
+
+/** A turn just ended: scenario movement such as the missile sled, then a victory check (it may have exited or been crushed into a loss). */
+export function endOfTurn(state: GameState, bundle: EditionBundle): GameState {
+  const s = scenarioTurnEnd(state, bundle)
+  const result = evaluate(s, bundle, 'action')
+  return result ? pushEvents({ ...s, phase: 'over', result }, [{ type: 'gameOver', winner: result.winner, reason: result.reason }]) : s
+}
+
 /** Round end: scenario timers, round limit -> result, phase 'over' (SCN-001). Called by turnflow. */
 export function endOfRound(state: GameState, bundle: EditionBundle): GameState {
   if (state.phase === 'over') return state
-  const s = dropDeadCarriers(state)
+  const s = scenarioRoundMoves(dropDeadCarriers(state), bundle)
   let result = evaluate(s, bundle, 'roundEnd')
   if (!result && s.maxRounds !== null && s.round >= s.maxRounds) result = timeoutByPoints(s, bundle) ?? { winner: null, reason: 'The round limit was reached with no winner', caps: 0 }
-  if (!result) return s
+  if (!result) return scenarioRoundEntries(s, bundle)
   return pushEvents({ ...s, phase: 'over', result }, [{ type: 'gameOver', winner: result.winner, reason: result.reason }])
 }
 
@@ -203,11 +254,37 @@ function carriable(state: GameState, mk: MarkerState): boolean {
 /** Objects a scenario lets models push, by scenario (RR p2: a Str test within Orange shoves the rocket Yellow). A marker may opt in with props.pushable. */
 const PUSHABLE_FACES: Record<string, string[]> = { 'ai-rr': ['red-rocket'] }
 const PUSH_REACH = 'orange', PUSH_DISTANCE = 'yellow'
+const pushReachOf = (mk: MarkerState): string => (typeof mk.props.pushReach === 'string' ? mk.props.pushReach : PUSH_REACH)
+const pushDistanceOf = (mk: MarkerState): string => (typeof mk.props.pushDistance === 'string' ? mk.props.pushDistance : PUSH_DISTANCE)
+/** Markers a model may Interact with for a plain effect (props.interact; props.interactBy 'players' | 'ai' | 'any'). */
+function interactable(state: GameState, mk: MarkerState, m: ModelState): boolean {
+  if (mk.props.interact !== true || mk.props.done === true || mk.props.destroyed === true) return false
+  const by = mk.props.interactBy ?? 'any'
+  return by === 'any' || (by === 'players') === !isAiOwned(state, m)
+}
 function pushable(state: GameState, mk: MarkerState): boolean {
   if (mk.props.destroyed === true || mk.props.offTable === true) return false
   return mk.props.pushable === true || (!!state.scenarioId && !!mk.face && (PUSHABLE_FACES[state.scenarioId] ?? []).includes(mk.face))
 }
 const touching = (m: ModelState, mk: MarkerState): boolean => dist(m.pos, mk.pos) - baseRadius(m.base) <= MARKER_REACH_IN
+
+/**
+ * An object with props.departEdges (the Red Rocket: the edges at the diner's corner) is taken off the table when a shove puts
+ * its base in contact with one of those edges (RR: "taken off the board after moving into contact with the opposite board
+ * edge"). At any other edge it stops in contact and stays.
+ */
+function keepToDepartureEdges(state: GameState, markerId: string): GameState {
+  const mk = state.markers.find((x) => x.id === markerId)
+  const edges = mk?.props.departEdges as string[] | undefined
+  if (!mk || !Array.isArray(edges)) return state
+  const { w, d } = state.scenario.table
+  const r = baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40)
+  const touching: Record<string, boolean> = { n: mk.pos.z - r <= -d / 2 + 1e-9, s: mk.pos.z + r >= d / 2 - 1e-9, w: mk.pos.x - r <= -w / 2 + 1e-9, e: mk.pos.x + r >= w / 2 - 1e-9 }
+  const { offTable: _stays, ...rest } = mk.props
+  if (edges.some((e) => touching[e])) return { ...state, markers: state.markers.map((x) => (x.id === markerId ? { ...x, props: { ...rest, offTable: true } } : x)) }
+  const pos = { x: Math.max(-w / 2 + r, Math.min(w / 2 - r, mk.pos.x)), z: Math.max(-d / 2 + r, Math.min(d / 2 - r, mk.pos.z)) }
+  return { ...state, markers: state.markers.map((x) => (x.id === markerId ? { ...x, pos, props: rest } : x)) }
+}
 
 export const scenario: ModuleDef = {
   id: 'scenario',
@@ -219,7 +296,10 @@ export const scenario: ModuleDef = {
     const carried = state.markers.filter((mk) => mk.carriedBy === modelId)
     for (const mk of state.markers) if (carriable(state, mk) && touching(m, mk)) out.push(option(`take:${mk.id}`, `Pick up the ${mk.face}`, 'scenario.pickup', { modelId, markerId: mk.id }))
     for (const mk of state.markers) {
-      if (pushable(state, mk) && objectGap(state, modelId, mk) <= rulerInches(bundle, PUSH_REACH) + 1e-9) out.push(option(`push:${mk.id}`, `Shove the ${mk.face ?? 'object'} (Str test)`, 'scenario.push', { modelId, markerId: mk.id }))
+      if (pushable(state, mk) && objectGap(state, modelId, mk) <= rulerInches(bundle, pushReachOf(mk) as never) + 1e-9) out.push(option(`push:${mk.id}`, `Shove the ${mk.face ?? 'object'} (Str test)`, 'scenario.push', { modelId, markerId: mk.id }))
+    }
+    for (const mk of state.markers) {
+      if (interactable(state, mk, m) && touching(m, mk)) out.push(option(`interact:${mk.id}`, `Interact with the ${mk.face ?? 'marker'}`, 'scenario.interact', { modelId, markerId: mk.id }))
     }
     for (const mk of carried) out.push(option(`drop:${mk.id}`, `Put down the ${mk.face}`, 'scenario.drop', { modelId, markerId: mk.id }))
     return out
@@ -241,12 +321,19 @@ export const scenario: ModuleDef = {
     if (action.type === 'scenario.push') {
       if (!pushable(state, mk)) return reject('E_BAD_TARGET', 'That cannot be pushed')
       if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot push things')
-      if (objectGap(state, modelId, mk) > rulerInches(bundle, PUSH_REACH) + 1e-9) return reject('E_OUT_OF_RANGE', 'Too far from the object')
+      if (objectGap(state, modelId, mk) > rulerInches(bundle, pushReachOf(mk) as never) + 1e-9) return reject('E_OUT_OF_RANGE', 'Too far from the object')
       const sv = computeSv(attrOf(state, bundle, modelId, 'str'), []).sv
       const t = skillTest(state, bundle, { sv, pool: {}, purpose: `push:${modelId}>${mk.id}`, ownerId: modelId })
       let s = pushEvents(t.state, t.events)
       s = gainAp(s, t.test.ap) // AP-004
-      if (t.test.success) s = pushObject(s, mk.id, m.pos, rulerInches(bundle, PUSH_DISTANCE))
+      if (t.test.success) s = keepToDepartureEdges(pushObject(s, mk.id, m.pos, rulerInches(bundle, pushDistanceOf(mk) as never)), mk.id)
+      return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
+    }
+    if (action.type === 'scenario.interact') {
+      if (!interactable(state, mk, m)) return reject('E_BAD_TARGET', 'That cannot be interacted with')
+      if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot interact')
+      if (!touching(m, mk)) return reject('E_OUT_OF_RANGE', 'Not in contact with the marker')
+      const s = pushEvents({ ...state, markers: state.markers.map((x) => (x.id === mk.id ? { ...x, revealed: true, props: { ...x.props, done: true } } : x)) }, [{ type: 'interacted', modelId, markerId: mk.id, face: mk.face }])
       return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
     }
     if (action.type === 'scenario.drop') {

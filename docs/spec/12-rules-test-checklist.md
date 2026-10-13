@@ -286,11 +286,17 @@ One line = one testable rule. Engine tests are named by ID, e.g. `it('DICE-004 .
 - SCN-001: Each scenario ends at its round limit or on a victory condition. (17)
 - SCN-002: BOX-2 nuke explodes on an armor-die 1 when a hit lands on the carrier or near the nuke. (BOX SCP-002)
 - SCN-003: RR Red Rocket: 10 Health, armor 1, rad immune; Str test Action within Orange pushes it Yellow. (RR p2)
-- SCN-004: AI-MISSILE sled moves Red at the end of every turn and detonation checks use previous hit count. (AIH s4)
+- SCN-004: AI-MISSILE sled moves Red at the end of every round (data `movesAt` can say turn), shoves or runs over models, and detonation checks use the previous hit count; a lockpick success is 1 damage with no armor roll. (AIH s4)
 - SCN-005: GA tutorials count skill-die icon faces as 1 and success. (GA A2)
 - SCN-006: CH-SMASH phase 1 Go To [helmet]; once an AI model holds it the carrier Goes To its entry edge and the rest Protect the carrier; a dropped helmet returns everyone to phase 1. (CH p40)
 - SCN-007: CH-ESCORT Brahmin (10 Health, armor 1 each) moves Red toward the far edge at each round end; engaged AI get no free attack when it moves; caps by Health left. (CH p42)
 - SCN-008: CH-LOOT AI Use [all Searchables]; an AI model lacking the needed skill ignores that Searchable for the rest of the game. (CH p41)
+- SCN-009: Scenario layout comes from data: AI-RR diner Yellow from a corner, AI markers exactly Orange from it and Yellow apart, survivors in the opposite Blue x Blue with the rocket; same seed, same layout. (RR; 17 s4.1)
+- SCN-012: Break-in patrols walk their own route markers in a loop, use O until aware (a player in LoS within Awareness, or an attack close by), then hand back to the matrix; the valve is a player-only Interact; the win needs the valve and half the team out. (AIH s4)
+- SCN-013: Into the Sewer: a looked-at blank is discarded, a numbered marker becomes a Lockpick/Computers box, an opened box gives a key, a key-holder at the hatch removes a lock, with both gone a player model whose Action ends at the hatch leaves; SS + 2 is the major win, SS alone at round 8 the minor; the Deathclaw flip runs only in rounds 4-6 and at most once. (COOP s4)
+- SCN-014: Blood Cage: chain slack Black pulls the other player; a broken chain frees them; AI waves wait off the table (wave 1 round 2, wave 2 on the armor die rounds 3-6) and still count as standing; found ranged weapons run dry after 3 uses. (COOP s4)
+- SCN-016: Dangerous Munitions: a free non-dog AI model touching the token at round end wins for the AI; the players win by surviving round 8 or removing the AI. (COOP s4)
+- SCN-017: The Escaped Tech: hounds Use the nearest marker (always O) and Super Mutants Protect a hound; the Tech appears where marker 1 is looked at, unarmed, for the side that looked, and wins for that side by reaching the exit near the other side's start corner. (AIH s4; Presence phase not modelled)
 
 ## AI: official AI
 - AI-001: On its turn the AI draws one number token, readies that model and Uses every Ready AI model in ascending number; it never chooses use-none. (CH p8)
@@ -322,6 +328,7 @@ One line = one testable rule. Engine tests are named by ID, e.g. `it('DICE-004 .
 - AI-027: AI set-up: one number per AI model, AI markers deployed face down and shuffled, each model placed at its number. (CH p8)
 - AI-028: The AI seat declines reaction offers (AI models never Prepare). (RULING; CH p11-14)
 - AI-029: Objects (Red Rocket, Missile sled) are targeted only via O (Defeat [object]); base contact with an object is not an engagement. (18 s8.5; RR p2)
+- AI-031: O is impossible for a Use objective when the AI side already holds the item or the model lacks the skill the marker needs. (CH p13)
 - COOP-001: The team readies one model per team turn; each player then uses all or none of their own Ready models. (COOP s2)
 - COOP-002: Team players' models only react to AI Actions, or to any model being hit. (COOP s2)
 

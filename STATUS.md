@@ -29,11 +29,19 @@ Milestone reached: **M4 AI** (versus bot + official AI card system; owner playte
   box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
 
 ## Official AI (M4b)
-- `src/ai/official/` (procedure, responses, targeting, decider) per spec 18 section 8 (rulings R-1..R-24);
-  Solo (human vs AI cards) and Co-op (2 humans hot-seat vs AI) modes; AiCardPanel shows the card, column, die
-  and response. `data/1e/ai/`: 11 starter cards + generic; 5 cards partly Confirmed from photos, the rest
-  Unsourced (see `docs/spec/sources/AI-CARDS-sources.md` for the cards to photograph).
-- Gaps: co-op team turns (R-9), patrol route markers, engaged-retargeting; not yet soaked in a long AI-scenario sim.
+- Built from the Campaign Handbook section 3 and AI scenarios (CH p8-16, p40-42); spec 18 section 8. Owner rule: official
+  rules only; every gap is a RULING in `docs/needs-rules-check.md`.
+- `src/ai/official/` (decider, matrix, targeting, responses, objectives, util): number tokens, blue-die row, cell
+  reading, responses A M O F D S, Careful/Reckless, target priorities, seeded ties, an `ai.decision` log per choice.
+  Tests AI-001..031 (tests/ai/official-*.test.ts). Engine: AI turns, object targets (`objects.ts`), sides,
+  data-driven scenarios (`src/engine/scenarios/`), new `battleCry.follow` decision.
+- Client: Solo (1 human) and Co-op (2 hot-seat humans) vs the Wasteland AI, AI card panel, feed lines,
+  `?seats=human,official&scenario=ai-rr`.
+- `data/1e/ai/starter.json`: Super Mutant, Brute, Sole Survivor Day One from CH; Sole Survivor, Aviator, Goddard,
+  Deathclaw from card photos; Settler, Enslaved Tech, Dogmeat, Mutant Hound still placeholders.
+- `npm run sim -- --official --games N`: all 7 AI/co-op scenarios finish, 0 errors, deterministic.
+- Gaps: ai-tech Presence/peek rules, AI spending AP on card effects, Luck "Tough", no-re-contact after a declined
+  follow, coop-cage Stuffed Monkey card. E2E "activate, move by drag" fails on main too (pre-existing).
 
 ## AI (M4a)
 - `src/ai/`: decider (dispatch by decision kind, validates, falls back to random), eval, threat, nav, moves,

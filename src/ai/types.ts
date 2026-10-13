@@ -10,7 +10,7 @@ export const TIER_IDS: readonly Tier[] = ['random', 'easy', 'normal']
 export type DecisionKind =
   | 'turn.start' | 'turn.first' | 'turn.ready' | 'turn.choose' | 'turn.pick' | 'turn.activation'
   | 'move.path' | 'shoot.target' | 'throw.target' | 'shoot.luck' | 'throw.luck' | 'melee.luck'
-  | 'charge.marker' | 'battleCry.push' | 'melee.slide' | 'react.offer' | 'item.choose' | 'search.found'
+  | 'charge.marker' | 'battleCry.push' | 'battleCry.follow' | 'melee.slide' | 'react.offer' | 'item.choose' | 'search.found'
 
 export interface TierParams {
   id: Exclude<Tier, 'random'>

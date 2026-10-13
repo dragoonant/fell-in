@@ -117,7 +117,11 @@ function newEvents(before: GameState, after: GameState): SeqEvent[] {
   return after.events.slice(from).map((event, i) => ({ seq: from + i + 1, event }))
 }
 
+/** Bumps on every new game or loaded save; per-game caches (the official AI memory) key on it. */
+export let gameEpoch = 0
+
 function begin(state: GameState, bundle: EditionBundle, controllers: Record<SeatId, SeatController>, seed: string, scenarioId: string | null): void {
+  gameEpoch++
   useGameStore.setState({
     ...INITIAL, state, bundle, controllers, seatOrder: [...state.seatOrder], seed, scenarioId, version: useGameStore.getState().version + 1,
   })

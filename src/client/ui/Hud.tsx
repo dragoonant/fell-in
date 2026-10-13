@@ -2,6 +2,7 @@
 // panel, rejection toast, banner, thinking indicator and the game-over recap.
 import { useEffect } from 'react'
 import { game, useBanner, useFatal, useGameResult, useNarration, usePending, useRejection, useSettings, useWaitingFor } from '../contract'
+import { AiCardPanel } from './AiCardPanel'
 import { ActivationPanel } from './ActivationPanel'
 import { EventFeed } from './EventFeed'
 import { GameOver } from './GameOver'
@@ -44,6 +45,7 @@ export function Hud() {
       <TopBar />
       {lastLine && <div className="ticker" data-testid="hud-narration">{lastLine}</div>}
       {banner && <div className={`banner banner-${banner.tone}`} data-testid="hud-banner">{banner.text}</div>}
+      <AiCardPanel />
       {leftOpen && <Roster />}
       {rightOpen && <EventFeed />}
       <div className="dock">

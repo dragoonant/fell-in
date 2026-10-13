@@ -57,7 +57,7 @@ export function narrate(state: GameState | null, cue: Cue): string | null {
   }
 }
 
-const RESPONSE_WORDS: Record<string, string> = {
+export const RESPONSE_WORDS: Record<string, string> = {
   A: 'attack', M: 'move', O: 'go for the objective', F: 'fall back', D: 'defend', S: 'strike',
 }
 /** One feed line for a logged AI choice: column, die row, response and target (our words, from the log fields). */

@@ -320,6 +320,9 @@ export const battleCryPush: Policy = (ctx) => {
   return gain >= -1e-9 ? push : stay
 }
 
+/** battleCry.follow: stay in contact with the pushed enemy. */
+export const pushFollowPolicy: Policy = (ctx) => ctx.legal.find((a) => a.follow === true) ?? null
+
 /** melee.slide: moves.bestSlide. */
 export const slide: Policy = (ctx) => bestSlide(ctx, threatsFor(ctx))
 
@@ -387,6 +390,7 @@ export const POLICIES: PolicyTable = {
   'melee.luck': useLuck,
   'charge.marker': chargeDie,
   'battleCry.push': battleCryPush,
+  'battleCry.follow': pushFollowPolicy,
   'melee.slide': slide,
   'react.offer': reaction,
   'item.choose': itemBranch,

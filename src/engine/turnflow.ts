@@ -21,7 +21,7 @@ import {
   type ActionDone, type Controller, type StepResult, type Trigger,
 } from './registry'
 import { roll } from './rng'
-import { checkVictory, endOfRound } from './scenario'
+import { checkVictory, endOfRound, endOfTurn, upkeep } from './scenario'
 import { hostile, isAiSeat, sameTeam, teamSeats } from './sides'
 import type { Action, ActionContext, DecisionOption, GameState, ModelId, ModelState, SeatId } from './types'
 
@@ -139,6 +139,8 @@ function endTurn(state: GameState, bundle: EditionBundle): GameState {
   const seats = { ...s.seats }
   for (const x of teamSeats(s, seat)) seats[x] = { ...seats[x]!, done: withReadiness(s, x, 'unready').length === 0 }
   s = { ...s, activation: null, action: null, seats }
+  s = endOfTurn(s, bundle) // scenario movement at the end of a turn (the missile sled), then its victory check
+  if (s.phase === 'over') return s
   return nextTurn(s, bundle, seat)
 }
 
@@ -197,7 +199,8 @@ function askNextChoice(state: GameState, bundle: EditionBundle, seats: readonly 
 /** Activation start in order (ACT-007, spec 11 s2): reaction discard, conditions.startOfActivation, items.tickEffects, reload, V.A.T.S. */
 export function beginActivation(state: GameState, bundle: EditionBundle, modelId: ModelId): StepResult {
   if (!state.models[modelId]) return reject('E_BAD_PARAM', `Unknown model ${modelId}.`)
-  let s = updateModel(state, modelId, { reaction: false }) // 1. PREP-005 / ACT-007
+  const tok0 = state.models[modelId]!.tokens
+  let s = updateModel(state, modelId, { reaction: false, tokens: Object.fromEntries(Object.entries(tok0).filter(([k]) => !k.startsWith('noFollow:'))) }) // 1. PREP-005 / ACT-007; ERR p.16 no-follow marks expire
   s = {
     ...s, action: null,
     activation: { modelId, actionsTaken: 0, ap: 0, apIconsUsed: [], heavyFired: false, testsUsed: [] },
@@ -413,7 +416,7 @@ function runReactions(state: GameState, bundle: EditionBundle): GameState {
     const res = mod ? mod.resolve(s, bundle, { ...d.action, decisionId: s.pending.id, seat: ownerOf(s, d.r) }) : null
     if (!res || isRejection(res)) { s = { ...s, action: null }; continue }
     if (!res.done) return res.state // the module raised its own decision; its done comes back through afterAction
-    s = afterActionTokens({ ...res.state, action: null }, bundle, res.done)
+    s = upkeep(afterActionTokens({ ...res.state, action: null }, bundle, res.done), bundle)
     const v = checkVictory(s, bundle)
     if (v) return { ...s, result: v, phase: 'over' }
   }
@@ -519,7 +522,7 @@ export const turnflow: Controller = {
     let s = state
     if (done.type.endsWith('.cancel')) return resume({ ...refund(s), action: null }, bundle)
     const wasReaction = !!s.action?.reaction
-    s = afterActionTokens({ ...s, action: null }, bundle, done)
+    s = upkeep(afterActionTokens({ ...s, action: null }, bundle, done), bundle)
     const v = checkVictory(s, bundle)
     if (v) return { ...s, result: v, phase: 'over' }
     if (wasReaction) return runReactions(s, bundle)
