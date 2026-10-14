@@ -53,7 +53,7 @@ type Attr = 'str'|'per'|'end'|'cha'|'int'|'agi'|'luc';
 type BaseMm = 25|32|40|50|80;                                        // = engine BaseMm (00 s2)
 type UnitType = 'creature'|'dog'|'robot'|'synth';
 type ApUse = 'movement'|'attack'|'expertise'|'prepare';
-type UnitFlag = 'unimpeded'|'cannotClimb'|'battleCryImmune'|'fast';
+type UnitFlag = 'unimpeded'|'cannotClimb'|'battleCryImmune'|'fast'|'immobile';
 type RulerStat = 'move'|'charge'|'awareness'|'presence'|'throw'|'battleCry';
 type Range = 'short'|'long'|'melee';
 type ArmorValue = { base: number; strong?: number } | 'none' | 'immune';   // "n", "n+s", "-", "X"
@@ -137,6 +137,7 @@ interface UnitDef { id: string; name: string; faction: string|null; unique: bool
 | Boot with a crossed-out difficult-terrain (mountain) mark | `flags: 'unimpeded'` |
 | Ladder or wall crossed out | `flags: 'cannotClimb'` |
 | Battle Cry icon crossed out | `flags: 'battleCryImmune'` |
+| Turret / emplacement that cannot move (M4d addition) | `flags: 'immobile'` (additive; engine must refuse Move/Charge) |
 | Aura ring beside an ability name | `Ability.aura` |
 | Glyph tied to an ability (dog silhouette = Dog Handler) | `Ability.glyph` |
 | Shield / lightning bolt / trefoil next to a damage number | `damage[].type` physical / energy / radiation |
@@ -288,3 +289,33 @@ in any free PDF; needs the owner's cards or a later free reissue.
   Stranger cards, Campaign Handbook content.
 - Dice and rulers: ruler inches from DICE text (orange 2, yellow 4, red 6, green 8, blue 10, black 12);
   die faces from spec 13 (the dice sheet is an icon sheet with no machine-readable faces).
+
+## M4d additions (additive)
+- `UnitFlag` gains `'immobile'` (Machine Gun Turret Mk1). Ability code hooks used by the new units and not yet implemented
+  in the engine: `startArmorBoost {n}` (Knight Hardy) and `turretReactions {n}` (turret starts each round with 3 tokens).
+- New data files: `data/1e/units/brotherhood.json` (Knight, Initiate, Paladin, Field Scribe, Machine Gun Turret Mk1),
+  `data/1e/weapons/brotherhood.json` (Machete, Power Fist, Baton, turret gun), `data/1e/armor/power-armor.json` (T-45, T-51;
+  T-60 stays in armor.json). Sources: `docs/spec/sources/m4d-brotherhood.md`.
+
+### 3.1a Scenario layout additions (M4d)
+Additive only; the `ScenarioDef` type is unchanged (`deploy`, `terrain`, `place`, `props` and `rules[].params` are free-form objects).
+- `sides[].forces` is required for every side of every scenario: `createGame` throws on a side without forces (no default by seat index).
+  A plain game seats one player per side, so a one-side tutorial seats a single player.
+- A scenario that lists `terrain` (even `[]`) gets exactly that terrain; without the key it gets the generic themed set.
+- Side `deploy.zone` / `deploy.groups[].zone` use the layout zones of spec 17 s4.1; a legacy `{within, of: "own edge"}` beside `zone`
+  is kept only so the client can still draw the strip. `deploy.groups[].enters.when: "towerControl"` (box-4).
+- Marker `props`: `public` (face visible in the view), `interactSide`, `spawn: {unit, items}`, `carryBy`, `suitPool: [armor ids]` with
+  `claimBy` (a side id), `height`, `shootable`/`meleeable` booleans (a tutorial target may be melee-only). Faces the client models:
+  `power-armor-suit`, `mini-nuke`, `radio-tower`, `book`, `captive`, `crate`, `exit`, `can`, `mut-fruit-plant`, `mole-rat-mound`.
+- Terrain pieces `hazard-zone` and `school-wall` (no model, procedural). `tire-stack` is 2 x 1.75 in (the model's real footprint).
+- `rules[].id` additions with `params`: `tutorial-route {first, then}`, `remove-on-hit {face}`, `nuke-blast {near}`,
+  `tower-control {side, turns}`. New Action `scenario.claim`; `scenario.interact` spawns when the marker has `props.spawn`.
+
+### 3.1b AI and co-op layout additions (M4d, additive)
+- Zone kind `triangle` (`corner`, `w`, `d`). Marker `place.spots` (list of points) with `place.pool` (name): pool markers take the
+  spots in a seeded order. Marker `props`: `lengthIn`, `widthIn`, `rotDeg` (a rectangular object), `peekCap {players?, ai?}` (ruler
+  colours), `attackBonusGreen` (number), `armor` values may be `{base, strong}` (Strong Armor tokens, the chain's 2+1).
+- `tech` rule `params`: `exitCornerAi`, `exitCornerPlayers` (corners), `exitWithin` (ruler colour); the old `exitNearAi` / `exitNearPlayers`
+  marker params are no longer read (the exit markers remain as the AI's walking target). Terrain piece `diner` (8 x 6 in, building).
+- Engine code behind them: `src/engine/scenarios/objshape.ts` (rectangular objects), `objects.ts` (`attackBonusGreen` through the probe,
+  `{base, strong}` armor), `attack.ts composePlan` (the extra green die), `items.ts peekViewer` (`peekCap`).

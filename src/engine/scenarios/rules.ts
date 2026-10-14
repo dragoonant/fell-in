@@ -5,7 +5,9 @@
 // Which mechanics a scenario uses is read from its `rules` ids; their numbers come from marker props, rule `params` and the
 // side deploy records in data/<edition>/scenarios. No rolls except through roll()/armorRoll()/flipLuck().
 import type { EditionBundle, ScenarioDef } from '../../data/types'
-import { armorRoll, flipLuck } from '../dice'
+import { isEngaged } from '../attack'
+import { armorRoll, computeSv, flipLuck, skillTest } from '../dice'
+import { attrOf } from '../forces'
 import { recordOf, rulerInches } from '../edition'
 import { hitObject } from '../objects'
 import { baseOnTable, baseRadius, dist, isOnTable, segPointDist } from '../geometry'
@@ -18,14 +20,15 @@ import type { GameState, MarkerState, ModelState, Vec2 } from '../types'
 
 /** Engine events as the loose records they are (DiceRolled has its own shape and is skipped by type). */
 type GameEvent = { type: string; [k: string]: unknown }
-import { enterReserves, spawnModel } from './deploy'
-import { frameOf, inchesOf, pointOf, sampleZone, stream, type PointSpec, type ZoneSpec } from './spec'
+import { callReserves, enterReserves, spawnModel } from './deploy'
+import { rectGapToBase } from './objshape'
+import { cornerPoint, frameOf, inchesOf, pointOf, sampleZone, stream, type Corner, type PointSpec, type ZoneSpec } from './spec'
 
 /** Geometry tolerance for "touching a marker" (a table fact, like scenario.ts MARKER_REACH_IN). */
 const TOUCH_IN = 0.5
 
 /** Scenario bookkeeping kept on state.scenario beside the table size (runtime only; the frozen type is not widened). */
-interface Runtime { evSeen?: number; exited?: string[]; deathclawDone?: boolean; tech?: TechRuntime }
+interface Runtime { evSeen?: number; exited?: string[]; deathclawDone?: boolean; tech?: TechRuntime; towerTurns?: number; reinforced?: boolean }
 interface TechRuntime { phase: number; revealedBy?: 'ai' | 'player'; techId?: string }
 export const runtimeOf = (s: GameState): Runtime => s.scenario as unknown as Runtime
 const withRuntime = (s: GameState, patch: Partial<Runtime>): GameState => ({ ...s, scenario: { ...s.scenario, ...patch } as GameState['scenario'] })
@@ -45,8 +48,8 @@ const lookupIn = (s: GameState) => (name: string): Vec2 | null => {
   const mk = s.markers.find((x) => x.id === name || x.face === name)
   return mk ? { ...mk.pos } : null
 }
-const markerRadius = (mk: MarkerState): number => baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40)
-const touchingMarker = (m: ModelState, mk: MarkerState): boolean => dist(m.pos, mk.pos) - baseRadius(m.base) - markerRadius(mk) <= TOUCH_IN
+export const markerRadius = (mk: MarkerState): number => baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40)
+export const touchingMarker = (m: ModelState, mk: MarkerState): boolean => (rectGapToBase(mk, m.pos, baseRadius(m.base)) ?? dist(m.pos, mk.pos) - baseRadius(m.base) - markerRadius(mk)) <= TOUCH_IN
 
 // ---------- entry points ----------
 export function scenarioUpkeep(state: GameState, bundle: EditionBundle): GameState {
@@ -64,6 +67,9 @@ export function scenarioUpkeep(state: GameState, bundle: EditionBundle): GameSta
   if (hasRule(sc, 'chain')) s = chainStep(s, bundle)
   if (hasRule(sc, 'weapon-uses')) s = weaponUses(s, bundle, sc, fresh)
   if (hasRule(sc, 'tech')) s = techStep(s, bundle, sc)
+  if (hasRule(sc, 'tutorial-route')) s = routeStep(s, sc)
+  if (hasRule(sc, 'remove-on-hit')) s = removeOnHit(s, sc)
+  if (hasRule(sc, 'nuke-blast')) s = nukeBlast(s, bundle, sc, fresh)
   return withRuntime(s, { evSeen: countedLength(s) })
 }
 
@@ -74,6 +80,8 @@ export function scenarioTurnEnd(state: GameState, bundle: EditionBundle): GameSt
   if (!sc || state.phase === 'over') return state
   let s = scenarioUpkeep(state, bundle)
   if (hasRule(sc, 'sled') && sledOf(s)?.props.movesAt === 'turn') s = moveSled(s, bundle)
+  if (hasRule(sc, 'tower-control')) s = towerControlStep(s, bundle, sc)
+  if (hasRule(sc, 'tech')) s = techPresence(s, bundle)
   return s
 }
 
@@ -95,6 +103,67 @@ export function scenarioRoundEntries(state: GameState, bundle: EditionBundle): G
   let s = enterReserves(state, bundle, next)
   if (hasRule(sc, 'deathclaw')) s = deathclawCheck(s, bundle, sc, next)
   return withRuntime(s, { evSeen: countedLength(s) })
+}
+
+// ---------- tutorial route (GA-1), tutorial targets (GA-2) ----------
+/** The first marker (face params.first) is marked reached once a model touches it; the scenario's victory then waits for the second. */
+function routeStep(state: GameState, sc: ScenarioDef): GameState {
+  const first = (paramsOf(sc, 'tutorial-route').first as string | undefined) ?? 'crate'
+  let s = state
+  for (const mk of s.markers.filter((x) => x.face === first && x.props.done !== true)) {
+    if (Object.values(s.models).some((m) => onTable(m) && touchingMarker(m, mk))) s = setMarker(s, mk.id, { revealed: true, props: { ...mk.props, done: true } })
+  }
+  return s
+}
+
+/** GA-2: a target marker leaves the table once it has been hit (its `hit` counter stays for the victory check). */
+function removeOnHit(state: GameState, sc: ScenarioDef): GameState {
+  const face = paramsOf(sc, 'remove-on-hit').face as string | undefined
+  let s = state
+  for (const mk of s.markers.filter((x) => x.face === face && x.props.destroyed !== true && typeof x.props.hit === 'number' && x.props.hit > 0)) s = patchMarker(s, mk.id, { destroyed: true })
+  return s
+}
+
+// ---------- the mini nuke (box-2) ----------
+/**
+ * A shot that hits the carrier, or a model within `near` of the nuke, rolls the red armor die: a 1 sets the nuke off (both
+ * sides lose). On any other result the shot is meant to hit the carrier; the shot itself resolves as usual (RULING).
+ */
+function nukeBlast(state: GameState, bundle: EditionBundle, sc: ScenarioDef, events: readonly GameEvent[]): GameState {
+  let s = state
+  const nuke = s.markers.find((m) => m.face === 'mini-nuke')
+  if (!nuke || markerGoneProps(nuke) || nuke.props.exploded === true) return s
+  const near = inchesOf(bundle, (paramsOf(sc, 'nuke-blast').near as string | undefined) ?? 'orange')
+  for (const e of events) {
+    if (e.type !== 'attack' || e.ns === 'melee' || e.success !== true) continue
+    const target = s.models[String(e.targetId)]
+    if (!target) continue
+    const at = (s.markers.find((m) => m.id === nuke.id)!.carriedBy ? s.models[nuke.carriedBy!]?.pos : null) ?? nuke.pos
+    const carrier = nuke.carriedBy === target.id
+    if (!carrier && Math.max(0, dist(target.pos, at) - baseRadius(target.base)) > near) continue
+    const roll = armorRoll(s, bundle, 'nuke:hit')
+    s = pushEvents(roll.state, [roll.event, { type: 'nukeShotHit', targetId: target.id, armorDie: roll.value }])
+    if (roll.value === 1) return pushEvents(patchMarker(s, nuke.id, { exploded: true }), [{ type: 'nukeDetonated', markerId: nuke.id }])
+  }
+  return s
+}
+
+// ---------- tower control and held-back reserves (box-4) ----------
+/** One count per finished turn: the defenders touch the tower and no enemy does. At `turns` in a row the reserve is called in. */
+function towerControlStep(state: GameState, bundle: EditionBundle, sc: ScenarioDef): GameState {
+  const p = paramsOf(sc, 'tower-control') as { side?: string; turns?: number }
+  const tower = state.markers.find((m) => m.face === 'radio-tower')
+  if (!tower || !p.side || runtimeOf(state).reinforced) return state
+  const sideOf = (m: ModelState): string => state.seats[m.owner]?.side ?? ''
+  const at = Object.values(state.models).filter((m) => onTable(m) && !m.inert && touchingMarker(m, tower))
+  const mine = at.filter((m) => sideOf(m) === p.side).length, foes = at.filter((m) => sideOf(m) !== p.side).length
+  const n = mine > 0 && foes === 0 ? (runtimeOf(state).towerTurns ?? 0) + 1 : 0
+  let s = withRuntime(state, { towerTurns: n })
+  if (n >= (p.turns ?? 3)) {
+    s = callReserves(s, bundle, p.side, 'towerControl')
+    s = withRuntime(pushEvents(s, [{ type: 'reinforcementsCalled', side: p.side }]), { reinforced: true })
+  }
+  return s
 }
 
 // ---------- exits ----------
@@ -378,15 +447,34 @@ function deathclawCheck(state: GameState, bundle: EditionBundle, sc: ScenarioDef
 
 // ---------- The Escaped Tech (AIH s4) ----------
 /**
- * Phase 1 is the search of eight face-down markers; marker 1 hides the Tech. Looking at a blank discards it. When marker 1 is
- * looked at, the Tech model appears there for the side whose seat looked (a hound for the AI), phase 2 starts for the AI models
- * (tokens.aiPhase) and the Tech can leave through the exit marker near the other side's start corner.
- * Not modelled here: the Presence attempt that turns phase 2 into phase 3 (the AI protects the Tech instead), the Tech's
- * Move-only limit, and its refusal to move next to a hound. See docs/needs-rules-check.md.
+ * Phase 1 is the search of eight face-down markers; marker 1 hides the Tech. Looking at a blank discards it. When a hound (the AI)
+ * looks at marker 1 the Tech appears there and the AI is in phase 2 straight away; when a player looks first the Tech joins that
+ * player's team and the AI stays in phase 1 until the Tech comes into the line of sight of any AI model (phase 2). A Super Mutant
+ * that gets a Presence test through on the Tech takes it back under AI control: phase 3, every AI model protects it and it walks
+ * to the exit. The exits are the two edges beside the opponent's start corner, up to Black from that corner (params
+ * exitCornerAi / exitCornerPlayers / exitWithin); the exit markers only give the AI a point to walk to.
+ * Not modelled here: the Tech's Move-only limit and its refusal to move beside a hound, Yellow awareness for players looking at
+ * markers, and the hounds' Red limit. The Presence test is made by the engine at the end of the AI's turn for each Super Mutant
+ * in range (RULING Escaped Tech). See docs/needs-rules-check.md.
  */
+interface TechParams { unit?: string; revealFace?: string; exitCornerAi?: Corner; exitCornerPlayers?: Corner; exitWithin?: string }
+
+/** Is the model's base against one of the two table edges at `corner`, no more than `within` inches along that edge from the corner? */
+function touchesExitBand(s: GameState, m: ModelState, corner: Corner, within: number): boolean {
+  const f = frameOf(s), c = cornerPoint(f, corner), r = baseRadius(m.base)
+  const onX = Math.abs(c.x - m.pos.x) - r <= TOUCH_IN && Math.abs(m.pos.z - c.z) <= within
+  const onZ = Math.abs(c.z - m.pos.z) - r <= TOUCH_IN && Math.abs(m.pos.x - c.x) <= within
+  return onX || onZ
+}
+
+function setAiPhase(s: GameState, phase: number): GameState {
+  const models = Object.fromEntries(Object.entries(s.models).map(([id, m]) => [id, isAiOwned(s, m) ? { ...m, tokens: { ...m.tokens, aiPhase: Math.max(phase, m.tokens.aiPhase ?? 0) } } : m]))
+  return { ...s, models }
+}
+
 function techStep(state: GameState, bundle: EditionBundle, sc: ScenarioDef): GameState {
   let s = state
-  const p = paramsOf(sc, 'tech') as { unit?: string; revealFace?: string; exitNearAi?: string; exitNearPlayers?: string }
+  const p = paramsOf(sc, 'tech') as TechParams
   const aiSeat = s.seatOrder.find((x) => s.seats[x]?.controller === 'official')
   // An AI seat looking at a marker turns it face up for everyone.
   if (aiSeat) s = { ...s, markers: s.markers.map((m) => (m.kind === 'investigation' && m.seenBy.includes(aiSeat) && !m.revealed ? { ...m, revealed: true } : m)) }
@@ -399,16 +487,52 @@ function techStep(state: GameState, bundle: EditionBundle, sc: ScenarioDef): Gam
     const spawned = spawnModel(s, bundle, seat, p.unit ?? 'enslaved-tech', [], mk.pos, { tech: 1 }, { bare: true, used: true })
     if (!spawned) continue
     s = { ...spawned.state, markers: spawned.state.markers.filter((x) => x.id !== mk.id) }
-    const models = Object.fromEntries(Object.entries(s.models).map(([id, m]) => [id, isAiOwned(s, m) ? { ...m, tokens: { ...m.tokens, aiPhase: 2 } } : m]))
-    s = withRuntime({ ...s, models }, { tech: { phase: 2, revealedBy: s.seats[seat]?.controller === 'official' ? 'ai' : 'player', techId: spawned.id } })
+    const byAi = s.seats[seat]?.controller === 'official'
+    s = withRuntime(s, { tech: { phase: byAi ? 2 : 1, revealedBy: byAi ? 'ai' : 'player', techId: spawned.id } })
+    if (byAi) s = setAiPhase(s, 2)
     s = pushEvents(s, [{ type: 'techRevealed', modelId: spawned.id, by: seat }])
   }
-  // The Tech leaves through the exit marker near the opposing start corner.
   const tech = runtimeOf(s).tech
   const t = tech?.techId ? s.models[tech.techId] : undefined
-  if (t && onTable(t)) {
-    const exit = s.markers.find((m) => m.face === (isAiOwned(s, t) ? p.exitNearPlayers : p.exitNearAi))
-    if (exit && touchingMarker(t, exit)) s = exitModel(s, bundle, t.id)
+  if (tech && t && onTable(t)) {
+    // A Tech the players found is still unseen by the AI: the first AI model with a line of sight to it starts phase 2.
+    if (tech.phase === 1 && !isAiOwned(s, t) && Object.values(s.models).some((m) => m.id !== t.id && onTable(m) && isAiOwned(s, m) && hasLos(s, m.id, t.id))) {
+      s = setAiPhase(withRuntime(s, { tech: { ...tech, phase: 2 } }), 2)
+      s = pushEvents(s, [{ type: 'techSpotted', modelId: t.id }])
+    }
+    // The Tech leaves at the edges beside the other side's start corner, up to Black from that corner.
+    const within = inchesOf(bundle, p.exitWithin ?? 'black')
+    const now = s.models[t.id]!
+    const corner = isAiOwned(s, now) ? p.exitCornerPlayers : p.exitCornerAi
+    if (corner && onTable(now) && touchesExitBand(s, now, corner, within)) s = exitModel(s, bundle, t.id)
+  }
+  return s
+}
+
+/**
+ * Phase 2 to 3 (AIH s4: Super Mutants Use [Presence] on the Tech). At the end of the AI's turn each of its Super Mutants that is not
+ * engaged, has the Tech in line of sight and within its own Presence ruler makes one Presence test; the first success puts the
+ * Tech back under the AI's control and every AI model into phase 3.
+ */
+function techPresence(state: GameState, bundle: EditionBundle): GameState {
+  const aiSeat = state.seatOrder.find((x) => state.seats[x]?.controller === 'official')
+  const tech = runtimeOf(state).tech
+  if (!aiSeat || state.turn?.seat !== aiSeat || !tech?.techId || tech.phase !== 2) return state
+  let s = state
+  const t = s.models[tech.techId]
+  if (!t || !onTable(t)) return s
+  for (const sm of Object.values(s.models).filter((m) => onTable(m) && isAiOwned(s, m) && m.id !== t.id).sort((a, b) => a.id.localeCompare(b.id))) {
+    const unit = recordOf(bundle, 'units', sm.profileId)
+    const row = unit?.skills.find((k) => k.skill === 'presence')
+    if (!row || !row.colour || isEngaged(s, sm.id) || modelDistance(sm, t) > rulerInches(bundle, row.colour as never) + 1e-9 || !hasLos(s, sm.id, t.id)) continue
+    const sv = computeSv(attrOf(s, bundle, sm.id, row.attr), []).sv
+    const r = skillTest(s, bundle, { sv, pool: {}, purpose: `presence:${sm.id}>${t.id}`, ownerId: sm.id })
+    s = pushEvents(r.state, r.events)
+    if (!r.test.success) continue
+    const nums = Object.values(s.models).filter((m) => m.owner === aiSeat).map((m) => m.tokens.aiNumber ?? 0)
+    s = updateModel(s, t.id, { owner: aiSeat, readiness: 'used', tokens: { ...t.tokens, aiNumber: Math.max(0, ...nums) + 1, deployX: t.pos.x, deployZ: t.pos.z } })
+    s = setAiPhase(withRuntime(s, { tech: { ...tech, phase: 3 } }), 3)
+    return pushEvents(s, [{ type: 'techRestored', modelId: t.id, by: sm.id }])
   }
   return s
 }

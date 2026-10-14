@@ -1,0 +1,102 @@
+[
+  {
+    "id": "t-45-power-armor",
+    "name": "T-45 Power Armor",
+    "kind": "powerArmor",
+    "text": "The oldest and lightest frame. Powered it adds strength and toughness at a cost in nimbleness; unpowered it is a clumsy shell.",
+    "powerArmor": {
+      "green": {
+        "attrBonus": {
+          "str": 2,
+          "end": 3,
+          "agi": -1
+        },
+        "armor": {
+          "physical": {
+            "base": 2,
+            "strong": 1
+          },
+          "energy": {
+            "base": 2,
+            "strong": 1
+          },
+          "radiation": {
+            "base": 4,
+            "strong": 1
+          }
+        }
+      },
+      "yellow": {
+        "attrBonus": {
+          "str": 2,
+          "agi": -1
+        },
+        "armor": {
+          "physical": {
+            "base": 3
+          },
+          "energy": {
+            "base": 2
+          },
+          "radiation": {
+            "base": 4
+          }
+        }
+      }
+    },
+    "cost": 44,
+    "source": [
+      "CARDS pa.pdf p18 (pdf idx 17)",
+      "COST T-45 Power Armor (wave9_costs.pdf p2)"
+    ]
+  },
+  {
+    "id": "t-51-power-armor",
+    "name": "T-51 Power Armor",
+    "kind": "powerArmor",
+    "text": "A refined frame with better plating. Powered it adds strength and toughness; unpowered it still shields the wearer.",
+    "powerArmor": {
+      "green": {
+        "attrBonus": {
+          "str": 2,
+          "end": 3
+        },
+        "armor": {
+          "physical": {
+            "base": 3,
+            "strong": 1
+          },
+          "energy": {
+            "base": 2,
+            "strong": 1
+          },
+          "radiation": {
+            "base": 4,
+            "strong": 1
+          }
+        }
+      },
+      "yellow": {
+        "attrBonus": {
+          "str": 2
+        },
+        "armor": {
+          "physical": {
+            "base": 3
+          },
+          "energy": {
+            "base": 3
+          },
+          "radiation": {
+            "base": 4
+          }
+        }
+      }
+    },
+    "cost": 60,
+    "source": [
+      "CARDS pa.pdf p18 (pdf idx 17)",
+      "COST T-51 Power Armor (wave9_costs.pdf p2)"
+    ]
+  }
+]

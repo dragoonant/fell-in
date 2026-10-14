@@ -1,6 +1,7 @@
 // Top bar: round, whose turn, readiness per side, speed, skip, rails and menu.
 import { SPEED_PRESETS, game, presentation, seatLabel, useGame, usePresented, usePresentedTurn, useSettings, useWaitingFor } from '../contract'
 import { useUiStore } from './uiStore'
+import { HowToPlay, HowToPlayButton } from './HowToPlay'
 
 export function TopBar() {
   const turn = usePresentedTurn()
@@ -18,6 +19,7 @@ export function TopBar() {
     return { ready: mine.filter((m) => m.readiness === 'ready').length, unready: mine.filter((m) => m.readiness === 'unready').length, used: mine.filter((m) => m.readiness === 'used').length }
   }
   return (
+    <>
     <header className="topbar" data-testid="hud-topbar">
       <div className="topbar-main">
         <b data-testid="hud-round">Round {turn.round}{state?.maxRounds ? ` of ${state.maxRounds}` : ''}</b>
@@ -38,6 +40,7 @@ export function TopBar() {
         <select aria-label="Animation speed" data-testid="hud-speed" value={String(speed)} onChange={(e) => presentation.setSpeed(Number(e.target.value))}>
           {SPEED_PRESETS.map((p) => <option key={p.id} value={String(p.speed)}>{p.label}</option>)}
         </select>
+        <HowToPlayButton testId="hud-how-to-play" label="Rules" />
         <button data-testid="hud-briefing" title="Scenario goals and how to win" onClick={() => setBriefing(true)}>Briefing</button>
         <button data-testid="hud-skip" onClick={() => presentation.skipAll()}>Skip</button>
         <button data-testid="hud-rail-left" aria-pressed={leftOpen} title="Units rail ([)" onClick={toggleLeft}>Units [</button>
@@ -45,5 +48,7 @@ export function TopBar() {
         <button data-testid="hud-menu-top" onClick={() => game.backToMenu()}>Menu</button>
       </div>
     </header>
+    <HowToPlay />
+    </>
   )
 }

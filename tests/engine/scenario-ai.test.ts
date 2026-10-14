@@ -8,6 +8,8 @@ import { distToShape, worldShape } from '../../src/engine/terrain'
 import { rulerInches } from '../../src/engine/edition'
 import { baseRadius, dist } from '../../src/engine/geometry'
 import { exitedIds } from '../../src/engine/scenarios/rules'
+import { objectRect, rectExtent, rectGapToBase } from '../../src/engine/scenarios/objshape'
+import { objectArmor, withProbe } from '../../src/engine/objects'
 import { view } from '../../src/engine/view'
 import type { GameEvent, GameState, MarkerState, ModelState } from '../../src/engine/types'
 import { loadBundle } from './helpers'
@@ -42,10 +44,12 @@ describe('SCN-009 scenario layout comes from data', () => {
     for (const m of ai) expect(distToShape(m.pos, diner)).toBeCloseTo(rulerInches(bundle, 'orange'), 1)
     for (const a of ai) for (const b of ai) if (a.id < b.id) expect(dist(a.pos, b.pos)).toBeGreaterThanOrEqual(rulerInches(bundle, 'yellow'))
     const half = s.scenario.table.w / 2
-    const box = (p: { x: number; z: number }, r = 0): boolean => p.x >= half - rulerInches(bundle, 'blue') - 0.01 && p.z >= half - rulerInches(bundle, 'blue') - 0.01 && p.x <= half - r + 0.01 && p.z <= half - r + 0.01
-    for (const m of models(s, 'p1')) expect(box(m.pos, baseRadius(m.base))).toBe(true)
-    expect(box(face(s, 'red-rocket').pos)).toBe(true)
-    expect(distToShape({ x: -half, z: -half }, diner)).toBeCloseTo(rulerInches(bundle, 'yellow') * Math.SQRT2, 0) // corner to diner corner: Yellow on each axis
+    // The survivors' zone is the corner triangle with Blue legs (the map), not a Blue x Blue box.
+    const blue = rulerInches(bundle, 'blue')
+    const inTriangle = (p: { x: number; z: number }, r = 0): boolean => (half - p.x) / blue + (half - p.z) / blue <= 1 + 0.01 && p.x <= half - r + 0.01 && p.z <= half - r + 0.01
+    for (const m of models(s, 'p1')) expect(inTriangle(m.pos, baseRadius(m.base))).toBe(true)
+    expect(inTriangle(face(s, 'red-rocket').pos)).toBe(true)
+    expect(distToShape({ x: -half, z: -half }, diner)).toBeCloseTo(rulerInches(bundle, 'yellow'), 0) // the diner stands Yellow from the corner
   })
 
   it('SCN-009 the same seed gives the same layout and another seed another', () => {
@@ -91,14 +95,14 @@ describe('SCN-004 missile sled', () => {
     const sled = face(s, 'missile-sled')
     const blocker = models(s, 'ai')[0]!
     s = parked(s, blocker.id)
-    s = put(s, blocker.id, sled.pos.x + 3, sled.pos.z + 0.3)
+    s = put(s, blocker.id, sled.pos.x - 3, sled.pos.z + 0.3)
     const after = endOfRound(s, bundle)
     const moved = face(after, 'missile-sled')
-    expect(moved.pos.x - sled.pos.x).toBeCloseTo(rulerInches(bundle, 'red'), 5)
+    expect(sled.pos.x - moved.pos.x).toBeCloseTo(rulerInches(bundle, 'red'), 5) // the sled starts at the east edge and heads west
     expect(after.terrain.find((t) => t.id === `obj-${sled.id}`)!.pos).toEqual(moved.pos) // its cover/impassable piece travels with it
     const b = after.models[blocker.id]!
     expect(b.life).toBe('active')
-    expect(dist(b.pos, moved.pos)).toBeGreaterThanOrEqual(baseRadius(b.base) + 0.5 * 50 / 25.4 - 1e-6) // shoved clear of the sled's base
+    expect(dist(b.pos, moved.pos)).toBeGreaterThanOrEqual(baseRadius(b.base) + baseRadius(32) - 1e-6) // shoved clear of the sled's base
   })
 
   it('SCN-004 a model with no room to be shoved is run over', () => {
@@ -106,9 +110,9 @@ describe('SCN-004 missile sled', () => {
     const sled = face(s, 'missile-sled')
     const victim = models(s, 'ai')[0]!
     s = parked(s, victim.id)
-    s = put(s, victim.id, sled.pos.x + 3, sled.pos.z)
+    s = put(s, victim.id, sled.pos.x - 3, sled.pos.z)
     // walls on both sides of the lane leave no room
-    const wall = (id: string, z: number) => ({ id, pieceId: id, rulesType: 'obstruction' as const, pos: { x: sled.pos.x + 3, z }, rot: 0, footprint: { rect: { w: 12, d: 1 } }, height: 3, props: {} })
+    const wall = (id: string, z: number) => ({ id, pieceId: id, rulesType: 'obstruction' as const, pos: { x: sled.pos.x - 3, z }, rot: 0, footprint: { rect: { w: 12, d: 1 } }, height: 3, props: {} })
     s = { ...s, terrain: [...s.terrain, wall('w1', 2.2), wall('w2', -2.2)] }
     const after = endOfRound(s, bundle)
     expect(after.models[victim.id]!.life).toBe('dead')
@@ -116,7 +120,7 @@ describe('SCN-004 missile sled', () => {
 
   it('SCN-004 the sled leaves at the exit edge: the AI side wins', () => {
     let s = clear(game('ai-missile'))
-    s = patchMarker(s, 'missile-sled', { pos: { x: s.scenario.table.w / 2 - 3, z: 0 } })
+    s = patchMarker(s, 'missile-sled', { pos: { x: -s.scenario.table.w / 2 + 3, z: 0 } })
     const after = endOfRound(s, bundle)
     expect(after.result?.reason).toMatch(/left the table/)
     expect(after.result?.winner).toBe('ai')
@@ -174,7 +178,8 @@ describe('SCN-012 patrols and awareness (The Break-in)', () => {
   it('SCN-012 patrolling uses the Objective response on the next route marker, and a model that sees a player hands back to its matrix and hunts', () => {
     let s = clear(game('ai-breakin'))
     const sm = find(s, 'super-mutant')
-    const before = settingsFor(view(s, 'ai'), bundle, sm)
+    for (const q of models(s, 'p1')) s = put(s, q.id, sm.pos.x > 0 ? -17 : 17, sm.pos.z > 0 ? -17 : 17) // every player model far away and out of sight
+    const before = settingsFor(view(s, 'ai'), bundle, s.models[sm.id]!)
     expect(before).toMatchObject({ objective: 'goTo', subject: 'next-route-marker', forceResponse: 'O' })
     const p = models(s, 'p1')[0]!
     s = put(put(s, p.id, 0, 0), sm.id, 4, 0)
@@ -383,10 +388,25 @@ describe('SCN-017 The Escaped Tech', () => {
     expect(t.owner).toBe('ai')
     expect(t.carried.filter((c) => c.kind === 'weapon')).toHaveLength(0) // unarmed
     expect(models(s, 'ai').every((m) => m.tokens.aiPhase === 2)).toBe(true)
-    expect(settingsFor(view(s, 'ai'), bundle, t)).toMatchObject({ objective: 'goTo', subject: 'exit-near-players' })
+    // Phase 2: a hound-found Tech sits still (Protect [itself]) until a Super Mutant's Presence test gets through.
+    expect(settingsFor(view(s, 'ai'), bundle, t)).toMatchObject({ objective: 'protect', subject: 'enslaved-tech' })
     expect(settingsFor(view(s, 'ai'), bundle, find(s, 'mutant-hound'))).toMatchObject({ objective: 'protect', subject: 'enslaved-tech', forceResponse: 'O' })
+    expect(settingsFor(view(s, 'ai'), bundle, find(s, 'super-mutant'))).toMatchObject({ objective: 'protect', subject: 'enslaved-tech' })
+    // Phase 3: a Super Mutant beside the Tech at the end of the AI's turn tests Presence; on a success every AI model Protects the Tech and it heads for the exit.
+    const sm = find(s, 'super-mutant')
+    let p3: GameState | null = null
+    for (let i = 1; i <= 60 && !p3; i++) {
+      let a = put(put(clear(s), t.id, 0, 0), sm.id, 2, 0)
+      for (const q of models(a).filter((x) => x.id !== t.id && x.id !== sm.id)) a = put(a, q.id, q.owner === 'ai' ? -16 : 16, q.owner === 'ai' ? -16 : 16)
+      const r = endOfTurn({ ...a, rng: [i + 1, 2, 3, 4] as GameState['rng'], turn: { ...(a.turn ?? {}), seat: 'ai' } as GameState['turn'] }, bundle)
+      if (r.models[t.id]!.tokens.aiPhase === 3) p3 = r
+    }
+    expect(p3).not.toBeNull()
+    expect(p3!.models[t.id]!.owner).toBe('ai')
+    expect(settingsFor(view(p3!, 'ai'), bundle, p3!.models[t.id]!)).toMatchObject({ objective: 'goTo', subject: 'exit-near-players' })
+    // The exit is either table edge beside the players' corner (south-west), up to Black from the corner.
     const exit = face(s, 'exit-near-players')
-    s = upkeep(put(s, t.id, exit.pos.x, exit.pos.z - 1), bundle)
+    s = upkeep(put(p3!, t.id, exit.pos.x, exit.pos.z), bundle)
     expect(checkVictory(s, bundle)).toMatchObject({ winner: 'ai' })
   })
 
@@ -398,7 +418,8 @@ describe('SCN-017 The Escaped Tech', () => {
     const t = find(s, 'enslaved-tech')
     expect(t.owner).toBe('p1')
     const exit = face(s, 'exit-near-ai')
-    s = upkeep(put(s, t.id, exit.pos.x, exit.pos.z + 1), bundle)
+    expect(upkeep(put(s, t.id, 0, 0), bundle).models[t.id]!.life).toBe('active') // the middle of the table is not an exit
+    s = upkeep(put(s, t.id, exit.pos.x, exit.pos.z), bundle)
     expect(checkVictory(s, bundle)).toMatchObject({ winner: 'p1' })
   })
 })
@@ -410,8 +431,140 @@ describe('SCN-004 timing is data', () => {
     s = patchMarker(s, 'missile-sled', { props: { movesAt: 'turn' } })
     const x0 = face(s, 'missile-sled').pos.x
     const t = endOfTurn(s, bundle)
-    expect(face(t, 'missile-sled').pos.x - x0).toBeCloseTo(6, 5)
+    expect(x0 - face(t, 'missile-sled').pos.x).toBeCloseTo(6, 5)
     const r = endOfRound(s, bundle)
     expect(face(r, 'missile-sled').pos.x).toBeCloseTo(x0, 5)
+  })
+})
+
+describe('SCN-018 AI and co-op set-ups follow the source sheets', () => {
+  it('SCN-018 every AI model carries the weapons its sheet lists, and the co-op player forces are armed too', () => {
+    const armed = (s: GameState, owner: string, profile: string, ...w: string[]): void => {
+      for (const m of models(s, owner).filter((x) => x.profileId === profile)) for (const id of w) expect(m.carried.some((c) => c.defId === id), `${m.id} has ${id}`).toBe(true)
+    }
+    for (const id of ['ai-rr', 'ai-missile', 'ai-breakin', 'coop-munitions']) {
+      const s = game(id)
+      armed(s, 'ai', 'brute', 'sledgehammer')
+      armed(s, 'ai', 'super-mutant', 'board', 'bolt-action-pipe-rifle')
+      armed(s, 'ai', 'mutant-hound', 'hound-bite')
+    }
+    armed(game('ai-tech'), 'ai', 'super-mutant', 'board', 'bolt-action-pipe-rifle')
+    armed(game('ai-breakin'), 'ai', 'settler', 'assault-rifle')
+    armed(game('ai-breakin'), 'ai', 'enslaved-tech', 'combat-shotgun')
+    const sewer = game('coop-sewer')
+    armed(sewer, 'p2', 'brute', 'sledgehammer')
+    armed(sewer, 'p2', 'super-mutant', 'board', 'bolt-action-pipe-rifle')
+    const cage = game('coop-cage')
+    armed(cage, 'ai', 'brute', 'sledgehammer')
+    armed(cage, 'p2', 'settler', 'improvised-weapon', 'sturdy-leather-armor')
+    expect(bundle.records.scenarios.find((x) => x.id === 'coop-cage')!.wastelandDecks!.items).toHaveLength(12)
+  })
+
+  it('SCN-018 The Break-in: four patrol routes 1-2-3-4, A-B, E-F-G and 4-3-2-1-2-3, with the pairs starting at 1, A, E and 4', () => {
+    const s = game('ai-breakin')
+    const stepOf = (m: MarkerState): number => (m.props.route as { step: number }).step
+    const route = (id: number): string[] => s.markers.filter((m) => (m.props.route as { id?: number } | undefined)?.id === id).sort((a, b) => stepOf(a) - stepOf(b)).map((m) => m.face!)
+    expect(route(1)).toEqual(['1', '2', '3', '4'])
+    expect(route(2)).toEqual(['A', 'B'])
+    expect(route(3)).toEqual(['E', 'F', 'G'])
+    expect(route(4)).toEqual(['4', '3', '2', '1', '2', '3'])
+    for (const id of [1, 2, 3, 4]) {
+      const start = s.markers.find((m) => (m.props.route as { id?: number } | undefined)?.id === id && stepOf(m) === 1)!
+      const walkers = models(s, 'ai').filter((m) => m.tokens.aiRouteId === id)
+      expect(walkers.length).toBeGreaterThan(0)
+      for (const m of walkers) expect(dist(m.pos, start.pos)).toBeLessThanOrEqual(rulerInches(bundle, 'orange') + 1e-6)
+    }
+    // The valve stands inside a small hut: walls on three sides, open to the south, so a model can walk up to it.
+    const valve = face(s, 'valve')
+    for (const id of ['hut-n', 'hut-w', 'hut-e']) expect(s.terrain.find((t) => t.id === id)).toBeTruthy()
+    expect(Math.abs(valve.pos.x)).toBeLessThan(1)
+    expect(valve.pos.z).toBeLessThan(s.terrain.find((t) => t.id === 'hut-w')!.pos.z + 2)
+  })
+
+  it('SCN-018 fixed marker spots: the sewer boxes and the Tech markers sit on the map spots, shuffled by seed', () => {
+    const spots = (id: string, seed: string): string[] => game(id, seed).markers.filter((m) => m.kind === 'investigation').map((m) => `${m.pos.x.toFixed(1)},${m.pos.z.toFixed(1)}`)
+    const a = spots('coop-sewer', 'a'), b = spots('coop-sewer', 'b')
+    expect(a).toHaveLength(5)
+    expect([...a].sort()).toEqual([...b].sort()) // the same five spots...
+    expect(new Set(a).size).toBe(5)
+    const t1 = spots('ai-tech', 'a'), t2 = spots('ai-tech', 'zzz')
+    expect(t1).toHaveLength(8)
+    expect([...t1].sort()).toEqual([...t2].sort())
+    let differs = false
+    for (const seed of ['a', 'b', 'c', 'd', 'e', 'f']) if (spots('ai-tech', seed).join('|') !== t1.join('|') || spots('coop-sewer', seed).join('|') !== a.join('|')) differs = true
+    expect(differs).toBe(true) // ...in a different order for another seed (which one hides the Tech)
+    // The two corner squares (Black x Black, the start corners) hold no marker.
+    const sc = game('ai-tech')
+    const black = rulerInches(bundle, 'black'), half = sc.scenario.table.w / 2
+    for (const m of sc.markers.filter((x) => x.kind === 'investigation')) {
+      expect(m.pos.x > half - black && m.pos.z < -half + black).toBe(false)
+      expect(m.pos.x < -half + black && m.pos.z > half - black).toBe(false)
+    }
+  })
+
+  it('SCN-018 the Red Rocket is a 4 in object on its side: contact is measured to its rectangle, not a round base', () => {
+    const s = game('ai-rr')
+    const rocket = face(s, 'red-rocket')
+    expect(rocket.props).toMatchObject({ lengthIn: 4, widthIn: 1.3 })
+    const a = ((rocket.props.rotDeg as number) * Math.PI) / 180
+    const along = { x: Math.cos(a), z: Math.sin(a) }, across = { x: -Math.sin(a), z: Math.cos(a) }
+    const at = (u: number, v: number) => ({ x: rocket.pos.x + along.x * u + across.x * v, z: rocket.pos.z + along.z * u + across.z * v })
+    const r = baseRadius(32)
+    expect(rectGapToBase(rocket, at(2 + r + 0.2, 0), r)).toBeCloseTo(0.2, 5) // off the end
+    expect(rectGapToBase(rocket, at(0, 0.65 + r + 0.2), r)).toBeCloseTo(0.2, 5) // off the side: a round 100 mm base would say 1.4 in
+    expect(rectGapToBase(rocket, at(0, 0), r)).toBe(0)
+    // The survivors' triangle holds the rocket, with room for the whole rectangle.
+    const half = s.scenario.table.w / 2, ext = rectExtent(objectRect(rocket)!)
+    expect(rocket.pos.x + ext.hx).toBeLessThanOrEqual(half + 1e-6)
+    expect(rocket.pos.z + ext.hz).toBeLessThanOrEqual(half + 1e-6)
+  })
+
+  it('SCN-018 The Missile: the sled starts Black from the east edge, 1.2 x 0.8 in, heading for the west edge; zones A and B are 24 in long and Orange deep', () => {
+    const s = game('ai-missile')
+    const sled = face(s, 'missile-sled')
+    expect(sled.pos.x).toBeCloseTo(s.scenario.table.w / 2 - rulerInches(bundle, 'black'), 5)
+    expect(objectRect(sled)).toMatchObject({ hl: 0.6, hw: 0.4 })
+    const piece = s.terrain.find((t) => t.id === `obj-${sled.id}`)!
+    expect(piece.footprint).toEqual({ rect: { w: 1.2, d: 0.8 } })
+    const sc = bundle.records.scenarios.find((x) => x.id === 'ai-missile')!
+    const groups = (sc.sides.find((x) => x.id === 'player')!.deploy as unknown as { groups: { zone: { kind: string; corner: string; w: number; d: string } }[] }).groups
+    expect(groups.map((g) => g.zone)).toMatchObject([{ kind: 'box', corner: 'nw', w: 24, d: 'orange' }, { kind: 'box', corner: 'se', w: 24, d: 'orange' }])
+  })
+
+  it('SCN-018 Dangerous Munitions: the impassable walls run Black + Orange from the east and south edge midpoints', () => {
+    const s = game('coop-munitions')
+    const len = rulerInches(bundle, 'black') + rulerInches(bundle, 'orange')
+    const we = s.terrain.find((t) => t.id === 'wall-e')!, ws = s.terrain.find((t) => t.id === 'wall-s')!
+    expect(we.footprint).toEqual({ rect: { w: len, d: 1 } })
+    expect(we.pos.x).toBeCloseTo(18 - len / 2, 5)
+    expect(we.pos.z).toBeCloseTo(0, 5)
+    expect(ws.footprint).toEqual({ rect: { w: 1, d: len } })
+    expect(ws.pos.x).toBeCloseTo(0, 5)
+    expect(ws.pos.z).toBeCloseTo(18 - len / 2, 5)
+    expect(face(s, 'munitions').pos.x).toBeGreaterThan(14) // Orange diagonal from the south-east corner
+  })
+
+  it('SCN-018 Blood Cage: the chain has armor 2+1 against physical and energy damage and every attack on it rolls an extra green die', () => {
+    const s = game('coop-cage')
+    const chain = face(s, 'chain')
+    for (const t of ['physical', 'energy'] as const) expect(objectArmor(chain, t)).toMatchObject({ base: 2, strong: 1 })
+    const probe = withProbe(s, chain)
+    expect(probe.state.models[probe.probeId]!.tokens.attackBonusGreen).toBe(1)
+  })
+
+  it('SCN-018 The Escaped Tech: the exits are the edges beside the other start corner up to Black from it; markers are looked at from Yellow (players) and Red (hounds)', () => {
+    let s = game('ai-tech')
+    const tech = s.markers.find((m) => m.face === 'tech')!
+    s = { ...s, markers: s.markers.map((m) => (m.id === tech.id ? { ...m, seenBy: ['p1'] } : m)) }
+    s = upkeep(s, bundle)
+    const t = find(s, 'enslaved-tech')
+    const half = s.scenario.table.w / 2, black = rulerInches(bundle, 'black')
+    // A player's Tech leaves at an edge beside the AI corner (north-east): 5 in from the corner on either edge, but not 13 in.
+    expect(upkeep(put(s, t.id, half - 0.7, -half + 5), bundle).models[t.id]!.life).toBe('dead')
+    expect(upkeep(put(s, t.id, half - 0.7, -half + black + 1), bundle).models[t.id]!.life).toBe('active')
+    expect(upkeep(put(s, t.id, half - 5, -half + 0.7), bundle).models[t.id]!.life).toBe('dead')
+    expect(upkeep(put(s, t.id, 0, -half + 0.7), bundle).models[t.id]!.life).toBe('active') // the middle of the north edge is too far
+    const first = bundle.records.scenarios.find((x) => x.id === 'ai-tech')!.markers.find((m) => m.kind === 'investigation')!
+    expect(first.props).toMatchObject({ peekCap: { players: 'yellow', ai: 'red' } })
   })
 })

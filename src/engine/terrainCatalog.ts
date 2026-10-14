@@ -16,11 +16,16 @@ export const TERRAIN_CATALOG: Record<string, TerrainPiece> = {
   'scrap-metal-fence': { w: 6, d: 0.6, h: 2.5, rulesType: 'obstruction' },
   'shipping-container-rusted': { w: 8, d: 3.2, h: 3.2, rulesType: 'obstruction' },
   'junk-pile': { w: 4, d: 4, h: 1.8, rulesType: 'rough' },
-  'tire-stack': { w: 2, d: 2, h: 1.6, rulesType: 'obstacle' },
+  'tire-stack': { w: 2, d: 1.75, h: 1.6, rulesType: 'obstacle' },
   'fuel-pump-island': { w: 5, d: 2.5, h: 3, rulesType: 'obstacle' },
   'water-tower-short': { w: 4, d: 4, h: 7, rulesType: 'obstruction' },
   'dead-tree': { w: 3, d: 3, h: 5, rulesType: 'rough' },
   'sandbag-wall': { w: 4, d: 1.2, h: 1.2, rulesType: 'obstacle' },
+  // Scenario pieces without a model (drawn procedurally): school walls (box-3 lengths come from the data) and flat hazard zones (GA-1).
+  'school-wall': { w: 6, d: 0.6, h: 3, rulesType: 'obstruction' },
+  'hazard-zone': { w: 6, d: 4, h: 0.1, rulesType: 'hazard' },
+  // The Red Rocket scenario's roadside diner (a low flat-roofed building, no model yet: drawn procedurally).
+  'diner': { w: 8, d: 6, h: 3.5, rulesType: 'building' },
 }
 
 /** [slug, x, z, rot] for one half of the table (z > 0); the other half is the 180 degree mirror. Deploy edges and the centre line stay clear. */

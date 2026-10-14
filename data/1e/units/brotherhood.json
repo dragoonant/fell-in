@@ -1,0 +1,405 @@
+[
+  {
+    "id": "knight",
+    "name": "Knight",
+    "faction": "brotherhood-of-steel",
+    "unique": false,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "blue",
+    "attrs": {
+      "str": 5,
+      "per": 6,
+      "end": 5,
+      "cha": 5,
+      "int": 5,
+      "agi": 6,
+      "luc": 2
+    },
+    "skills": [
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "green"
+      },
+      {
+        "skill": "lockpick",
+        "attr": "int"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": "none",
+      "energy": "none",
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [
+      {
+        "id": "hardy",
+        "name": "Hardy",
+        "text": "At set-up each Knight begins with one armor boost token.",
+        "effects": [
+          {
+            "code": "startArmorBoost",
+            "args": {
+              "n": 1
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: 40 mm because the card art is a power-armored model, 32 mm for foot soldiers (RoP s2.8 p17); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 53,
+    "source": [
+      "CARDS unit.pdf p55 (pdf idx 54) and p15 (idx 14)",
+      "COST Knight (wave9_costs.pdf p9)"
+    ]
+  },
+  {
+    "id": "initiate",
+    "name": "Initiate",
+    "faction": "brotherhood-of-steel",
+    "unique": false,
+    "types": [],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "green",
+    "attrs": {
+      "str": 4,
+      "per": 5,
+      "end": 4,
+      "cha": 4,
+      "int": 4,
+      "agi": 5,
+      "luc": 1
+    },
+    "skills": [
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "red"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": "none",
+      "energy": "none",
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: 40 mm because the card art is a power-armored model, 32 mm for foot soldiers (RoP s2.8 p17); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 35,
+    "source": [
+      "CARDS unit.pdf p15 (pdf idx 14)",
+      "COST Initiate (wave9_costs.pdf p9)"
+    ]
+  },
+  {
+    "id": "paladin",
+    "name": "Paladin",
+    "faction": "brotherhood-of-steel",
+    "unique": false,
+    "types": [],
+    "baseMm": 40,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "black",
+    "attrs": {
+      "str": 6,
+      "per": 7,
+      "end": 5,
+      "cha": 6,
+      "int": 6,
+      "agi": 7,
+      "luc": 4
+    },
+    "skills": [
+      {
+        "skill": "heavy",
+        "attr": "str"
+      },
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "rifle",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "colour": "orange"
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "blue"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      },
+      {
+        "skill": "throw",
+        "attr": "agi",
+        "colour": "green"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": "none",
+      "energy": "none",
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: 40 mm because the card art is a power-armored model, 32 mm for foot soldiers (RoP s2.8 p17); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 77,
+    "source": [
+      "CARDS unit.pdf p55 (pdf idx 54) and p15 (idx 14)",
+      "COST Paladin (wave9_costs.pdf p10)"
+    ]
+  },
+  {
+    "id": "field-scribe",
+    "name": "Field Scribe",
+    "faction": "brotherhood-of-steel",
+    "unique": false,
+    "types": [],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "green",
+    "awareness": "blue",
+    "attrs": {
+      "str": 3,
+      "per": 4,
+      "end": 4,
+      "cha": 3,
+      "int": 7,
+      "agi": 6,
+      "luc": 2
+    },
+    "skills": [
+      {
+        "skill": "melee",
+        "attr": "str"
+      },
+      {
+        "skill": "pistol",
+        "attr": "per"
+      },
+      {
+        "skill": "battleCry",
+        "attr": "cha",
+        "white": true
+      },
+      {
+        "skill": "presence",
+        "attr": "cha",
+        "colour": "yellow"
+      },
+      {
+        "skill": "lockpick",
+        "attr": "int"
+      },
+      {
+        "skill": "computers",
+        "attr": "int"
+      },
+      {
+        "skill": "search",
+        "attr": "int"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": "none",
+      "energy": "none",
+      "radiation": "none"
+    },
+    "apUse": [
+      "prepare"
+    ],
+    "flags": [],
+    "abilities": [],
+    "equipped": [],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: 40 mm because the card art is a power-armored model, 32 mm for foot soldiers (RoP s2.8 p17); see RULING Base sizes in docs/needs-rules-check.md"
+    },
+    "cost": 41,
+    "source": [
+      "CARDS unit.pdf p58 (pdf idx 57)",
+      "COST Field Scribe (wave9_costs.pdf p9)"
+    ]
+  },
+  {
+    "id": "machine-gun-turret-mk1",
+    "name": "Machine Gun Turret Mk1",
+    "faction": null,
+    "unique": false,
+    "types": [
+      "robot"
+    ],
+    "baseMm": 32,
+    "move": "yellow",
+    "charge": "red",
+    "awareness": "green",
+    "attrs": {
+      "str": 0,
+      "per": 4,
+      "end": 5,
+      "cha": 0,
+      "int": 0,
+      "agi": 0,
+      "luc": 0
+    },
+    "skills": [
+      {
+        "skill": "rifle",
+        "attr": "per"
+      }
+    ],
+    "healthAttr": "end",
+    "armor": {
+      "physical": {
+        "base": 2
+      },
+      "energy": {
+        "base": 1
+      },
+      "radiation": "immune"
+    },
+    "apUse": [],
+    "flags": [
+      "immobile"
+    ],
+    "abilities": [
+      {
+        "id": "turret-watch",
+        "name": "Turret Watch",
+        "text": "The turret never moves. At the start of each round it holds three reaction tokens.",
+        "effects": [
+          {
+            "code": "turretReactions",
+            "args": {
+              "n": 3
+            }
+          }
+        ]
+      }
+    ],
+    "equipped": [
+      "machine-gun-turret-mk1-gun"
+    ],
+    "specialities": [],
+    "provenance": {
+      "baseMm": "Unsourced: small emplacement, 32 mm assumed; see RULING Turret in docs/needs-rules-check.md"
+    },
+    "cost": 0,
+    "source": [
+      "CARDS weapon.pdf p49 (pdf idx 48)",
+      "COST Machine Gun Turret Mk1 (wave9_costs.pdf p8; 10 caps charged on the weapon)",
+      "BOX SCP-004 p7 (turret allowed)"
+    ]
+  }
+]

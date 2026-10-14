@@ -11,8 +11,8 @@ import { recordOf } from '../../engine/edition'
 import { ProceduralFigure } from './Procedural'
 import { GlbBase, GlbBody, useFittedFigure } from './GlbBody'
 import { NOMINAL_LENGTH, Weapon } from './Weapon'
-import { isNaturalWeapon, modeOfWeapon, pickEquipped, type WeaponMode } from './equipped'
-import { figureHeight, heldRotation, socketFor, unitGlbUrl, useManifest, weaponGlbUrl } from './glbModels'
+import { isNaturalWeapon, modeOfWeapon, pickEquipped, weaponClassOf, type WeaponMode } from './equipped'
+import { figureHeight, heldPose, socketFor, unitGlbUrl, useManifest, weaponGlbUrl } from './glbModels'
 import { facingYaw, lookOf, pipCounts, pipSlots, tintFor, turnToward } from './view'
 
 const TURN_RATE = 9 // rad/s
@@ -43,11 +43,11 @@ function Ring({ r }: { r: number }) {
 }
 
 /** Generated GLB when listed and loaded, else the bare procedural figure. */
-export function FigureBody({ id, slug, baseMm, color, accent }: { id: string; slug: string | undefined; baseMm: number; color: string; accent: string }) {
+export function FigureBody({ id, slug, baseMm, color, accent, profile }: { id: string; slug: string | undefined; baseMm: number; color: string; accent: string; profile?: string }) {
   const manifest = useManifest()
   const entry = slug ? manifest.units[slug] : undefined
   const group = useFittedFigure(slug ? unitGlbUrl(slug) : undefined, entry?.height || figureHeight(baseMm), entry?.yaw ?? 0)
-  if (!group) return <ProceduralFigure id={id} x={0} z={0} baseMm={baseMm} color={color} accent={accent} bare />
+  if (!group) return <ProceduralFigure id={id} x={0} z={0} baseMm={baseMm} color={color} accent={accent} bare profile={profile ?? slug} />
   return (
     <group name={`model-${id}`} userData={{ id, x: 0, z: 0 }}>
       <GlbBase baseMm={baseMm} color={color} />
@@ -59,13 +59,16 @@ export function FigureBody({ id, slug, baseMm, color, accent }: { id: string; sl
 /** The weapon in the unit's hand socket (bigger figures carry proportionally bigger guns), or nothing: no weapon, a natural attack, or a unit without a hand socket. */
 export function HeldWeapon({ profileId, baseMm, weaponId, mode, accent }: { profileId: string; baseMm: number; weaponId: string | undefined; mode: WeaponMode; accent: string }) {
   const manifest = useManifest()
+  const bundle = useBundle()
   if (!weaponId || isNaturalWeapon(weaponId)) return null
   const sock = socketFor(manifest, profileId, baseMm)
   if (!sock) return null
+  const def = bundle ? (recordOf(bundle, 'weapons', weaponId) as Parameters<typeof weaponClassOf>[1]) : undefined
+  const pose = heldPose(weaponClassOf(weaponId, def), sock.hand, sock.rot)
   return (
     <Weapon mode={mode} accent={accent} url={manifest.weapons[weaponId] ? weaponGlbUrl(weaponId) : undefined}
       length={(manifest.weapons[weaponId]?.length ?? NOMINAL_LENGTH[mode]) * Math.max(1, figureHeight(baseMm) / figureHeight(32))}
-      position={sock.hand} rotation={heldRotation(mode, sock.rot)} />
+      position={pose.position} rotation={pose.rotation} />
   )
 }
 
@@ -112,7 +115,7 @@ function Figure({ id, seatIndex }: { id: string; seatIndex: number }) {
     <group ref={outer} position={[m.pos.x, m.elev, m.pos.z]} name={`figure-${id}`}>
       {active && <Ring r={r} />}
       <group ref={body}>
-        <FigureBody id={id} slug={unitSlug} baseMm={m.base} color={color} accent={accent} />
+        <FigureBody id={id} slug={unitSlug} baseMm={m.base} color={color} accent={accent} profile={m.profileId} />
         <HeldWeapon profileId={m.profileId} baseMm={m.base} weaponId={weaponId} mode={weaponMode} accent={accent} />
       </group>
       <Pips id={id} r={r} />

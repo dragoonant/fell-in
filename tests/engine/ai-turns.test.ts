@@ -266,8 +266,8 @@ describe('scenario push (SCN-003)', () => {
 
   it('SCN-003 a shove past the table edge flags the rocket off the table and the Survivors win', () => {
     let s = stripLuck(aiGame('push-edge'))
-    s = { ...s, markers: s.markers.map((m) => ({ ...m, pos: { x: 0, z: -9 } })) }
-    s = place(s, 'p1-sole-survivor-1', 0, -6)
+    s = { ...s, markers: s.markers.map((m) => ({ ...m, pos: { x: 8, z: -9 } })) } // clear of the diner and its ring of mutants
+    s = place(s, 'p1-sole-survivor-1', 8, -6)
     for (let i = 0; i < 40; i++) {
       const a = activate({ ...s, rng: [i + 1, 2, 3, 4] as GameState['rng'] }, 'p1-sole-survivor-1')
       const t = step(a, pick(a, 'scenario.push'))
@@ -290,7 +290,9 @@ describe('apply and view (AI-015, view)', () => {
   })
 
   it('view carries round, rounds, scenario and markers; hidden faces are removed until the team has seen them', () => {
-    const g = createGame(bundle, { seed: 'v1', scenarioId: 'box-1' })
+    // box-1's suits are open objects, so make the three markers face-down searchables to test the hiding.
+    const g0 = createGame(bundle, { seed: 'v1', scenarioId: 'box-1' })
+    const g = { ...g0, markers: g0.markers.map((m) => ({ ...m, kind: 'searchable' as const, props: {} })) }
     const v = view(g, 'A')
     expect(v).toMatchObject({ round: 0, maxRounds: 6, scenarioId: 'box-1' })
     expect(v.markers).toHaveLength(3)

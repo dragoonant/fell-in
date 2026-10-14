@@ -84,7 +84,7 @@
 .panel h3 { font-size: 14px; text-transform: uppercase; }
 .sect { margin: 6px 0 2px; }
 
-.topbar { top: 8px; left: 8px; right: 8px; padding: 3px 10px; gap: 4px 14px; }
+.topbar { top: 8px; left: 8px; right: 8px; padding: 3px 10px; gap: 4px 14px; z-index: 4; }
 .topbar button { padding: 3px 8px; }
 .ticker { top: 52px; background: rgba(29,26,22,.55); font-size: 12px; }
 .banner { top: 30%; font-size: 30px; }

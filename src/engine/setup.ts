@@ -15,7 +15,7 @@ export const TABLE_IN = 36 // M0 demo only; real games take the table from the s
 /** Default scenario: Box scenario 1 (kill all enemies, 6 rounds, 3 searchables on the centre line). */
 export const DEFAULT_SCENARIO_ID = 'box-1'
 
-/** Starter-set skirmish forces used when a scenario side lists none: Survivors vs Super Mutants (the AI-RR line-up). */
+/** Starter-set skirmish forces (Survivors vs Super Mutants, the AI-RR line-up). Reference only: createGame no longer falls back to them, every scenario side declares its own forces. */
 export const DEFAULT_FORCES: readonly (readonly ScenarioForce[])[] = [
   [
     { unit: 'sole-survivor', count: 1, items: ['hunting-rifle', 'baseball-bat'] },
@@ -131,18 +131,20 @@ function simpleTerrain(w: number, d: number): TerrainInstance[] {
 
 /**
  * Build a real game from data/<edition>/scenarios (default DEFAULT_SCENARIO_ID). Seat i plays scenario side i; forces come
- * from opts.forces, else the scenario side, else DEFAULT_FORCES[i]. Unknown unit ids are skipped. The first decision is
+ * from opts.forces, else the scenario side (a side with none is a data error and throws). Unknown unit ids are skipped. The first decision is
  * 'turn.start' for the first seat (owned by turnflow). Throws on an unknown scenario id (a setup error, not an Action).
  */
 export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameState {
   const scenarioId = opts.scenarioId ?? DEFAULT_SCENARIO_ID
   const sc = recordOf(bundle, 'scenarios', scenarioId)
   if (!sc) throw new Error(`createGame: no scenario "${scenarioId}" in edition ${bundle.edition}`)
-  const seatOrder = opts.seats ?? ['A', 'B']
+  const requested = opts.seats ?? ['A', 'B']
   const [w, d] = sc.tableIn
   const controllerOf = (seat: SeatId): SeatController => opts.controllers?.[seat] ?? (seat === 'ai' ? 'official' : 'human')
   const aiSideIdx = sc.sides.findIndex((x) => x.ai)
-  const hasAi = aiSideIdx >= 0 && seatOrder.some((x) => controllerOf(x) === 'official')
+  const hasAi = aiSideIdx >= 0 && requested.some((x) => controllerOf(x) === 'official')
+  // Plain games seat one player per scenario side: a one-side tutorial has no opponent seat, however many were asked for.
+  const seatOrder = hasAi ? requested : requested.slice(0, Math.max(1, sc.sides.length))
   // Seat -> scenario side. Plain games: seat i plays side i. AI games: the AI seat plays the side with the `ai` block and
   // the human seats take the other sides in order (several humans share the last one and split its force; spec 18 s8.2).
   const humanSides = sc.sides.map((_, i) => i).filter((i) => i !== aiSideIdx)
@@ -159,7 +161,8 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     const si = sideIdx(seat)
     const side = sc.sides[hasAi ? si : i]
     const sharing = seatOrder.filter((x) => sideIdx(x) === si && controllerOf(x) === controllerOf(seat))
-    let forces = opts.forces?.[seat] ?? (side?.forces?.length ? side.forces : DEFAULT_FORCES[i] ?? [])
+    let forces = opts.forces?.[seat] ?? side?.forces ?? []
+    if (!forces.length) throw new Error(`createGame: scenario "${sc.id}" side "${side?.id ?? i}" declares no forces (every side needs explicit forces with gear)`)
     if (!opts.forces?.[seat] && sharing.length > 1) forces = forces.filter((_, k) => k % sharing.length === sharing.indexOf(seat))
     const list: ModelState[] = []
     const counts: Record<string, number> = {}
@@ -215,7 +218,8 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     rollSeq: 0,
     decisionSeq: 0,
     models,
-    terrain: w === 36 && d === 36 ? themedTerrain(sc.id) : simpleTerrain(w, d),
+    // A scenario that lists its own terrain (even an empty list, as the small tutorial tables do) gets exactly that; others get the generic set.
+    terrain: sc.terrain ? [] : w === 36 && d === 36 ? themedTerrain(sc.id) : simpleTerrain(w, d),
     clouds: [],
     scenario: { table: { w, d } },
     pending: { id: 'd:0', seat: seatOrder[0]!, kind: 'turn.start', context: {}, options: [], canPass: false },

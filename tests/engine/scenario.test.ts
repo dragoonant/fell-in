@@ -29,8 +29,11 @@ describe('SCN: scenarios and victory', () => {
 
   it('SCN-001 wiping out a side wins the game with the scenario reward', () => {
     const r = checkVictory(kill(game('box-1'), 'B'), bundle)!
-    expect(r.winner).toBe('A')
-    expect(r.caps).toBe(300)
+    expect(r.winner).toBe('A') // seat A plays the Brotherhood (the attacker)
+    expect(r.caps).toBe(200) // no suit worn, so no 50 caps bonus
+    const s = checkVictory(kill(game('box-1'), 'A'), bundle)!
+    expect(s.winner).toBe('B')
+    expect(s.caps).toBe(300)
   })
 
   it('SCN-001 both sides gone is nobody', () => {
@@ -46,18 +49,23 @@ describe('SCN: scenarios and victory', () => {
     expect(endOfRound({ ...g, round: 5 }, bundle).phase).toBe('play')
   })
 
-  it('SCN-001 BOX-1: at the round limit the side with more surviving points wins, no caps', () => {
-    let g = { ...game('box-1'), round: 6 }
-    const b = Object.values(g.models).find((m) => m.owner === 'B')!
-    g = updateModel(g, b.id, { life: 'dead' })
-    const over = endOfRound(g, bundle)
-    expect(over.result!.winner).toBe('A')
+  it('SCN-001 BOX-1: at the round limit with both sides standing nobody wins (no house ruling)', () => {
+    const over = endOfRound({ ...game('box-1'), round: 6 }, bundle)
+    expect(over.result!.winner).toBeNull()
     expect(over.result!.caps).toBe(0)
+  })
+
+  it('SCN-001 BOX-1: the Brotherhood earns 50 caps per claimed suit still worn and unbroken', () => {
+    let g = kill(game('box-1'), 'B')
+    const a = Object.values(g.models).filter((m) => m.owner === 'A')
+    g = updateModel(g, a[0]!.id, { carried: [...a[0]!.carried, { uid: 'x', defId: 't-45-power-armor', kind: 'armor', starting: false }] })
+    g = updateModel(g, a[1]!.id, { carried: [...a[1]!.carried, { uid: 'y', defId: 't-51-power-armor', kind: 'armor', starting: false, degraded: true }] })
+    expect(checkVictory(g, bundle)!.caps).toBe(250)
   })
 
   it('SCN-004 BOX-4: more models at the tower is a major win', () => {
     let g: GameState = { ...game('box-4'), round: 6 }
-    const tower = g.markers.find((m) => m.face === 'tower')!
+    const tower = g.markers.find((m) => m.face === 'radio-tower')!
     const a = Object.values(g.models).find((m) => m.owner === 'B')!
     g = updateModel(g, a.id, { pos: { ...tower.pos } })
     const over = endOfRound(g, bundle)
@@ -72,19 +80,19 @@ describe('SCN: scenarios and victory', () => {
   it('SCN-002 BOX-2: the attacker wins by carrying the nuke off the table', () => {
     const g = game('box-2')
     const carrier = Object.values(g.models).find((m) => m.owner === 'B')!
-    const s = withMarker(updateModel(g, carrier.id, { offTable: true }), 'nuke', { carriedBy: carrier.id })
+    const s = withMarker(updateModel(g, carrier.id, { offTable: true }), 'mini-nuke', { carriedBy: carrier.id })
     const r = checkVictory(s, bundle)!
     expect(r.winner).toBe('B')
     expect(r.caps).toBe(200)
   })
 
   it('SCN-002 BOX-2: an exploding nuke leaves no winner, and defenders holding it at the limit round win', () => {
-    const boom = checkVictory(withMarker(game('box-2'), 'nuke', { props: { exploded: true } }), bundle)!
+    const boom = checkVictory(withMarker(game('box-2'), 'mini-nuke', { props: { exploded: true } }), bundle)!
     expect(boom.winner).toBeNull()
     expect(boom.caps).toBe(0)
     const g = game('box-2')
     const holder = Object.values(g.models).find((m) => m.owner === 'A')!
-    const held = withMarker(g, 'nuke', { carriedBy: holder.id })
+    const held = withMarker(g, 'mini-nuke', { carriedBy: holder.id })
     expect(endOfRound({ ...held, round: 8 }, bundle).phase).toBe('play')
     const end = endOfRound({ ...held, round: 9 }, bundle)
     expect(end.result!.winner).toBe('A')
@@ -93,8 +101,8 @@ describe('SCN: scenarios and victory', () => {
   it('SCN-002 a dead carrier drops the nuke where it fell', () => {
     const g = game('box-2')
     const holder = Object.values(g.models).find((m) => m.owner === 'A')!
-    const s = endOfRound(updateModel(withMarker(g, 'nuke', { carriedBy: holder.id }), holder.id, { life: 'dead' }), bundle)
-    expect(s.markers.find((m) => m.face === 'nuke')!.carriedBy).toBeUndefined()
+    const s = endOfRound(updateModel(withMarker(g, 'mini-nuke', { carriedBy: holder.id }), holder.id, { life: 'dead' }), bundle)
+    expect(s.markers.find((m) => m.face === 'mini-nuke')!.carriedBy).toBeUndefined()
   })
 
   it('SCN-003 AI-RR: a wrecked rocket wins for the Super Mutants, a shoved one for the Survivors', () => {
@@ -145,7 +153,7 @@ describe('SCN: scenarios and victory', () => {
 
   it('SCN-002 carrying: pick up the nuke in contact, and drop it again', () => {
     const g = game('box-2')
-    const nuke = g.markers.find((m) => m.face === 'nuke')!
+    const nuke = g.markers.find((m) => m.face === 'mini-nuke')!
     const who = Object.values(g.models).find((m) => m.owner === 'B')!
     const placed = { ...updateModel(g, who.id, { pos: { x: nuke.pos.x + 1.1, z: nuke.pos.z } }), activation: { modelId: who.id, actionsTaken: 0, ap: 0, apIconsUsed: [], heavyFired: false, testsUsed: [] } }
     expect(scenario.options(placed, bundle, who.id).map((o) => o.action.type)).toEqual(['scenario.pickup'])

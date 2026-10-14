@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { modeOfWeapon, pickEquipped } from '../../src/client/figures/equipped'
-import { parseManifest, socketFor } from '../../src/client/figures/glbModels'
+import { modeOfWeapon, pickEquipped, weaponClassOf } from '../../src/client/figures/equipped'
+import { heldPose, parseManifest, socketFor } from '../../src/client/figures/glbModels'
 import { fitFigure } from '../../src/client/figures/GlbBody'
 import { parseTerrainManifest, terrainEntryFor } from '../../src/client/board/terrainGlb'
+import { objectKind } from '../../src/client/figures/ObjectModels'
+import { proceduralLook } from '../../src/client/figures/Procedural'
 import { planFit } from '../../src/client/board/terrainFit'
 
 describe('glb pipeline', () => {
@@ -30,5 +32,49 @@ describe('glb pipeline', () => {
     const p = planFit('w1', { rect: { w: 4, d: 2 } }, 0, 1, [10, 5, 3])
     expect(p.size[0]).toBeLessThanOrEqual(4.01)
     expect(p.size[2]).toBeLessThanOrEqual(2.01)
+    expect(p.sx).toBe(p.sy)
+    expect(p.sz).toBe(p.sy)
+    const tire = planFit('t1', { circle: { r: 1 } }, 0, 1.4, [2, 1, 2])
+    expect(tire.sx).toBe(tire.sy) // uniform: a tire stack is never stretched
+  })
+  it('objects manifest key and face kinds', () => {
+    const m = parseManifest({ objects: { 'red-rocket': { file: 'objects/red-rocket.glb', lengthIn: 4, yaw: 1 }, 'bad slug!': {} } })
+    expect(m.objects['red-rocket']).toEqual({ file: 'objects/red-rocket.glb', lengthIn: 4, yaw: 1 })
+    expect(Object.keys(m.objects)).toEqual(['red-rocket'])
+    expect(objectKind('red-rocket')).toBe('red-rocket')
+    expect(objectKind('power-armor')).toBe('power-armor-suit')
+    expect(objectKind('nuke')).toBe('mini-nuke')
+    expect(objectKind('zzz')).toBe('unknown')
+    expect(proceduralLook('paladin')).toBe('power')
+    expect(proceduralLook('knight')).toBe('armor')
+    expect(proceduralLook('turret')).toBe('turret')
+    expect(proceduralLook('settler')).toBe('plain')
+  })
+  it('classifies weapons into hold classes', () => {
+    expect(weaponClassOf('10mm-pistol', { short: 'blue' })).toBe('pistol')
+    expect(weaponClassOf('pipe-pistol', { short: 'black' })).toBe('pistol')
+    expect(weaponClassOf('44-revolver', { short: 'blue' })).toBe('pistol')
+    expect(weaponClassOf('hunting-rifle', { short: 'blue', long: 'black' })).toBe('long')
+    expect(weaponClassOf('combat-shotgun', { short: 'red', long: 'blue' })).toBe('long')
+    expect(weaponClassOf('laser-rifle', { short: 'black', long: 'black' })).toBe('long')
+    expect(weaponClassOf('missile-launcher', { short: 'black', long: 'black', heavy: true })).toBe('heavy')
+    expect(weaponClassOf('minigun')).toBe('heavy')
+    expect(weaponClassOf('fragmentation-grenade', { short: 'throw', grenade: true })).toBe('thrown')
+    expect(weaponClassOf('sledgehammer', { dice: { melee: {} } })).toBe('melee2')
+    expect(weaponClassOf('board', { dice: { melee: {} } })).toBe('melee2')
+    expect(weaponClassOf('machete', { dice: { melee: {} } })).toBe('melee1')
+    expect(weaponClassOf('baseball-bat', { dice: { melee: {} } })).toBe('melee1')
+    expect(weaponClassOf('laser-rifle')).toBe('long') // no record: name fallback
+  })
+  it('hold poses: pistol unchanged, long gun braced level and forward (muzzle never raised), manifest rot wins', () => {
+    const hand: [number, number, number] = [0.4, 1.3, 0.25]
+    const pp = heldPose('pistol', hand, undefined)
+    expect(pp.position).toEqual(hand)
+    pp.rotation.forEach((r) => expect(Math.abs(r)).toBeLessThan(1e-9))
+    const lg = heldPose('long', hand, undefined)
+    expect(lg.position[0]).toBeLessThan(hand[0]) // stock side pulled toward the body
+    expect(Math.abs(lg.rotation[0])).toBeLessThan(0.1) // barrel level, not pitched up
+    expect(lg.position[1]).toBeLessThanOrEqual(hand[1]) // held at the chest or hip, not raised past the face
+    expect(heldPose('long', hand, [1, 2, 3])).toEqual({ position: hand, rotation: [1, 2, 3] })
   })
 })

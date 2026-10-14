@@ -22,7 +22,7 @@ read only the section a task needs. The source map is `docs/spec/sources/WW-SOUR
 
 ## Current state (2026-10-12)
 - M0-M4 shipped; see STATUS.md. M4b (official AI cards, solo/co-op) is rebuilt from the Campaign Handbook, which is
-  in gitignored `docs/sources/`; it replaced the earlier fan-source M4b. **Next: the owner playtest gate for M4**
+  in gitignored `docs/sources/`; it replaced the earlier fan-source M4b. **Next: owner playtest of the fixed scenarios; then plan B weapon poses (regenerated figures with two grips, pilot Sole Survivor + Super Mutant). ASK the owner before any Hunyuan/GPU work and wait for a go.** Then the owner playtest gate for M4
   (versus bot and Wasteland AI), then fill the four placeholder AI cards from photos and the gaps in STATUS.md.
 
 ## History (2026-10-11)

@@ -1,0 +1,145 @@
+[
+  {
+    "id": "machete",
+    "name": "Machete",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "black": 1,
+        "green": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 1
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1
+      }
+    },
+    "cost": 3,
+    "source": [
+      "CARDS weapon.pdf p8 (pdf idx 7)",
+      "COST Machete"
+    ]
+  },
+  {
+    "id": "power-fist",
+    "name": "Power Fist",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "black": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 1
+      }
+    ],
+    "specials": [
+      {
+        "cost": [
+          "BOT"
+        ],
+        "outcome": "stun"
+      }
+    ],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "yellow": 1
+      }
+    },
+    "cost": 6,
+    "source": [
+      "CARDS weapon.pdf p27 (pdf idx 26)",
+      "COST Power Fist"
+    ]
+  },
+  {
+    "id": "baton",
+    "name": "Baton",
+    "skill": "melee",
+    "dice": {
+      "melee": {
+        "green": 2
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "critical": {
+      "rating": 3,
+      "damage": [
+        {
+          "type": "physical",
+          "value": 2
+        }
+      ],
+      "extraDice": {
+        "black": 1,
+        "yellow": 1
+      }
+    },
+    "cost": 10,
+    "source": [
+      "CARDS weapon.pdf p9 (pdf idx 8)",
+      "COST Baton"
+    ]
+  },
+  {
+    "id": "machine-gun-turret-mk1-gun",
+    "name": "Machine Gun Turret Mk1",
+    "skill": "rifle",
+    "restriction": {
+      "units": [
+        "machine-gun-turret-mk1"
+      ]
+    },
+    "short": "green",
+    "long": "green",
+    "dice": {
+      "short": {
+        "yellow": 1
+      },
+      "long": {
+        "yellow": 1
+      }
+    },
+    "damage": [
+      {
+        "type": "physical",
+        "value": 2
+      }
+    ],
+    "specials": [],
+    "cost": 10,
+    "source": [
+      "CARDS weapon.pdf p49 (pdf idx 48)",
+      "COST Machine Gun Turret Mk1"
+    ]
+  }
+]

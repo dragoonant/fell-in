@@ -11,6 +11,7 @@ import { baseRadius, dist } from './geometry'
 import { pushEvents } from './registry'
 import { OBJECT_OWNER } from './sides'
 import { modelDefaults } from './setup'
+import { rectGapToBase } from './scenarios/objshape'
 import type { GameState, Id, MarkerState, ModelId, ModelState, Vec2, WastelandDamageType } from './types'
 
 /** Geometry tolerance for "in base contact with an object" (a table fact, like scenario.ts MARKER_REACH_IN). */
@@ -35,6 +36,8 @@ export function objectArmor(mk: MarkerState, type: WastelandDamageType): ArmorRa
   const armor = mk.props['armor'] as Record<string, unknown> | undefined
   const v = armor?.[type]
   if (v === 'immune' || v === 'X' || v === 'x') return ratingOf('immune')
+  // `{ base, strong }` is a rating with Strong Armor tokens (the Blood Cage chain, 2+1).
+  if (v && typeof v === 'object') { const o = v as { base?: unknown; strong?: unknown }; return ratingOf({ base: num(o.base) ?? 0, strong: num(o.strong) ?? 0 }) }
   const n = num(v)
   return n === undefined ? ratingOf(undefined) : ratingOf({ base: n })
 }
@@ -48,6 +51,8 @@ export function withProbe(state: GameState, mk: MarkerState): { state: GameState
   const probe: ModelState = {
     ...modelDefaults(), id: probeId, profileId: '__object__', owner: OBJECT_OWNER, pos: { ...mk.pos }, elev: 0,
     base: num(mk.props['baseMm']) ?? DEFAULT_OBJECT_BASE_MM, life: 'active', conditions: [],
+    // props.attackBonusGreen: extra green dice every attack against this object rolls (the Blood Cage chain, COOP s4).
+    ...(num(mk.props['attackBonusGreen']) ? { tokens: { attackBonusGreen: num(mk.props['attackBonusGreen'])! } } : {}),
   }
   return { state: { ...state, models: { ...state.models, [probeId]: probe } }, probeId }
 }
@@ -56,7 +61,7 @@ export function withProbe(state: GameState, mk: MarkerState): { state: GameState
 export function objectGap(state: GameState, modelId: ModelId, mk: MarkerState): number {
   const m = state.models[modelId]
   if (!m) return Infinity
-  return Math.max(0, dist(m.pos, mk.pos) - baseRadius(m.base) - baseRadius(num(mk.props['baseMm']) ?? DEFAULT_OBJECT_BASE_MM))
+  return rectGapToBase(mk, m.pos, baseRadius(m.base)) ?? Math.max(0, dist(m.pos, mk.pos) - baseRadius(m.base) - baseRadius(num(mk.props['baseMm']) ?? DEFAULT_OBJECT_BASE_MM))
 }
 export const inObjectContact = (state: GameState, modelId: ModelId, mk: MarkerState): boolean => objectGap(state, modelId, mk) <= OBJECT_CONTACT_IN + 1e-9
 

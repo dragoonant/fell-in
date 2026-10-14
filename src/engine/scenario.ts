@@ -8,11 +8,13 @@ import { attrOf } from './forces'
 import { baseRadius, dist } from './geometry'
 import { isEngaged } from './attack'
 import { objectGap, pushObject } from './objects'
-import { exitedIds, isAiOwned, scenarioRoundEntries, scenarioRoundMoves, scenarioTurnEnd, scenarioUpkeep, techIdOf } from './scenarios/rules'
+import { exitedIds, isAiOwned, markerRadius, scenarioRoundEntries, scenarioRoundMoves, scenarioTurnEnd, scenarioUpkeep, techIdOf, touchingMarker } from './scenarios/rules'
+import { spawnModel } from './scenarios/deploy'
+import { objectRect, rectExtent, rectGapToBase } from './scenarios/objshape'
 import { teamOf } from './sides'
 import { gainAp } from './turnflow'
-import { option, pushEvents, reject, type ModuleDef, type StepResult } from './registry'
-import type { Action, DecisionOption, GameResult, GameState, MarkerState, ModelId, ModelState, SeatId } from './types'
+import { option, pushEvents, reject, updateModel, type ModuleDef, type StepResult } from './registry'
+import type { Action, CarriedItem, DecisionOption, GameResult, GameState, MarkerState, ModelId, ModelState, SeatId } from './types'
 
 /** Geometry tolerance for "token touching a base" (a table fact, not an edition rule). */
 const MARKER_REACH_IN = 0.5
@@ -23,7 +25,7 @@ export function scenarioDefOf(state: GameState, bundle: EditionBundle): Scenario
 }
 
 // ---------- verdicts ----------
-interface Verdict { side: string | null; level?: 'major' | 'minor'; reason: string }
+interface Verdict { side: string | null; level?: 'major' | 'minor'; reason: string; /** Overrides the victory entry's caps (a reward that depends on the finish, such as box-1's suits). */ caps?: number }
 type Phase = 'action' | 'roundEnd'
 interface Ctx { state: GameState; bundle: EditionBundle; def: ScenarioDef; phase: Phase }
 
@@ -62,14 +64,30 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
   'ga-2': (c) => tutorialAll(c, 'hit', 'every target was hit'),
   'ga-3': (c) => tutorialAll(c, 'hit', 'every target was hit'),
   'ga-4': (c) => tutorialAll(c, 'damaged', 'every mound took damage'),
+  'ga-1': (c) => {
+    // Crate first (marked reached by the upkeep), then the exit.
+    const crate = markersOf(c.state, 'crate')[0], exit = markersOf(c.state, 'exit')[0]
+    if (!crate || crate.props.done !== true || !exit) return null
+    return Object.values(c.state.models).some((m) => onTable(m) && touchingMarker(m, exit)) ? { side: c.def.victory[0]?.side ?? null, reason: 'The crate was reached and then the exit' } : null
+  },
+  'box-1': (c) => {
+    const v = lastGroupStanding(c)
+    if (!v || v.side !== 'brotherhood') return v
+    // 200 caps plus 50 per claimed suit still worn and unbroken (not degraded) at the end.
+    const worn = Object.values(c.state.models).filter((m) => onTable(m) && sideOfSeat(c.state, m.owner) === 'brotherhood'
+      && m.carried.some((it) => it.kind === 'armor' && it.starting === false && !it.degraded && recordOf(c.bundle, 'armor', it.defId)?.kind === 'powerArmor')).length
+    return { ...v, caps: (c.def.victory.find((e) => e.side === 'brotherhood')?.caps ?? 200) + 50 * worn }
+  },
   'box-2': (c) => {
-    const nuke = markersOf(c.state, 'nuke')[0]
+    const nuke = markersOf(c.state, 'mini-nuke')[0]
     if (!nuke) return null
     if (nuke.props.exploded === true) return { side: null, reason: 'The nuke went off and took both forces with it' }
     if (markerGone(c.state, nuke)) return { side: 'attacker', reason: 'The nuke was carried off the table' }
+    // Defender win: the nuke is still unclaimed, or in the defenders' hands, when round 9 ends.
     const hold = numberIn(victoryText(c.def, 'defender'), /round (\d+)/i)
-    if (c.phase === 'roundEnd' && hold !== null && c.state.round >= hold && holderSeat(c.state, nuke) === seatOfSide(c.state, 'defender')) {
-      return { side: 'defender', reason: 'The defenders still hold the nuke' }
+    const holder = holderSeat(c.state, nuke)
+    if (c.phase === 'roundEnd' && hold !== null && c.state.round >= hold && (holder === null || holder === seatOfSide(c.state, 'defender'))) {
+      return { side: 'defender', reason: holder === null ? 'The nuke was never claimed' : 'The defenders still hold the nuke' }
     }
     return null
   },
@@ -80,20 +98,32 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
   },
   'box-4': (c) => {
     if (c.phase !== 'roundEnd' || c.state.maxRounds === null || c.state.round < c.state.maxRounds) return null
-    const tower = markersOf(c.state, 'tower')[0]
+    const tower = markersOf(c.state, 'radio-tower')[0]
     if (!tower) return null
     const tally: Record<string, { n: number; pts: number }> = {}
     for (const m of Object.values(c.state.models)) {
       if (!onTable(m)) continue
       const t = (tally[m.owner] ??= { n: 0, pts: 0 })
       t.pts += recordOf(c.bundle, 'units', m.profileId)?.cost ?? 0
-      if (dist(m.pos, tower.pos) - baseRadius(m.base) <= MARKER_REACH_IN) t.n++
+      if (touchingMarker(m, tower)) t.n++
     }
     const ranked = Object.entries(tally).sort((a, b) => b[1].n - a[1].n || b[1].pts - a[1].pts)
     const [first, second] = ranked
     if (!first || (second && first[1].n === second[1].n && first[1].pts === second[1].pts)) return { side: null, reason: 'The tower is shared evenly' }
     const side = sideOfSeat(c.state, first[0])
     return { side, level: second && first[1].n === second[1].n ? 'minor' : 'major', reason: 'Most models at the tower when time ran out' }
+  },
+  'box-5': (c) => {
+    const cap = markersOf(c.state, 'captive')[0]
+    if (!cap) return null
+    const flipSeat = seatOfSide(c.state, 'flip')
+    const sid = typeof cap.props.spawnedId === 'string' ? cap.props.spawnedId : null
+    const flipAlive = Object.values(c.state.models).some((m) => m.owner === flipSeat && m.id !== sid && alive(m))
+    if (!sid) return flipAlive ? null : { side: 'kidnappers', caps: 200, reason: 'Flip fell before Sarah was freed' }
+    if (exitedIds(c.state).includes(sid)) return { side: 'flip', reason: 'Sarah got off the table' }
+    const sarah = c.state.models[sid]
+    if (sarah && sarah.life === 'dead') return flipAlive ? { side: 'kidnappers', caps: 150, reason: 'Sarah was killed' } : { side: 'kidnappers', caps: 200, reason: 'Flip and Sarah are both dead' }
+    return null
   },
   'ai-rr': (c) => {
     const rocket = markersOf(c.state, 'red-rocket')[0]
@@ -137,6 +167,9 @@ const EVALUATORS: Record<string, (c: Ctx) => Verdict | null> = {
     // The Tech walking out wins for whoever controls it; losing it ends the hunt for the players.
     if (exitedIds(c.state).includes(tech.id)) return { side: sideOfSeat(c.state, tech.owner), reason: isAiOwned(c.state, tech) ? 'The AI got the Tech out' : 'The Tech got away' }
     if (tech.life === 'dead') return { side: aiSide(c), reason: 'The Tech was lost' }
+    // Phases 2 and 3: every Super Mutant and Mutant Hound removed is a win for the players.
+    const hunters = Object.values(c.state.models).filter((m) => m.id !== tech.id && isAiOwned(c.state, m) && alive(m))
+    if (hunters.length === 0) return { side: sideOfSeat(c.state, playerSeat(c.state)), reason: 'Every Super Mutant and hound is gone' }
     return null
   },
   'coop-munitions': (c) => {
@@ -181,7 +214,8 @@ function toResult(c: Ctx, v: Verdict): GameResult {
   if (v.side === null) return { winner: null, reason: v.reason, caps: 0 }
   const entry = c.def.victory.find((e) => e.side === v.side && (!v.level || e.level === v.level)) ?? c.def.victory.find((e) => e.side === v.side)
   const seat = seatOfSide(c.state, v.side) ?? c.state.seatOrder.find((s) => c.state.seats[s]?.side === v.side) ?? null
-  return { winner: seat, ...(entry?.level ? { level: entry.level } : v.level ? { level: v.level } : {}), reason: v.reason, ...(entry?.caps !== undefined ? { caps: entry.caps } : {}) }
+  const caps = v.caps ?? entry?.caps
+  return { winner: seat, ...(entry?.level ? { level: entry.level } : v.level ? { level: v.level } : {}), reason: v.reason, ...(caps !== undefined ? { caps } : {}) }
 }
 
 function evaluate(state: GameState, bundle: EditionBundle, phase: Phase): GameResult | null {
@@ -246,10 +280,12 @@ export function endOfRound(state: GameState, bundle: EditionBundle): GameState {
 
 // ---------- scenario Actions: carry an objective ----------
 /** Faces that a model may pick up and carry, by scenario (BOX-2 nuke, BOX-3 books). A marker may also opt in with props.carry. */
-const CARRIED_FACES: Record<string, string[]> = { 'box-2': ['nuke'], 'box-3': ['book'] }
+const CARRIED_FACES: Record<string, string[]> = { 'box-2': ['mini-nuke'], 'box-3': ['book'] }
 
-function carriable(state: GameState, mk: MarkerState): boolean {
-  return !mk.carriedBy && (mk.props.carry === true || (!!state.scenarioId && !!mk.face && (CARRIED_FACES[state.scenarioId] ?? []).includes(mk.face)))
+function carriable(state: GameState, mk: MarkerState, m?: ModelState): boolean {
+  // props.carryBy names the only side that may take it (box-3: only the attacking Survivors take books).
+  if (m && typeof mk.props.carryBy === 'string' && sideOfSeat(state, m.owner) !== mk.props.carryBy) return false
+  return !mk.carriedBy && mk.props.destroyed !== true && mk.props.offTable !== true && (mk.props.carry === true || (!!state.scenarioId && !!mk.face && (CARRIED_FACES[state.scenarioId] ?? []).includes(mk.face)))
 }
 /** Objects a scenario lets models push, by scenario (RR p2: a Str test within Orange shoves the rocket Yellow). A marker may opt in with props.pushable. */
 const PUSHABLE_FACES: Record<string, string[]> = { 'ai-rr': ['red-rocket'] }
@@ -259,14 +295,25 @@ const pushDistanceOf = (mk: MarkerState): string => (typeof mk.props.pushDistanc
 /** Markers a model may Interact with for a plain effect (props.interact; props.interactBy 'players' | 'ai' | 'any'). */
 function interactable(state: GameState, mk: MarkerState, m: ModelState): boolean {
   if (mk.props.interact !== true || mk.props.done === true || mk.props.destroyed === true) return false
+  if (typeof mk.props.interactSide === 'string' && sideOfSeat(state, m.owner) !== mk.props.interactSide) return false
   const by = mk.props.interactBy ?? 'any'
   return by === 'any' || (by === 'players') === !isAiOwned(state, m)
+}
+/**
+ * A power armor suit object (props.suit, drawn at set-up) a model may claim with an Action while in base contact (box-1). props.claimBy
+ * names the only side that may; a model already in Power Armor cannot take a second suit; a wrecked suit is gone.
+ */
+function claimable(state: GameState, bundle: EditionBundle, mk: MarkerState, m: ModelState): boolean {
+  if (typeof mk.props.suit !== 'string' || mk.props.claimed === true || mk.props.destroyed === true || mk.props.offTable === true || mk.carriedBy) return false
+  if (typeof mk.props.claimBy === 'string' && sideOfSeat(state, m.owner) !== mk.props.claimBy) return false
+  return !m.carried.some((c) => c.kind === 'armor' && !c.spent && recordOf(bundle, 'armor', c.defId)?.kind === 'powerArmor')
 }
 function pushable(state: GameState, mk: MarkerState): boolean {
   if (mk.props.destroyed === true || mk.props.offTable === true) return false
   return mk.props.pushable === true || (!!state.scenarioId && !!mk.face && (PUSHABLE_FACES[state.scenarioId] ?? []).includes(mk.face))
 }
-const touching = (m: ModelState, mk: MarkerState): boolean => dist(m.pos, mk.pos) - baseRadius(m.base) <= MARKER_REACH_IN
+/** Base contact with a marker: a marker with a base (props.baseMm) counts from its edge, a bare token from its centre. */
+const touching = (m: ModelState, mk: MarkerState): boolean => (rectGapToBase(mk, m.pos, baseRadius(m.base)) ?? dist(m.pos, mk.pos) - baseRadius(m.base) - (typeof mk.props.baseMm === 'number' ? markerRadius(mk) : 0)) <= MARKER_REACH_IN
 
 /**
  * An object with props.departEdges (the Red Rocket: the edges at the diner's corner) is taken off the table when a shove puts
@@ -278,12 +325,35 @@ function keepToDepartureEdges(state: GameState, markerId: string): GameState {
   const edges = mk?.props.departEdges as string[] | undefined
   if (!mk || !Array.isArray(edges)) return state
   const { w, d } = state.scenario.table
-  const r = baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40)
-  const touching: Record<string, boolean> = { n: mk.pos.z - r <= -d / 2 + 1e-9, s: mk.pos.z + r >= d / 2 - 1e-9, w: mk.pos.x - r <= -w / 2 + 1e-9, e: mk.pos.x + r >= w / 2 - 1e-9 }
+  const rect = objectRect(mk)
+  const ext = rect ? rectExtent(rect) : null
+  const rx = ext ? ext.hx : baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40), rz = ext ? ext.hz : rx
+  const touching: Record<string, boolean> = { n: mk.pos.z - rz <= -d / 2 + 1e-9, s: mk.pos.z + rz >= d / 2 - 1e-9, w: mk.pos.x - rx <= -w / 2 + 1e-9, e: mk.pos.x + rx >= w / 2 - 1e-9 }
   const { offTable: _stays, ...rest } = mk.props
   if (edges.some((e) => touching[e])) return { ...state, markers: state.markers.map((x) => (x.id === markerId ? { ...x, props: { ...rest, offTable: true } } : x)) }
-  const pos = { x: Math.max(-w / 2 + r, Math.min(w / 2 - r, mk.pos.x)), z: Math.max(-d / 2 + r, Math.min(d / 2 - r, mk.pos.z)) }
+  const pos = { x: Math.max(-w / 2 + rx, Math.min(w / 2 - rx, mk.pos.x)), z: Math.max(-d / 2 + rz, Math.min(d / 2 - rz, mk.pos.z)) }
   return { ...state, markers: state.markers.map((x) => (x.id === markerId ? { ...x, pos, props: rest } : x)) }
+}
+
+/**
+ * An object with props.spawn ({unit, items}) puts a new model of the interacting seat in its place when interacted with (box-5: Flip
+ * frees Sarah, a Settler with a Laser Rifle, who then fights for Flip). The model stands on the marker, nudged out of the actor's base.
+ */
+function spawnFromMarker(state: GameState, bundle: EditionBundle, actor: ModelState, markerId: string): GameState {
+  const mk = state.markers.find((x) => x.id === markerId)
+  const sp = mk?.props.spawn as { unit?: string; items?: string[] } | undefined
+  if (!mk || !sp || typeof sp.unit !== 'string') return state
+  const r = baseRadius(recordOf(bundle, 'units', sp.unit)?.baseMm ?? 32) + baseRadius(actor.base) + 0.05
+  let pos = { ...mk.pos }
+  if (dist(actor.pos, pos) < r) {
+    const dx = pos.x - actor.pos.x, dz = pos.z - actor.pos.z, l = Math.hypot(dx, dz)
+    const ux = l > 1e-6 ? dx / l : 1, uz = l > 1e-6 ? dz / l : 0
+    const { w, d } = state.scenario.table
+    pos = { x: Math.max(-w / 2, Math.min(w / 2, actor.pos.x + ux * r)), z: Math.max(-d / 2, Math.min(d / 2, actor.pos.z + uz * r)) }
+  }
+  const spawned = spawnModel(state, bundle, actor.owner, sp.unit, sp.items ?? [], pos)
+  if (!spawned) return state
+  return { ...spawned.state, markers: spawned.state.markers.map((x) => (x.id === markerId ? { ...x, props: { ...x.props, spawnedId: spawned.id, freed: true, destroyed: true } } : x)) }
 }
 
 export const scenario: ModuleDef = {
@@ -294,13 +364,14 @@ export const scenario: ModuleDef = {
     if (!m || !onTable(m) || isEngaged(state, modelId)) return []
     const out: DecisionOption[] = []
     const carried = state.markers.filter((mk) => mk.carriedBy === modelId)
-    for (const mk of state.markers) if (carriable(state, mk) && touching(m, mk)) out.push(option(`take:${mk.id}`, `Pick up the ${mk.face}`, 'scenario.pickup', { modelId, markerId: mk.id }))
+    for (const mk of state.markers) if (carriable(state, mk, m) && touching(m, mk)) out.push(option(`take:${mk.id}`, `Pick up the ${mk.face}`, 'scenario.pickup', { modelId, markerId: mk.id }))
     for (const mk of state.markers) {
       if (pushable(state, mk) && objectGap(state, modelId, mk) <= rulerInches(bundle, pushReachOf(mk) as never) + 1e-9) out.push(option(`push:${mk.id}`, `Shove the ${mk.face ?? 'object'} (Str test)`, 'scenario.push', { modelId, markerId: mk.id }))
     }
     for (const mk of state.markers) {
       if (interactable(state, mk, m) && touching(m, mk)) out.push(option(`interact:${mk.id}`, `Interact with the ${mk.face ?? 'marker'}`, 'scenario.interact', { modelId, markerId: mk.id }))
     }
+    for (const mk of state.markers) if (claimable(state, bundle, mk, m) && touching(m, mk)) out.push(option(`claim:${mk.id}`, 'Claim and put on the power armor', 'scenario.claim', { modelId, markerId: mk.id }))
     for (const mk of carried) out.push(option(`drop:${mk.id}`, `Put down the ${mk.face}`, 'scenario.drop', { modelId, markerId: mk.id }))
     return out
   },
@@ -312,7 +383,7 @@ export const scenario: ModuleDef = {
     const mk = state.markers.find((x) => x.id === action.markerId)
     if (!m || !mk) return reject('E_BAD_TARGET', 'Unknown model or marker')
     if (action.type === 'scenario.pickup') {
-      if (!carriable(state, mk)) return reject('E_BAD_TARGET', 'That cannot be carried')
+      if (!carriable(state, mk, m)) return reject('E_BAD_TARGET', 'That cannot be carried')
       if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot pick things up')
       if (!touching(m, mk)) return reject('E_OUT_OF_RANGE', 'Not in contact with the marker')
       const s = { ...state, markers: state.markers.map((x) => (x.id === mk.id ? { ...x, carriedBy: modelId, pos: { ...m.pos } } : x)) }
@@ -329,11 +400,23 @@ export const scenario: ModuleDef = {
       if (t.test.success) s = keepToDepartureEdges(pushObject(s, mk.id, m.pos, rulerInches(bundle, pushDistanceOf(mk) as never)), mk.id)
       return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
     }
+    if (action.type === 'scenario.claim') {
+      if (!claimable(state, bundle, mk, m)) return reject('E_BAD_TARGET', 'That suit cannot be claimed by this model')
+      if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot claim things')
+      if (!touching(m, mk)) return reject('E_OUT_OF_RANGE', 'Not in contact with the suit')
+      const suit = String(mk.props.suit)
+      const item: CarriedItem = { uid: `${m.id}/${suit}`, defId: suit, kind: 'armor', starting: false }
+      let s = updateModel(state, m.id, { carried: [...m.carried, item] })
+      s = { ...s, markers: s.markers.map((x) => (x.id === mk.id ? { ...x, revealed: true, props: { ...x.props, claimed: true, destroyed: true, claimedBy: m.id } } : x)) }
+      s = pushEvents(s, [{ type: 'claimed', modelId, markerId: mk.id, itemId: suit }])
+      return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
+    }
     if (action.type === 'scenario.interact') {
       if (!interactable(state, mk, m)) return reject('E_BAD_TARGET', 'That cannot be interacted with')
       if (isEngaged(state, modelId)) return reject('E_ENGAGED', 'Engaged models cannot interact')
       if (!touching(m, mk)) return reject('E_OUT_OF_RANGE', 'Not in contact with the marker')
-      const s = pushEvents({ ...state, markers: state.markers.map((x) => (x.id === mk.id ? { ...x, revealed: true, props: { ...x.props, done: true } } : x)) }, [{ type: 'interacted', modelId, markerId: mk.id, face: mk.face }])
+      let s = pushEvents({ ...state, markers: state.markers.map((x) => (x.id === mk.id ? { ...x, revealed: true, props: { ...x.props, done: true } } : x)) }, [{ type: 'interacted', modelId, markerId: mk.id, face: mk.face }])
+      s = spawnFromMarker(s, bundle, m, mk.id)
       return { state: s, done: { modelId, type: action.type, triggers: [{ kind: 'action', sourceId: modelId }] } }
     }
     if (action.type === 'scenario.drop') {

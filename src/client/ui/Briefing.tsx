@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore'
 import { readParams } from '../params'
 import { buildBriefing } from './briefingView'
 import { useUiStore } from './uiStore'
+import { HowToPlayButton } from './HowToPlay'
 
 /** Mount with key={epoch}: opens once per new game (not on a mid-game load, nor under ?test=1 unless ?briefing=1). */
 export function Briefing() {
@@ -42,6 +43,7 @@ export function Briefing() {
         {model.rules.length > 0 && (
           <details><summary>Special rules</summary><ul>{model.rules.map((r) => <li key={r.id}>{r.text}</li>)}</ul></details>
         )}
+        <p className="b-howto">First game? <HowToPlayButton link testId="briefing-how-to-play" label="How to play: turns, actions and dice" /></p>
         <div className="b-actions"><button className="primary" data-testid="briefing-start" onClick={() => setOpen(false)}>Start</button></div>
       </div>
     </div>

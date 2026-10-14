@@ -1,0 +1,358 @@
+{
+ "scenarios": [
+  {
+   "id": "coop-sewer",
+   "ok": false,
+   "issues": [
+    "Sides match COOP p4: AI=BoS (Goddard T-60+Bat, 2 Settler Assault Rifle, Dogmeat); P1 Survivors (SS 10mm, Tech Combat Shotgun); P2 Super Mutants. Settlers/Dogmeat on BoS side are correct.",
+    "P2 Super Mutants items []: need board+bolt-action-pipe-rifle; Brute needs sledgehammer (units have no equipped weapons, so they are unarmed).",
+    "Corners mirrored: map has AI zone SE, Deathclaw NW (A). Data has AI NW, Deathclaw SE.",
+    "5 Investigation markers are FIXED on the map, not random: about (6,6.5),(18,4.7),(30,4.7),(4,18.4),(4,29.5) in from the NW corner, along the N and W edges near the Deathclaw corner.",
+    "Player deploy: within Yellow of hatch AND more than Black from face-down I markers; that exclusion is missing.",
+    "Deathclaw is Defeat [any model], so it can attack BoS too. Data sets subject any-enemy and says it 'plays for the AI'.",
+    "No faction on p1 (survivors) or ai (BoS); BoS only comes from Goddard's unit fallback.",
+    "Map has a long LoS-blocking wall running N from near the hatch, plus 2 buildings; source asks for terrain that blocks LoS between the zones."
+   ],
+   "objects": [
+    "Hatch: round steel sewer manhole cover, ~1.25 in across, flush on the ground at centre, with 2 padlock tokens stacked on it until unlocked",
+    "Emergency box: small grey wall/post-mounted box ~1 in, either a padlock face (Lockpick) or a terminal screen (Computers); replaces the revealed numbered I marker",
+    "Key: small brass key token carried by a model",
+    "I markers: 1 in face-down discs"
+   ],
+   "unitsNeeded": [
+    "brotherhood-of-steel faction (only Goddard exists)"
+   ]
+  },
+  {
+   "id": "coop-cage",
+   "ok": false,
+   "issues": [
+    "Chain armor should be 2+1 physical/2+1 energy and +1 green die to hit it; data has flat 3/3 and no bonus die.",
+    "Item deck is 12 cards; data lists 11 and is missing Stuffed Monkey (no item data for it).",
+    "Settler should have Heroic, Sturdy Leather Armor, Mysterious Stranger; Mysterious Stranger is missing (no data). Setup says models start with Improvised Weapon only, but p2 has no improvised-weapon. RULING needed on whether the armor is worn at start.",
+    "AI Brute has no sledgehammer; Super Mutant has no board or bolt-action-pipe-rifle.",
+    "Non-melee weapons: 3 uses each (grenade included). Data text says 'found ranged weapon'; check grenades are covered.",
+    "No faction fields (P1, P2 Survivors; AI Super Mutants); only the unit fallback sets them.",
+    "Holes, the 2 Yellow + 4 Green searchables, A/B entry points and the wave die all match COOP p5."
+   ],
+   "objects": [
+    "Chain hole: ~1 in dark iron ring/grate in the floor, Yellow in from the W and E edge midpoints",
+    "Chain: thin chain links running from each prisoner's wrist to their hole (draw as a line while slack is under Black); breakable",
+    "Searchable: 1 in junk/crate token",
+    "Pit: raider arena; fences or scrap walls are flavour only"
+   ],
+   "unitsNeeded": [
+    "stuffed-monkey item",
+    "mysterious-stranger card"
+   ]
+  },
+  {
+   "id": "coop-munitions",
+   "ok": false,
+   "issues": [
+    "Walls are wrong: source walls project from the E edge midpoint heading W and the S edge midpoint heading N (both edges beside the SE munitions corner), each Black+Orange=14 in. Data runs them from the W and E edges.",
+    "AI Brute has no sledgehammer; Super Mutants have no board or bolt-action-pipe-rifle; hounds items [] (fine only because hound-bite is equipped).",
+    "P2 faction is Brotherhood of Steel (Goddard T-60+Bat, Settler Laser Pistol); there is no faction field and no BoS data.",
+    "Players pick the remaining corners: P1 NE and P2 SW match the map. AI within Green of NW and munitions Orange diagonal from SE are correct.",
+    "Rounds: no fixed limit; the players win at the end of round 8. Data rounds 8 is fine."
+   ],
+   "objects": [
+    "Munitions: pallet of olive-drab ammo crates and a few bombs, ~1.5 in square and ~1 in tall, with a red skull-and-crossbones hazard stencil; Orange diagonal in from the SE corner",
+    "Impassable walls: tall compound wall sections, ~3.5 in high, 14 in long, cannot be climbed"
+   ],
+   "unitsNeeded": [
+    "brotherhood-of-steel faction"
+   ]
+  },
+  {
+   "id": "ai-rr",
+   "ok": false,
+   "issues": [
+    "Red Rocket IS the yellow cube: Zones.tsx:36 draws every object marker as a 0.8in #e0b54a box",
+    "Rocket must be a ~Yellow-long (4in) terrain piece, not a 100mm round base (RR p2)",
+    "Survivor zone is a corner triangle with Blue legs, not a Blue x Blue box (RR p1 map)",
+    "SM deploy at AI markers exactly Orange from diner, Yellow apart: ring ok; map shows ~8 marker spots",
+    "'1-3 Health = nobody wins' is not in the source (unsourced)",
+    "Forces, 2ft table, 4 rounds, victory and caps match RR p2"
+   ],
+   "objects": [
+    "Red Rocket: retro red rocket hull with cream fins lying on its side, ~4in long, ~1.3in across, no base; pushable",
+    "Diner: LoS-blocking building ~7x6in, Yellow from NW corner"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ai-missile",
+   "ok": false,
+   "issues": [
+    "Brute, SM and Hound items empty: should be Sledgehammer; Bolt-Action Pipe Rifle+Board; Hound Bite (AIH p5)",
+    "Zones A/B depth is Orange on the map, not Yellow; each runs ~24in (two thirds of the edge)",
+    "A/B corners swapped vs sled direction: A runs from the exit-side corner to the sled, B from the sled-start side (AIH p5 map)",
+    "Sled is ~3x2cm, not a 50mm base",
+    "Player chooses who deploys in A vs B; JSON fixes it (ruling exists)"
+   ],
+   "objects": [
+    "Sled: low olive tracked platform 1.2x0.8in with a grey finned warhead strapped on, ~0.8in tall; cover, impassable, LoS clear"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ai-breakin",
+   "ok": false,
+   "issues": [
+    "All AI items empty: Brute Sledgehammer, SM BAPR+Board, Hounds Hound Bite, Tech Combat Shotgun, Settlers Assault Rifle (AIH p6)",
+    "Routes wrong: 1=1-2-3-4 loop near table corners outside the compound; 2=A-B across the north half W to E; 3=E-F-G (3 markers, JSON has 2); 4=4-3-2-1-2-3 ping-pong reusing numbered markers 1-4",
+    "Start pairs on the map: A, E, 4, 1",
+    "Valve sits outside the hut (z 4.8 vs hut z -2..4); must be inside a small LoS-blocking building",
+    "Collapsed-house hut may not block LoS"
+   ],
+   "objects": [
+    "Valve: red handwheel on a pipe stub ~0.6in tall inside a closed concrete pump hut ~4x3x3in",
+    "Route markers: flat 1in tokens numbered 1-4 and lettered A,B,E,F,G, not cubes"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ai-tech",
+   "ok": false,
+   "issues": [
+    "Needs 3 phases: P2 hounds Protect[Tech], SM Use(Presence)[Tech]; P3 after Presence succeeds: all Protect[Tech], Tech Go To[Exit] (AIH p7)",
+    "P2 also starts when a player-held Tech enters an AI model's LoS",
+    "A hound-found Tech is not AI-controlled until a Presence succeeds",
+    "Players look at markers at Yellow Awareness, not as usual",
+    "Exit = any edge point within Black of the opponent's start corner (both edges), not a single marker",
+    "No-marker squares are the corner 12in thirds (Black), not Green",
+    "Map shows 4 LoS-blocking buildings plus L-walls with markers at them; JSON has none"
+   ],
+   "objects": [
+    "Investigation markers: flat face-down 1in tokens; #1 becomes the Enslaved Tech model, unarmed",
+    "Exits: shaded 12in edge bands at each start corner"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "box-1",
+   "ok": false,
+   "issues": [
+    "Side 2 has no forces, so it gets DEFAULT_FORCES[1] (Super Mutants) and side 1 gets Survivors. The source is Brotherhood of Steel (Attacker) vs Scavengers (box p1)",
+    "Each player places 3 buildings, Yellow apart, between the enemy zone and the centre (6 total). The street theme has only 1 house per side",
+    "Suits are drawn at random per claim. Only the T-60 suit is in the data",
+    "Points are not set; use equal caps (CH p20)"
+   ],
+   "objects": [
+    "Power Armor x3: an empty upright suit on a 40 mm base, about 1.8 in tall, on the centre line Green (8 in) apart. It is searchable and can be shot"
+   ],
+   "unitsNeeded": [
+    "BoS: Aspirant Goddard out of armor so he can claim a suit, plus Knight (53) and 2 Initiates (35); enter these from BSData Brotherhood_of_Steel.cat",
+    "Random suit pool: T-45 (44), T-51 (60), T-60 (82) (costs p2)",
+    "Scavengers: Sole Survivor, Dogmeat, 2 Settlers"
+   ]
+  },
+  {
+   "id": "box-2",
+   "ok": false,
+   "issues": [
+    "Side 0 is tagged super-mutants but gets the default Survivors force, and the attacker gets Super Mutants: reversed",
+    "Defenders should stand within Red (6 in) of the centre. The legacy deploy puts them at the edge",
+    "The attacker zone is Yellow along all 4 edges",
+    "Needs about 16-20 containers, Yellow x Orange (4x2 in), Orange apart. The catalog piece is 8x3.2 and only 2 are placed",
+    "Detonation applies to shooting hits only; on any roll but 1 the shot hits the carrier",
+    "The defenders also win if the nuke is still unclaimed at round 9. Rounds should be 9",
+    "The explosion result should be a both-lose draw, not an attacker win worth 0 caps"
+   ],
+   "objects": [
+    "Mini nuke: a domed bomb shell in an open crate on a 32 mm token, about 0.6 in tall, at the centre"
+   ],
+   "unitsNeeded": [
+    "Defender: Brute, 2 Super Mutants, 2 Mutant Hounds",
+    "Attacker: the Survivors starter force"
+   ]
+  },
+  {
+   "id": "box-3",
+   "ok": false,
+   "issues": [
+    "The source has Survivors as the attacker (+20% caps). The data gives the attacker Super Mutants",
+    "Needs a school: central walled rooms about 20x20 in, 3 in walls, all blocking LoS. Missing; the quest theme is used instead",
+    "The attacker places the first book",
+    "Only attacking (Survivor) models may take books",
+    "Defenders deploy inside the school. The map shows attackers on the top and bottom edges; the text says any edge",
+    "No round cap is a stall risk"
+   ],
+   "objects": [
+    "Book x5: a stack of 2-3 old books on a 25 mm token, inside the school, Yellow apart"
+   ],
+   "unitsNeeded": [
+    "Defender: Super Mutants (any faction)",
+    "Attacker: Survivors at 120% caps"
+   ]
+  },
+  {
+   "id": "box-4",
+   "ok": false,
+   "issues": [
+    "The defender is the Brotherhood of Steel (faction missing) and gets Survivors. The attacker should be Survivors (+20%) but gets Super Mutants",
+    "Defender deploys within Yellow of the tower, not at the edge",
+    "The defender's turret is missing",
+    "Up to half the defender's caps may be held back. Hold the tower 3 consecutive turns to bring in double that value",
+    "The tower renders as a generic block"
+   ],
+   "objects": [
+    "Radio tower: a steel lattice mast, about 3x3 in footprint, 4 in tall (Yellow at most), at the centre. It is tall terrain and models touch its base"
+   ],
+   "unitsNeeded": [
+    "BoS: Goddard in T-60, Knight, Initiate, and a turret card",
+    "Survivors at 120%"
+   ]
+  },
+  {
+   "id": "box-5",
+   "ok": false,
+   "issues": [
+    "Kidnappers should field double Flip's caps (any faction); this is not enforced",
+    "Kidnappers stand within Yellow of the marker and Flip within Red of an edge. The legacy deploy uses edge rows",
+    "Needs a ring of about 7 buildings around the centre, Yellow apart. The revenge theme has none",
+    "Freeing Sarah must spawn a Settler with a Laser Rifle under Flip's control"
+   ],
+   "objects": [
+    "Captive Sarah: a bound figure on a 32 mm base at the centre, replaced by a Settler model once freed"
+   ],
+   "unitsNeeded": [
+    "Flip: Super Mutant (40) with a Sledgehammer, made Heroic for free; non-creature only",
+    "Kidnappers (about 2x): Sole Survivor and 2 Settlers"
+   ]
+  },
+  {
+   "id": "ga-1",
+   "ok": false,
+   "issues": [
+    "The table should be 18x12 in (O+R+R+Y by Y+O+R), not 36x36",
+    "Street-theme terrain is placed on the tutorial table",
+    "Nora starts in the bottom-left corner",
+    "3 green hazard zones (x,y in from top-left): (2-8, 0-4), (14-18, 0-4), (2-14, 6.4-12). Missing",
+    "The exit marker is missing. The crate-then-exit victory is not evaluated"
+   ],
+   "objects": [
+    "Crate: a red footlocker holding a 10mm pistol, at (11, 1.2)",
+    "Exit: a numbered 25 mm token at (16, 9.7)",
+    "Hazard: flat glowing green toxic pools"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ga-2",
+   "ok": false,
+   "issues": [
+    "The table should be 24x14 in, not 36x36, with no street terrain",
+    "Nora starts at the left-edge midpoint (1, 7)",
+    "Cans are lined up on the centre line instead of at (7,4), (12,2), (12,7), (19,7.5), (21,12)",
+    "Remove each can once it is hit"
+   ],
+   "objects": [
+    "Can: a tin can about 0.5 in tall on a 25 mm token"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ga-3",
+   "ok": false,
+   "issues": [
+    "The table should be 24x14 in",
+    "Nora starts at (1, 7)",
+    "Plants should be at (12.5,1.7), (7,4), (21,5), (4.3,10.7), (14,11)"
+   ],
+   "objects": [
+    "Mut fruit plant: a bulbous purple-fruited shrub about 1 in tall on a 25 mm base"
+   ],
+   "unitsNeeded": []
+  },
+  {
+   "id": "ga-4",
+   "ok": false,
+   "issues": [
+    "The table should be 24x14 in",
+    "Nora starts at (1, 7)",
+    "Mounds should be at (4.3,3.2), (12,4.7), (21,1.8), (7,10), (16.4,8.8)",
+    "The source says 'pistol icon' but the weapon is a rifle"
+   ],
+   "objects": [
+    "Mole rat mound: a dirt mound about 1.5 in wide and 0.6 in tall with a burrow hole"
+   ],
+   "unitsNeeded": []
+  }
+ ],
+ "bos": {
+  "units": [
+   {
+    "id": "client-objects",
+    "source": "src/client/board/Zones.tsx L34",
+    "complete": false,
+    "gaps": "Every kind:'object' marker draws a 0.8in yellow #e0b54a cube, so yes, that cube is the Red Rocket. Searchables draw a tan crate, so faces are ignored. Needs a per-face model."
+   },
+   {
+    "id": "ai-rr",
+    "source": "red_rocket_ai_scenario.pdf p1-2",
+    "complete": false,
+    "gaps": "Data matches the source. Fix the visual: the rocket should be a red finned scrap rocket, about 4in (Yellow) long, lying on its side, wider than 1in. The diner should be a low diner box, not collapsed-house-corner."
+   },
+   {
+    "id": "setup-defaults",
+    "source": "src/engine/setup.ts L19,162",
+    "complete": false,
+    "gaps": "box-1..4 sides list no forces, so DEFAULT_FORCES[i] fills them by seat index. Box-1: BoS gets Super Mutants. Box-2: the super-mutants defender gets Survivors. Box-3/4: the attacker, which the sheet names as Survivors, gets Super Mutants. No caps cap anywhere, and the sheets set none."
+   },
+   {
+    "id": "box-1",
+    "source": "box_scenarios_1-5.pdf p1-2",
+    "complete": false,
+    "gaps": "Sides are BoS (Attacker, south edge) vs Scavengers (north edge). Needs a BoS force with no power armor, since the suits are the prize. Scavenger faction is unsourced (Survivors or Raiders Scavvers: needs a RULING). Suits are searchables that must be targetable with PA-card armor and health. Picking one gives a random T-45/T-51/T-60. +50 caps per suit is not implemented. Look: an empty upright PA suit on a 40mm base, about 2.2in tall."
+   },
+   {
+    "id": "box-2",
+    "source": "box_scenarios_1-5.pdf p3-4",
+    "complete": false,
+    "gaps": "Defender = Super Mutants inside Red of the nuke. Attacker faction is open. The nuke check applies to SHOTS only: a red armor die roll of 1 detonates it, anything else hits the carrier. Containers are Yellow x Orange, Orange apart. The game ends at round 9. Look: a mini-nuke shell about 1.2in long."
+   },
+   {
+    "id": "box-3",
+    "source": "box_scenarios_1-5.pdf p5-6",
+    "complete": false,
+    "gaps": "Attacker = Survivors, +20% caps. Defender is any faction; the text mentions feral ghouls. Survivors deploy within Yellow of all edges. The attacker places the first book. Look: a book stack on a 25mm marker. The school is a walled maze."
+   },
+   {
+    "id": "box-4",
+    "source": "box_scenarios_1-5.pdf p7-8",
+    "complete": false,
+    "gaps": "Defender = BoS with an optional turret, which is missing. Attacker = Survivors, +20% caps. The map shows the attacker zone on the north edge only. Reserve reinforcements are not built. Look: a lattice radio mast about 4in tall on a 4in square footprint."
+   },
+   {
+    "id": "box-5",
+    "source": "box_scenarios_1-5.pdf p9-10",
+    "complete": false,
+    "gaps": "Kidnappers get no forces at double Flip's caps. The rescue and the Sarah spawn are not built (Laser Rifle Survivor). Flip zone is Red of the north edge. Look: a captive kneeling, tied, on a 32mm base."
+   },
+   {
+    "id": "bos-units",
+    "source": "docs/sources/w9cards/unit.pdf (official free Wave 1-9 unit cards) p55 (pdf idx54), p58, p43, p15; wave9_costs.pdf",
+    "complete": true,
+    "gaps": "All card fields read, attrs listed S,P,E,C,I,A,L. Paladin 6,7,5,6,6,7,4: Y/R, aw black, BC orange, Presence blue, 77c. Knight 5,6,5,5,5,6,2: aw blue, Hardy (+1 armor token), Lockpick, 53c. Initiate 4,5,4,4,4,5,1: no Heavy, aw green, Presence red, 35c. Field Scribe 3,4,4,3,7,6,2: R/G, melee and pistol only, no Throw, Presence yellow, 41c. Maxson 6,7,5,6,6,7,3: health on AGI, BC-immune, Command, Brave aura, 101c. Danse 6,8,6,7,6,7,3: Armor Knowledge aura, Orders, 88c. Printed armor is '-' on all. baseMm is unsourced (40 PA / 32 foot). Goddard data armor 2/1 conflicts with the w9 card '-'."
+   },
+   {
+    "id": "bos-gear",
+    "source": "w9cards/pa.pdf p18,16,14; weapon.pdf p7,8,26,17,18; wave9_costs.pdf",
+    "complete": false,
+    "gaps": "Missing data: T-45 44c, T-51 60c, X-01 102c, T-60f 118c, Frame 15c, Gatling Laser 30c, Power Fist, Machete, Baton, Gauss, Minigun 23c. BoS faction reference card and robes/hood item cards were not read."
+   }
+  ],
+  "sourceFiles": [
+   "C:/Claude Code Projects/Fell-in/docs/sources/box_scenarios_1-5.pdf",
+   "C:/Claude Code Projects/Fell-in/docs/sources/red_rocket_ai_scenario.pdf",
+   "C:/Claude Code Projects/Fell-in/docs/sources/wave9_costs.pdf",
+   "C:/Claude Code Projects/Fell-in/.claude/worktrees/resume-m4b-58255d/docs/sources/w9cards/unit.pdf",
+   "C:/Claude Code Projects/Fell-in/.claude/worktrees/resume-m4b-58255d/docs/sources/w9cards/pa.pdf",
+   "C:/Claude Code Projects/Fell-in/.claude/worktrees/resume-m4b-58255d/docs/sources/w9cards/weapon.pdf",
+   "C:/Claude Code Projects/Fell-in/.claude/worktrees/resume-m4b-58255d/docs/sources/bsdata/Library-BoS.cat"
+  ],
+  "notes": "I downloaded the official free Wave 9 unit, power armor and weapon card PDFs (Google Drive IDs listed in WW-SOURCES.md) into the gitignored docs/sources/w9cards/, with full stats. BSData BoS has costs and loadout options only, no stats (gitignored docs/sources/bsdata/). RULING line 42 says box-1 uses Goddard, but the data never added it. No repo edits made."
+ }
+}

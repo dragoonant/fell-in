@@ -427,5 +427,16 @@
     },
     "cost": 13,
     "source": "CARDS p.60; COST Buffout"
+  },
+  {
+    "id": "stuffed-monkey",
+    "name": "Stuffed Monkey",
+    "kind": "gear",
+    "text": "A keepsake with no game effect.",
+    "limitedUse": false,
+    "duration": "instant",
+    "effects": [],
+    "cost": 0,
+    "source": "RULING stuffed-monkey no-effect card; coop-cage wastelandDecks"
   }
 ]

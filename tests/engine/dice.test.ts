@@ -175,12 +175,12 @@ describe('skill tests', () => {
 })
 
 describe('foundations', () => {
-  it('SETUP-002 createGame builds the default box scenario: Survivors vs Super Mutants, 36 x 36, turn.start open', () => {
+  it('SETUP-002 createGame builds the default box scenario: Brotherhood of Steel vs Scavengers (Survivors), 36 x 36, turn.start open', () => {
     const g = createGame(bundle, { seed: 's' })
     expect(g.scenario.table).toEqual({ w: 36, d: 36 })
     expect(g.scenarioId).toBe('box-1')
     const factions = new Set(Object.values(g.models).map((m) => `${m.owner}:${bundle.records.units.find((u) => u.id === m.profileId)!.faction}`))
-    expect(factions).toEqual(new Set(['A:survivors', 'B:super-mutants']))
+    expect(factions).toEqual(new Set(['A:brotherhood-of-steel', 'B:survivors']))
     expect(g.pending.kind).toBe('turn.start')
     expect(g.pending.options[0]!.action.decisionId).toBe(g.pending.id)
     expect(g.terrain.length).toBeGreaterThan(0)

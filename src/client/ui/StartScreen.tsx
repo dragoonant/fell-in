@@ -4,6 +4,7 @@ import { continueGame, hasAutosave, launchGame, loadScenarioChoices, readAutosav
 import { SPEED_PRESETS, useSettingsStore } from '../store/settingsStore'
 import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
+import { HowToPlay, HowToPlayButton } from './HowToPlay'
 import './start/start.css'
 import {
   aiScenarios, ageLabel, asTeam, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OFFICIAL_TIER, OPPONENTS, pickDefaultScenario, scenarioPreview, scenarioSummary,
@@ -63,6 +64,7 @@ export function StartScreen() {
         <p className="eyebrow">An unofficial fan project</p>
         <h1>Fell-in: Wasteland Warfair</h1>
         <p className="tag">A 3D tabletop skirmish on a dusty 3 by 3 foot table.</p>
+        <p className="sc-note">New to the game? <HowToPlayButton link testId="start-how-to-play" label="Read how to play" /></p>
 
         <section className="sc-sec" aria-label="Scenario">
           <h2 className="sc-h">Scenario</h2>
@@ -146,6 +148,7 @@ export function StartScreen() {
           Unofficial fan project, not affiliated with Modiphius Entertainment, Bethesda Softworks or ZeniMax. By evilgouki.
         </p>
       </div>
+      <HowToPlay />
     </main>
   )
 }

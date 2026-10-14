@@ -48,6 +48,20 @@ Milestone reached: **M4 AI** (versus bot + official AI card system; owner playte
   briefing modal (Briefing button reopens it), live objective tracker from `objectiveStatus(view)`
   (`src/engine/scenarios/status.ts`), 3D labels on objective markers, plain-words hints on the first turn steps.
 
+## Scenario fixes (M4d)
+- All 16 scenarios re-entered against their PDFs (audit: `docs/audits/m4d-scenario-audit.json`): explicit forces per
+  side (setup throws without them), current deploy zones, per-scenario table sizes and terrain (school, containers,
+  building rings, diner, walls, hazards), objects at source positions, box mechanics (suit claims, nuke, turret and
+  reserves, captive), AI gear, routes and phases.
+- Brotherhood of Steel: Knight, Initiate, Paladin, Field Scribe, Machine Gun Turret Mk1, T-45/T-51/T-60 power armor
+  and gear from the official free card PDFs (`data/1e/units/brotherhood.json`, `armor/power-armor.json`,
+  `weapons/brotherhood.json`).
+- Client: object models by marker face (GLBs for power armor, Red Rocket, mini nuke, missile sled, radio tower;
+  procedural for the rest), every zone shape drawn, labels as plain DOM, terrain fitted with one uniform scale,
+  weapon hold classes (pistol, long gun, heavy, one/two-hand melee, thrown), Knight/Initiate/Paladin figures,
+  How to play guide (start screen, briefing, top bar "Rules").
+- Open: two-grip weapon poses need regenerated figures (plan B, GPU); heavy-weapon hold untested on a GLB.
+
 ## AI (M4a)
 - `src/ai/`: decider (dispatch by decision kind, validates, falls back to random), eval, threat, nav, moves,
   policies, world (view shim), worker. Tiers random / easy / normal; start-screen Opponent picker. Spec 30.

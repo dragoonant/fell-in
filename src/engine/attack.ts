@@ -248,7 +248,8 @@ export function composePlan(state: GameState, bundle: EditionBundle, p: PlanInpu
   ]
   const { sv, breakdown } = computeSv(base, mods)
   const diceKey = p.band === 'melee' ? 'melee' : p.band
-  const parts: (DicePool | undefined)[] = [def.dice[diceKey], p.critical ? def.critical?.extraDice : undefined, ...(p.extraPools ?? [])]
+  const bonusGreen = state.models[p.targetId]?.tokens.attackBonusGreen // an object that is easier to hit (props.attackBonusGreen on the marker)
+  const parts: (DicePool | undefined)[] = [def.dice[diceKey], p.critical ? def.critical?.extraDice : undefined, ...(p.extraPools ?? []), ...(bonusGreen ? [{ green: bonusGreen }] : [])]
   const att = state.models[p.attackerId]!
   const { pool, dropped } = buildPool(bundle, parts, att.bonusDice)
   const damageSrc = p.critical && def.critical?.damage ? def.critical.damage : def.damage

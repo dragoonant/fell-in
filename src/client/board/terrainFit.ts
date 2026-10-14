@@ -48,7 +48,7 @@ export interface FitPlan {
   /** Quarter turns about +y applied to the model first (flip adds two). */
   turns: number
   flip: boolean
-  /** Scale per axis, applied after the turn, in the footprint's frame. */
+  /** Scale (always uniform: sx = sy = sz), applied after the turn, in the footprint's frame. */
   sx: number; sy: number; sz: number
   /** Footprint bbox centre the fitted model is centred on (local space). */
   cx: number; cz: number
@@ -69,8 +69,11 @@ export function planFit(id: string, fp: Shape, rot: number, visualHeight: number
   const odd = turns % 2 === 1
   const ex = Math.max(odd ? modelSize[2] : modelSize[0], 1e-6)
   const ez = Math.max(odd ? modelSize[0] : modelSize[2], 1e-6)
-  let sx = b.w / ex, sz = b.d / ez
-  if (Math.abs(sx - sz) / Math.max(sx, sz) > 0.15) sx = sz = Math.min(sx, sz)
-  const sy = visualHeight / Math.max(modelSize[1], 1e-6)
+  // ONE uniform scale: fit the footprint (the tighter axis, so nothing overhangs), then let height follow. If that would
+  // make the piece more than 1.6x taller or shorter than its catalog height, pull the scale toward the height fit.
+  const sFoot = Math.min(b.w / ex, b.d / ez)
+  const sHeight = visualHeight / Math.max(modelSize[1], 1e-6)
+  const s = Math.min(Math.max(sFoot, sHeight / 1.6), sHeight * 1.6)
+  const sx = s, sy = s, sz = s
   return { turns, flip, sx, sy, sz, cx: b.cx, cz: b.cz, size: [ex * sx, modelSize[1] * sy, ez * sz] }
 }

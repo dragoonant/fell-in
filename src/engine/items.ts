@@ -307,13 +307,16 @@ function inReach(m: ModelState, mk: MarkerState): boolean {
   return dist(m.pos, mk.pos) - baseRadius(m.base) <= MARKER_REACH_IN
 }
 
-/** Can this seat see the marker: partly within a model's Awareness colour and in LoS of it (SRCH-001). Returns the viewer id. */
+/** Can this seat see the marker: partly within a model's Awareness colour and in LoS of it (SRCH-001). Returns the viewer id.
+ *  A scenario marker may cap that colour with props.peekCap { players?, ai? } (The Escaped Tech: a strong wind, AIH s4). */
 function peekViewer(state: GameState, bundle: EditionBundle, seat: string, mk: MarkerState): ModelId | null {
+  const cap = (mk.props.peekCap as Record<string, string> | undefined)?.[state.seats[seat]?.controller === 'official' ? 'ai' : 'players']
+  const capIn = cap ? rulerInches(bundle, cap as never) : Infinity
   for (const m of Object.values(state.models)) {
     if (m.owner !== seat || m.life !== 'active' || m.offTable) continue
     const unit = unitOf(state, bundle, m.id)
     if (!unit) continue
-    const reach = rulerInches(bundle, unit.awareness)
+    const reach = Math.min(rulerInches(bundle, unit.awareness), capIn)
     if (Math.max(0, dist(m.pos, mk.pos) - baseRadius(m.base)) > reach + 1e-9) continue
     const probe: ModelState = { ...modelDefaults(), id: '__marker__', profileId: '__marker__', owner: '__none__', pos: mk.pos, elev: 0, base: 25, life: 'active', conditions: [] }
     const probed: GameState = { ...state, models: { ...state.models, [probe.id]: probe } }

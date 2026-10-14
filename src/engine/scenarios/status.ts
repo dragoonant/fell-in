@@ -21,14 +21,13 @@ const NAMES: Record<string, string> = {
 }
 /** Short table labels by marker face (hidden faces are not in the view, so they fall back to a generic label). */
 const LABELS: Record<string, string> = {
-  crate: 'Crate', can: 'Can', plant: 'Plant', mound: 'Rat mound', 'power-armor': 'Power armor', nuke: 'Nuke', book: 'Book', tower: 'Radio tower',
+  crate: 'Crate', exit: 'Exit', can: 'Can', 'mut-fruit-plant': 'Mut fruit plant', 'mole-rat-mound': 'Rat mound', 'power-armor-suit': 'Power armor', 'mini-nuke': 'Mini nuke', book: 'Book', 'radio-tower': 'Radio tower',
   captive: 'Sarah', 'red-rocket': 'Red Rocket', 'missile-sled': 'Missile sled', valve: 'Valve', tech: 'The Tech', hatch: 'Sewer hatch',
   'hole-1': 'Chain anchor', 'hole-2': 'Chain anchor', chain: 'Chain', item: 'Loot', munitions: 'Munitions', 'exit-near-ai': 'Exit', 'exit-near-players': 'Exit',
   'key-1': 'Key', 'key-2': 'Key', 'protocol-box': 'Protocol box',
 }
 /** Labels for marker kinds whose face is hidden in the view, per scenario. */
 const HIDDEN_LABELS: Record<string, Record<string, string>> = {
-  'box-1': { searchable: 'Power armor' },
   'coop-sewer': { investigation: 'Emergency box' },
 }
 /** Terrain pieces worth a table label, by scenario then terrain id. */
@@ -71,7 +70,9 @@ export function objectiveStatus(view: PlayerView): ObjectiveStatus | null {
 
   switch (id) {
     case 'ga-1': {
-      line({ id: 'crate', text: 'Reach the crate, then the exit', done: byFace('crate').some((c) => c.revealed || c.props.done === true) })
+      const reached = byFace('crate').some((c) => c.props.done === true)
+      line({ id: 'crate', text: 'Reach the crate', done: reached })
+      line({ id: 'exit', text: 'Then reach the exit', done: false })
       break
     }
     case 'ga-2': case 'ga-3': case 'ga-4': {
@@ -83,11 +84,12 @@ export function objectiveStatus(view: PlayerView): ObjectiveStatus | null {
     }
     case 'box-1': {
       modelCounts()
-      line({ id: 'suits', text: 'Power armor suits on the table', value: markers.filter((m) => m.kind === 'searchable' && !markerOffTable(m)).length, max: 3 })
+      line({ id: 'suits', text: 'Power armor suits on the table', value: byFace('power-armor-suit').filter((m) => !markerOffTable(m)).length, max: 3 })
+      line({ id: 'worn', text: 'Suits claimed', value: byFace('power-armor-suit').filter((m) => m.props.claimed === true).length, max: 3 })
       break
     }
     case 'box-2': {
-      const nuke = byFace('nuke')[0]
+      const nuke = byFace('mini-nuke')[0]
       const carrier = nuke ? heldBy(nuke) : undefined
       const text = !nuke || markerOffTable(nuke) ? 'Nuke has left the table' : carrier ? (mine(carrier) ? 'You are carrying the nuke' : 'The enemy is carrying the nuke') : 'Nuke is lying loose'
       line({ id: 'nuke', text, done: !!carrier && mine(carrier) })
@@ -100,17 +102,20 @@ export function objectiveStatus(view: PlayerView): ObjectiveStatus | null {
       break
     }
     case 'box-4': {
-      const tower = byFace('tower')[0]
+      const tower = byFace('radio-tower')[0]
       if (tower) {
-        const near = (pred: (m: ModelState) => boolean): number => standing((m) => pred(m) && dist(m.pos, tower.pos) - baseRadius(m.base) <= TOUCH_IN)
+        const reach = baseRadius(num(tower.props.baseMm) ?? 40)
+        const near = (pred: (m: ModelState) => boolean): number => standing((m) => pred(m) && dist(m.pos, tower.pos) - baseRadius(m.base) - reach <= TOUCH_IN)
         line({ id: 'tower-you', text: 'Your models at the tower', value: near(mine), side: 'you' })
         line({ id: 'tower-enemy', text: 'Enemy models at the tower', value: near((m) => !mine(m)), side: 'enemy' })
       }
       break
     }
     case 'box-5': {
-      const sarah = byFace('captive')[0]
-      line({ id: 'captive', text: sarah && markerOffTable(sarah) ? 'Sarah has left the table' : 'Sarah is still held', done: !!sarah && markerOffTable(sarah) })
+      const cap = byFace('captive')[0]
+      const sid = typeof cap?.props.spawnedId === 'string' ? cap.props.spawnedId : null
+      const left = !!sid && exited.includes(sid)
+      line({ id: 'captive', text: left ? 'Sarah has left the table' : sid ? (view.models[sid] && alive(view.models[sid]!) ? 'Sarah is free: get her off the table' : 'Sarah was killed') : 'Sarah is still held', done: left })
       modelCounts()
       break
     }
@@ -164,7 +169,7 @@ export function objectiveStatus(view: PlayerView): ObjectiveStatus | null {
   const hidden = HIDDEN_LABELS[id]
   const out: ObjectiveStatus['markers'] = []
   for (const mk of markers) {
-    if (gone(mk) || mk.props.route !== undefined || mk.face === 'blank') continue
+    if (gone(mk) || mk.props.route !== undefined || mk.face === 'blank' || mk.props.freed === true) continue
     const carrier = heldBy(mk)
     const p = carrier ? carrier.pos : mk.pos
     const label = (mk.face && LABELS[mk.face]) || (mk.props.hatch === true ? 'Sewer hatch' : undefined) || hidden?.[mk.kind]

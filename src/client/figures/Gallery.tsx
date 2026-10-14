@@ -6,6 +6,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { FigureBody, HeldWeapon } from './Figures'
 import { tintFor } from './view'
+import { OBJECT_FACES, ObjectModel } from './ObjectModels'
 import type { WeaponMode } from './equipped'
 
 /** Default weapon per unit: the first ranged weapon in its scenario starting loadouts (data/1e/scenarios), the brute's
@@ -22,7 +23,18 @@ export const GALLERY: { id: string; baseMm: number; seat: number; weapon: string
   { id: 'aviator', baseMm: 40, seat: 1, weapon: 'pipe-pistol', mode: 'ranged' },
   { id: 'mutant-hound', baseMm: 40, seat: 1, weapon: 'hound-bite', mode: 'melee' },
   { id: 'deathclaw', baseMm: 50, seat: 1, weapon: 'deathclaw-swipe', mode: 'melee' },
+  { id: 'knight', baseMm: 32, seat: 0, weapon: 'laser-rifle', mode: 'ranged' },
+  { id: 'initiate', baseMm: 25, seat: 0, weapon: 'laser-pistol', mode: 'ranged' },
+  { id: 'scribe', baseMm: 25, seat: 0, weapon: 'laser-pistol', mode: 'ranged' },
+  { id: 'paladin', baseMm: 40, seat: 0, weapon: 'laser-rifle', mode: 'ranged' },
+  { id: 't-60-goddard', baseMm: 40, seat: 0, weapon: 'plasma-rifle', mode: 'ranged' },
+  { id: 'turret', baseMm: 40, seat: 1, weapon: 'minigun', mode: 'ranged' },
 ]
+
+/** Every objective object face, drawn in a second row behind the figures (review the models here). */
+export const GALLERY_OBJECTS: readonly string[] = OBJECT_FACES
+const OBJ_Z = -4.5
+const objX = (i: number) => (i - (GALLERY_OBJECTS.length - 1) / 2) * SPACING
 
 const SPACING = 3.4
 const xOf = (i: number) => (i - (GALLERY.length - 1) / 2) * SPACING
@@ -36,12 +48,14 @@ function CameraRig({ focus }: { focus: number | null }) {
   const controls = useThree((s) => s.controls) as unknown as { target: { set(x: number, y: number, z: number): void }; update(): void } | null
   const invalidate = useThree((s) => s.invalidate)
   useEffect(() => {
-    const x = focus === null ? 0 : xOf(focus)
+    const isObj = focus !== null && focus >= GALLERY.length
+    const x = focus === null ? 0 : isObj ? objX(focus - GALLERY.length) : xOf(focus)
     const y = focus === null ? 1.2 : 1.25
-    const dist = focus === null ? 44 : 6.5
-    camera.position.set(x, y + (focus === null ? 1.5 : 0.4), dist)
-    camera.lookAt(x, y, 0)
-    if (controls) { controls.target.set(x, y, 0); controls.update() }
+    const dist = focus === null ? 74 : 6.5
+    const z0 = isObj ? OBJ_Z : 0
+    camera.position.set(x, y + (focus === null ? 1.5 : 0.4), z0 + dist)
+    camera.lookAt(x, y, z0)
+    if (controls) { controls.target.set(x, y, z0); controls.update() }
     invalidate()
   }, [focus, camera, controls, invalidate])
   return null
@@ -53,24 +67,27 @@ export function Gallery() {
   const yaw = GALLERY_VIEWS[view]
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#2a2520' }} data-testid="gallery">
-      <Canvas frameloop="demand" dpr={[1, 2]} shadows camera={{ fov: 30, position: [0, 2.7, 44] }} gl={{ preserveDrawingBuffer: true }}>
+      <Canvas frameloop="demand" dpr={[1, 2]} shadows camera={{ fov: 30, position: [0, 2.7, 74] }} gl={{ preserveDrawingBuffer: true }}>
         <color attach="background" args={['#2a2520']} />
         <hemisphereLight args={['#f1dfb8', '#4a3826', 1.0]} />
         <directionalLight position={[8, 20, 18]} intensity={2.2} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004}
-          shadow-camera-left={-22} shadow-camera-right={22} shadow-camera-top={8} shadow-camera-bottom={-8} />
+          shadow-camera-left={-40} shadow-camera-right={40} shadow-camera-top={8} shadow-camera-bottom={-8} />
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[44, 10]} />
+          <planeGeometry args={[Math.max(44, GALLERY.length * SPACING + 4), 20]} />
           <meshStandardMaterial color="#8a7454" roughness={0.95} />
         </mesh>
         {GALLERY.map((g, i) => {
           const [color, accent] = tintFor(g.seat)
           return (
             <group key={g.id} position={[xOf(i), 0, 0]} rotation={[0, yaw, 0]} name={`gallery-${g.id}`}>
-              <FigureBody id={`gallery-${g.id}`} slug={g.id} baseMm={g.baseMm} color={color} accent={accent} />
+              <FigureBody id={`gallery-${g.id}`} slug={g.id} baseMm={g.baseMm} color={color} accent={accent} profile={g.id} />
               <HeldWeapon profileId={g.id} baseMm={g.baseMm} weaponId={g.weapon} mode={g.mode} accent={accent} />
             </group>
           )
         })}
+        {GALLERY_OBJECTS.map((f, i) => (
+          <group key={f} position={[objX(i), 0, OBJ_Z]} name={`gallery-object-${f}`}><ObjectModel face={f} revealed /></group>
+        ))}
         <OrbitControls makeDefault />
         <CameraRig focus={focus} />
       </Canvas>
@@ -81,6 +98,9 @@ export function Gallery() {
         <button type="button" data-testid="gallery-focus-all" aria-pressed={focus === null} onClick={() => setFocus(null)}>all</button>
         {GALLERY.map((g, i) => (
           <button key={g.id} type="button" data-testid={`gallery-focus-${g.id}`} aria-pressed={focus === i} onClick={() => setFocus(i)}>{g.id}</button>
+        ))}
+        {GALLERY_OBJECTS.map((f, i) => (
+          <button key={f} type="button" data-testid={`gallery-focus-obj-${f}`} aria-pressed={focus === GALLERY.length + i} onClick={() => setFocus(GALLERY.length + i)}>{f}</button>
         ))}
       </div>
     </div>

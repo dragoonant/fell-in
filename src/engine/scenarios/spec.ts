@@ -31,12 +31,12 @@ export interface PointSpec {
 
 /** An area of the table that models or markers are put in. */
 export interface ZoneSpec {
-  kind: 'corner' | 'box' | 'edges' | 'ring' | 'disc' | 'table'
+  kind: 'corner' | 'box' | 'triangle' | 'edges' | 'ring' | 'disc' | 'table'
   /** corner / box: which corner. */
   corner?: Corner
   /** corner / disc: how far from the corner or centre (a ruler colour); the area is a quarter disc at a corner. */
   reach?: Col
-  /** box: width (x) and depth (z) measured inward from the corner. */
+  /** box: width (x) and depth (z) measured inward from the corner. triangle: the two legs along the edges from the corner (w along x, d along z). */
   w?: Col
   d?: Col
   /** edges: which edges ("any" = all four) and how deep. */
@@ -131,6 +131,12 @@ export function inZone(bundle: EditionBundle, f: Frame, z: ZoneSpec, p: Vec2, lo
       const dx = (west(z.corner!) ? 1 : -1) * (p.x - c.x), dz = (north(z.corner!) ? 1 : -1) * (p.z - c.z)
       return dx >= 0 && dx <= w && dz >= 0 && dz <= d
     }
+    case 'triangle': {
+      const c = cornerPoint(f, z.corner!)
+      const w = inchesOf(bundle, z.w), d = inchesOf(bundle, z.d ?? z.w)
+      const dx = (west(z.corner!) ? 1 : -1) * (p.x - c.x), dz = (north(z.corner!) ? 1 : -1) * (p.z - c.z)
+      return dx >= 0 && dz >= 0 && w > 0 && d > 0 && dx / w + dz / d <= 1
+    }
     case 'edges': {
       const k = inchesOf(bundle, z.within)
       const es: Edge[] = z.edges === 'any' || !z.edges ? ['n', 's', 'e', 'w'] : z.edges
@@ -157,7 +163,8 @@ export function zoneBounds(bundle: EditionBundle, f: Frame, z: ZoneSpec, lookup:
       const c = cornerPoint(f, z.corner!), r = inchesOf(bundle, z.reach)
       return { x0: Math.min(c.x, c.x + (west(z.corner!) ? r : -r)), x1: Math.max(c.x, c.x + (west(z.corner!) ? r : -r)), z0: Math.min(c.z, c.z + (north(z.corner!) ? r : -r)), z1: Math.max(c.z, c.z + (north(z.corner!) ? r : -r)) }
     }
-    case 'box': {
+    case 'box':
+    case 'triangle': {
       const c = cornerPoint(f, z.corner!), w = inchesOf(bundle, z.w), d = inchesOf(bundle, z.d ?? z.w)
       const x = c.x + (west(z.corner!) ? w : -w), zz = c.z + (north(z.corner!) ? d : -d)
       return { x0: Math.min(c.x, x), x1: Math.max(c.x, x), z0: Math.min(c.z, zz), z1: Math.max(c.z, zz) }

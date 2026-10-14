@@ -28,6 +28,7 @@ const place = (gap: number, tweak?: (a: ModelState, b: ModelState) => void) =>
     const a = Object.values(ms).find((m) => m.owner === seat && armed(m))!
     const b = Object.values(ms).find((m) => m.owner !== seat)!
     a.pos = { x: 0, z: 0 }; b.pos = { x: gap, z: 0 }
+    for (const o of Object.values(ms)) if (o.owner !== seat && o.id !== b.id) o.pos = { x: 5000, z: 5000 } // only the duel partner is in reach
     tweak?.(a, b)
   })
 const duel = (gap: number) => place(gap)

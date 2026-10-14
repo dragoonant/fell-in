@@ -113,6 +113,33 @@
         1.45,
         0.26
       ]
+    },
+    "knight": {
+      "file": "units/knight.glb",
+      "yaw": 0,
+      "hand": [
+        0.36,
+        1.3,
+        0.21
+      ]
+    },
+    "initiate": {
+      "file": "units/initiate.glb",
+      "yaw": 0,
+      "hand": [
+        0.39,
+        1.29,
+        0.05
+      ]
+    },
+    "paladin": {
+      "file": "units/paladin.glb",
+      "yaw": 0,
+      "hand": [
+        0.3,
+        1.36,
+        0.2
+      ]
     }
   },
   "weapons": {
@@ -141,5 +168,32 @@
     "pipe-wrench": {},
     "plasma-rifle": {},
     "sledgehammer": {}
+  },
+  "objects": {
+    "power-armor": {
+      "file": "objects/power-armor.glb",
+      "heightIn": 1.82,
+      "yaw": 0
+    },
+    "red-rocket": {
+      "file": "objects/red-rocket.glb",
+      "lengthIn": 4,
+      "yaw": 0
+    },
+    "nuke": {
+      "file": "objects/nuke.glb",
+      "lengthIn": 0.8,
+      "yaw": 0
+    },
+    "missile-sled": {
+      "file": "objects/missile-sled.glb",
+      "lengthIn": 1.2,
+      "yaw": 0
+    },
+    "tower": {
+      "file": "objects/tower.glb",
+      "heightIn": 4,
+      "yaw": 0
+    }
   }
 }

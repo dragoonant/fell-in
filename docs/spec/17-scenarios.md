@@ -16,26 +16,30 @@ Searchable (S). "Within X of edge" = deployment depth.
 ## 2. Getting Acclimated tutorials (GA A1-A4) - single model, no opponent
 | ID | Name | Teaches | Win |
 |---|---|---|---|
-| GA-1 | Navigating the Wastes | Move with Sole Survivor Day One; avoid green hazard zones; reach an S crate then an exit | reach exit untouched |
-| GA-2 | Shooting Range | Shoot 10mm Pistol at 5 I "cans", move if out of range | 1 hit on each |
-| GA-3 | Weird Harvest | Charge/Move into contact, melee with Baseball Bat vs 5 I "plants" | 1 hit on each |
-| GA-4 | Solving the Rat Problem | Hunting Rifle vs 5 I "mounds" (3 Health, 1 phys armor) | 1 damage after armor on each |
-Tutorial mode: only numbers and X on the skill die; icon faces count as 1 and succeed (GA A2).
+| GA-1 | Navigating the Wastes | 18 x 12 in table (O+R+R+Y by Y+O+R). Nora at the bottom-left; move with Sole Survivor Day One around 3 green hazard zones (impassable; x-z in from the top-left: 2-8 x 0-4, 14-18 x 0-4, 2-14 x 6.4-12); reach the crate (11, 1.2) then the exit (16, 9.7) | touch the crate, then the exit |
+| GA-2 | Shooting Range | 24 x 14 in table, Nora at the left-edge midpoint (1, 7). Shoot 10mm Pistol at 5 I "cans" at (7,4) (12,2) (12,7) (19,7.5) (21,12); a hit can leaves the table | 1 hit on each |
+| GA-3 | Weird Harvest | 24 x 14 in table. Charge/Move into contact, melee with Baseball Bat vs 5 I "plants" at (12.5,1.7) (7,4) (21,5) (4.3,10.7) (14,11) | 1 hit on each |
+| GA-4 | Solving the Rat Problem | 24 x 14 in table. Hunting Rifle vs 5 I "mounds" (3 Health, 1 phys armor) at (4.3,3.2) (12,4.7) (21,1.8) (7,10) (16.4,8.8) | 1 damage after armor on each |
+Tutorial mode: only numbers and X on the skill die; icon faces count as 1 and succeed (GA A2). Positions are x-z inches in from the
+top-left corner of the printed map (M4d audit, checked against the page). The tutorial tables carry no generic terrain.
 
 ## 3. Box scenarios 1-5 (BOX SCP-001..005) - versus, any factions by caps
 | ID | Name | Set-up | Special rules | Rounds | Victory (reward) |
 |---|---|---|---|---|---|
-| BOX-1 | Ad Victoriam | Each side within Yellow of own edge; 3 S on the centre line, Green apart; each player places 3 buildings between the enemy zone and the centre, Yellow apart | Brotherhood side: Action in contact with an S gains and equips random Power Armor; the other side may attack and destroy any unclaimed suit (armor applies) | 6 | Kill all enemies: defender 300; Brotherhood 200 + 50 per intact equipped suit |
+| BOX-1 | Ad Victoriam | Brotherhood (attacker, south) vs Scavengers (north), each within Yellow of own edge; 3 suits (objects, 40 mm) on the centre line, Green apart; 6 buildings, 3 in each half, Yellow apart | Brotherhood side: Action in contact with a suit gains and equips it (T-45, T-51 or T-60 drawn at set-up); either side may shoot or smash an unclaimed suit (its own armor and Health apply) | 6 | Kill all enemies: defender 300; Brotherhood 200 + 50 per intact equipped suit |
 | BOX-2 | Big John's Salvage Showdown | Dense LoS-blocking containers (~Yellow x Orange, Orange apart), 1 S at centre; Super Mutant defenders within Red of S; attacker within Yellow of any edge | Action in contact picks up the nuke; carrier passes it by Action in contact or drops on death (engaged defenders may grab it); hits on the carrier or any model within Orange of the nuke roll the armor die: 1 = nuke explodes | until a win | Attacker: off any edge 200; defender: still held by round 9, 200; explosion = both lose |
 | BOX-3 | Quest for Knowledge | Defender builds a walled school (all walls block LoS); alternate placing 5 S books inside, Yellow apart; defender inside, attacker within Yellow of an edge | Attacker +20% caps; Action in contact takes a book; drop at death point; carry off any edge | until a win | Defender: kill all 200; attacker: 3+ books off 200 |
 | BOX-4 | Radio Tower Takeover | Tower at centre (<= Yellow); defenders within Yellow of it, may place a turret, may hold back up to half caps; attacker within Red of any edge | Attacker +20% caps; control = in contact with tower without enemy contact; 3 consecutive controlled turns lets the defender bring reserves worth double the held-back caps | 6 | Most units in contact at end; tie broken by points: major 250, minor 150 |
 | BOX-5 | Flip's Revenge | Ring of buildings, S at centre, Yellow apart; kidnappers (double points) within Yellow of S; Flip (one non-creature Super Mutant, free Heroic) within Red of an edge | Flip's Action at the S frees Sarah (Survivor model with Laser Rifle, joins Flip's side) | 6 | Sarah off any edge: Flip 200; Sarah killed: kidnappers 150; both dead: kidnappers 200 |
 Source: `docs/sources/box_scenarios_1-5.pdf` (BOX SCP-001..005): BOX-1 p1-2, BOX-2 p3-4, BOX-3 p5-6, BOX-4 p7-8, BOX-5 p9-10.
-BOX-1 sides are Scavengers (defender, pays 300) against the Brotherhood (attacker, 200 + 50 per worn suit); its only printed
-win is elimination, so we add RULING timeout-points (points on table at round 6, no caps). BOX-4 printed Defender rows say
+BOX-1 sides are Scavengers (defender, pays 300) against the Brotherhood (attacker, 200 + 50 per worn unbroken suit); its only printed
+win is elimination, so a game with both sides standing after round 6 is a draw (the earlier timeout-points house ruling is withdrawn). BOX-4 printed Defender rows say
 "the enemy controls the Tower", a typo; both sides win Major with more models at the tower, Minor on equal models and more points.
-Note: BOX-1 and BOX-4 name Brotherhood/turrets; with starter models use Aspirant Goddard and skip the
-turret (RULING).
+Every box side declares explicit forces (setup throws otherwise). The Brotherhood forces come from the Wave 9 unit cards (Knight,
+Initiate, Goddard in a T-60, Machine Gun Turret Mk1); faction-agnostic sides use the Survivors starter force or Super Mutants, with
+equal caps (RULING Box force picks). Terrain per map: BOX-1 six buildings, BOX-2 18 containers 5 x 2 in (the shipping-container model's
+proportions) at least Orange apart around an open Red disc, BOX-3 a 20 x 20 in school of walls with doors (all block LoS) with books
+inside, BOX-4 the radio tower (a solid 80 mm base object, 4 in tall) plus scatter, BOX-5 a ring of 7 buildings (radius 11.5 in).
 
 ## 4. AI scenarios (AIH s4; RR; COOP s4; CH-* rows: CH p40-42) - solo/co-op, AI rules in `18`
 | ID | Name | Forces (AI vs player) | Key rules | Rounds | Victory |
@@ -68,8 +72,23 @@ for table facts such as terrain sizes. North is the far edge (-z), south the hum
   `enters` holds a group off the table until `{round}` or until a die in `{rounds:[a,b], armorDieBelowRoundMinus, wave}` (one die
   per wave and round). Waiting models count as standing for "last side standing". `route` gives a patrol route id.
 - Rules that need mechanics are switched on by `rules[].id` (`sled`, `patrol`, `keys`, `chain`, `weapon-uses`, `deathclaw`,
-  `tech`) and take numbers from `rules[].params` or marker `props` (`moves`, `movesAt`, `hitWithin`, `departEdges`, `locks`,
-  `interact`/`interactBy`, `route`, `slack`).
+  `tech`, and from M4d `tutorial-route`, `remove-on-hit`, `nuke-blast`, `tower-control`) and take numbers from `rules[].params` or marker `props` (`moves`, `movesAt`, `hitWithin`, `departEdges`, `locks`,
+  `interact`/`interactBy`, `route`, `slack`). M4d additions (see spec 20 s3.1a): `interactSide` (only that side may Interact), `spawn`
+  (`{unit, items}`: Interact puts that model in the marker's place for the actor's seat, box-5 Sarah), `carryBy` (only that side may
+  pick it up, box-3 books), `suitPool` + `claimBy` (box-1: a suit object whose suit is drawn at set-up; `scenario.claim` equips it),
+  `public` (a searchable/investigation marker whose face everyone sees), `height` (a `blocksMove` object's terrain height).
+  A terrain piece with `rulesType: "hazard"` and `props.impassable` is a no-go patch (GA-1). A group's `enters: {when: "towerControl"}`
+  holds it off the table until the `tower-control` rule fires (the defender touches the tower and no enemy does for `turns` finished
+  turns in a row); the reserve then arrives within the group's zone.
+- M4d map fixes (AI and co-op): zone kind `triangle` (`corner`, legs `w` x `d`; the Red Rocket survivors' corner). A marker `place`
+  may list fixed `spots` (points) and a `pool` name: the pool's markers take the spots in a seed-shuffled order (the map shows where
+  the face-down tokens go, not which is which: the sewer boxes, the Escaped Tech markers). An object with `props.lengthIn` and
+  `props.widthIn` is a rectangle (`rotDeg` turns its long axis from +x towards +z); contact, push reach and the table-edge test use
+  the rectangle, a `blocksMove` object stands as a rectangular piece. `props.peekCap {players, ai}` caps the Awareness colour used
+  to look at that marker, `props.attackBonusGreen` adds green dice to every attack on an object (the Blood Cage chain, armor
+  `{base, strong}` = 2+1). The `tech` rule takes `exitCornerAi`, `exitCornerPlayers` and `exitWithin` (table edges beside that
+  corner, up to that far along them); the exit markers only give the AI a point to walk to. Patrol routes are separate markers per
+  route (`route {id, step}`); a route that revisits a spot uses coincident markers.
 - AI settings, phases and switches are the `ai` block (spec 18 s8.6). `forceResponse: "matrix"` in a later switch hands the
   response back to the matrix (patrol over).
 

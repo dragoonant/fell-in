@@ -7,11 +7,12 @@ import type { TerrainInstance } from '../../engine/types'
 import { usePresented } from '../contract'
 import { clearTerrainHover, hoverTerrain } from './terrainHover'
 import { terrainEntryFor, useFittedTerrain, useTerrainManifest } from './terrainGlb'
+import { customTerrain } from './ProceduralTerrain'
 
 /** Terrain from the presented state (spell-made pieces appear and vanish with it). */
 export function TerrainPieces() {
   const terrain = usePresented()?.terrain
-  return useMemo(() => <>{(terrain ?? []).map((t) => <TerrainPiece key={t.id} t={t} />)}</>, [terrain])
+  return useMemo(() => <>{(terrain ?? []).filter((t) => !t.id.startsWith('obj-')).map((t) => <TerrainPiece key={t.id} t={t} />)}</>, [terrain])
 }
 
 function TerrainHit({ t, children, ...rest }: { t: TerrainInstance; children: React.ReactNode; position: [number, number, number]; rotation?: [number, number, number]; name: string }) {
@@ -51,6 +52,8 @@ function TerrainPiece({ t }: { t: TerrainInstance }) {
   }
   if ('rect' in f) {
     const { w, d } = f.rect
+    const custom = customTerrain(t.pieceId, t.id, w, d, t.height)
+    if (custom) return <TerrainHit t={t} position={[x, 0, z]} rotation={[0, t.rot, 0]} name={`terrain-${t.id}`}>{custom}</TerrainHit>
     const color = key.includes('wreck') ? PALETTE.tealDark : key.includes('wall') ? PALETTE.sandDark : key.includes('crates') ? PALETTE.rust : PALETTE.steel
     const rubble = t.rulesType === 'rubble'
     return (

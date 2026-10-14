@@ -1,0 +1,47 @@
+/* "How to play" overlay (HowToPlay.tsx). Works on the start screen and in game; variables have fallbacks. */
+.htp-back { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(10,8,6,.7); padding: 12px; box-sizing: border-box; }
+.htp-panel { width: 100%; max-width: 680px; max-height: 92vh; display: flex; flex-direction: column; background: rgba(29,26,22,.97); color: var(--bone, #ece3d0); border: 2px solid var(--rust, #a4502c); border-radius: 6px; text-align: left; font-size: 14px; line-height: 1.45; box-sizing: border-box; }
+.htp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #4f8a8266; }
+.htp-head h2 { margin: 0; font-size: 22px; color: var(--sand, #c9ad7c); letter-spacing: .03em; }
+.htp-scroll { overflow-y: auto; padding: 4px 16px 16px; }
+.htp-panel button { font: inherit; background: rgba(29,26,22,.9); color: var(--bone, #ece3d0); border: 1px solid var(--teal, #4f8a82); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.htp-panel button:hover { background: var(--teal, #4f8a82); color: var(--ink, #1d1a16); }
+.htp-toc { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 4px; }
+.htp-toc button { font-size: 12px; padding: 2px 8px; }
+.htp-sec { padding-top: 6px; }
+.htp-sec h3 { margin: 10px 0 4px; font-size: 16px; color: var(--sand, #c9ad7c); letter-spacing: .04em; border-bottom: 1px solid #c9ad7c33; padding-bottom: 2px; }
+.htp-sec p { margin: 4px 0; }
+.htp-sec ul { margin: 4px 0; padding-left: 20px; }
+.htp-sec li { margin: 2px 0; }
+.htp-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+.htp-box { flex: 1 1 120px; border: 1px solid var(--teal, #4f8a82); border-radius: 5px; padding: 6px 8px; text-align: center; background: #4f8a821f; font-size: 13px; }
+.htp-box.alt { border-color: var(--rust, #a4502c); background: #a4502c22; }
+.htp-box small { opacity: .8; }
+.htp-arrow { color: var(--sand, #c9ad7c); font-weight: bold; }
+.htp-loop { flex: 0 0 100%; font-size: 12px; font-style: italic; color: var(--sand, #c9ad7c); text-align: center; }
+.htp-die { margin: 8px 0; }
+.htp-faces { display: flex; gap: 2px; }
+.htp-face { flex-basis: 0; min-width: 0; text-align: center; font-size: 11px; font-weight: bold; padding: 5px 0; border-radius: 3px; overflow: hidden; }
+.htp-face.pass { background: #5f9b4a; color: #10140d; }
+.htp-face.fail { background: #5a544b; color: #e6dfd2; }
+.htp-face.x { background: #b8412f; color: #fff; }
+.htp-caption { font-size: 12px; opacity: .85; }
+.htp-rulers { margin: 8px 0; display: grid; gap: 4px; }
+.htp-ruler { display: grid; grid-template-columns: 56px 1fr 44px; align-items: center; gap: 8px; font-size: 12px; }
+.htp-rname { text-transform: capitalize; }
+.htp-rbar { display: block; height: 10px; border-radius: 2px; border: 1px solid #ece3d055; }
+.htp-ruler > .htp-rbar { justify-self: start; }
+.htp-rin { text-align: right; opacity: .9; }
+.htp-actions { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 13px; }
+.htp-actions th, .htp-actions td { text-align: left; vertical-align: top; padding: 4px 6px; border-top: 1px solid #c9ad7c22; }
+.htp-actions th { color: var(--teal, #4f8a82); white-space: nowrap; }
+.htp-cost { white-space: nowrap; color: var(--sand, #c9ad7c); font-size: 12px; }
+button.htp-link, .hud-root button.htp-link { background: none; border: none; padding: 0; color: var(--teal, #4f8a82); text-decoration: underline; cursor: pointer; font: inherit; }
+@media (max-width: 520px) {
+  .htp-actions, .htp-actions tbody, .htp-actions tr { display: block; }
+  .htp-actions th, .htp-actions td { display: inline-block; border: none; padding: 2px 4px; }
+  .htp-actions tr { border-top: 1px solid #c9ad7c22; padding: 4px 0; }
+  .htp-actions td:last-child { display: block; }
+  .htp-arrow { display: none; }
+}
+.b-howto { margin: 10px 0 0; font-size: 13px; text-align: center; opacity: .9; }

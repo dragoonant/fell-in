@@ -10,6 +10,7 @@ import { pushEvents } from '../registry'
 import { carriedFor, modelDefaults } from '../setup'
 import { placementBlockers, worldShape, type WorldShape } from '../terrain'
 import type { GameState, MarkerState, ModelState, TerrainInstance, Vec2 } from '../types'
+import { objectRect, rectEdgeDist } from './objshape'
 import { clearOf, frameOf, inchesOf, pointOf, sampleZone, stream, terrainFrom, type Lookup, type PointSpec, type TerrainEntry, type ZoneSpec } from './spec'
 
 /** A group of a side's models that stands in its own zone, possibly arriving later (reserve) or following a patrol route. */
@@ -18,7 +19,7 @@ export interface GroupSpec {
   units: string[] | 'rest'
   zone: ZoneSpec
   /** Arrives later: at the start of `round`, or on a die roll in rounds [from, to] (armor die below round - `below`). */
-  enters?: { round?: number; rounds?: [number, number]; armorDieBelowRoundMinus?: number; wave?: string }
+  enters?: { round?: number; rounds?: [number, number]; armorDieBelowRoundMinus?: number; wave?: string; /** Called in by a scenario mechanic instead of a round (box-4: the defenders held the tower three turns). */ when?: 'towerControl' }
   /** Patrol route id (markers with props.route.id) the group walks. */
   route?: number
   /** Counters written onto each model of the group at set-up (for example the chain link a player is bound to). */
@@ -32,7 +33,18 @@ const deployOf = (sc: ScenarioDef, id: string): SideDeploy => {
   const d = (sideDef(sc, id)?.deploy ?? {}) as { zone?: unknown; groups?: unknown }
   return { ...(typeof d.zone === 'object' && d.zone !== null ? { zone: d.zone as ZoneSpec } : {}), ...(Array.isArray(d.groups) ? { groups: d.groups as GroupSpec[] } : {}) }
 }
-const isLayoutPlace = (p: object | undefined): boolean => !!p && ('at' in p || 'zone' in p)
+const isLayoutPlace = (p: object | undefined): boolean => !!p && ('at' in p || 'zone' in p || 'spots' in p)
+
+/** A fixed set of spots shared by a pool of markers (the map shows where the face-down tokens go, not which is which): the pool's n-th marker takes the n-th spot of a seeded shuffle. */
+function poolSpot(state: GameState, sc: ScenarioDef, pool: string, rank: number, spots: PointSpec[]): PointSpec | undefined {
+  const next = stream(state.seed, 'layout', sc.id, 'pool', pool)
+  const order = spots.map((_, k) => k)
+  for (let k = order.length - 1; k > 0; k--) {
+    const j = Math.floor(next() * (k + 1))
+    ;[order[k], order[j]] = [order[j]!, order[k]!]
+  }
+  return spots[order[rank % order.length]!]
+}
 
 /** Look up a placed piece by terrain id, marker id or marker face. */
 function lookupFor(state: GameState): Lookup {
@@ -50,6 +62,11 @@ const shapeLookup = (state: GameState) => (id: string): WorldShape | null => {
 
 /** Radius a solid scenario object keeps clear of models. */
 const solidRadius = (mk: MarkerState): number => (mk.kind === 'object' && mk.props.solid === true ? baseRadius(typeof mk.props.baseMm === 'number' ? mk.props.baseMm : 40) : 0)
+/** A solid object with a rectangle keeps models clear of that rectangle, not of a round stand-in. */
+const solidClash = (mk: MarkerState, p: Vec2, r: number): boolean => {
+  const rr = mk.kind === 'object' && mk.props.solid === true ? objectRect(mk) : null
+  return rr ? rectEdgeDist(rr, p) < r + 0.3 : solidRadius(mk) > 0 && Math.hypot(p.x - mk.pos.x, p.z - mk.pos.z) < solidRadius(mk) + r + 0.3
+}
 
 function placeTerrain(state: GameState, bundle: EditionBundle, sc: ScenarioDef): GameState {
   const entries = (sc.terrain ?? []).filter((e): e is TerrainEntry => 'piece' in e && 'at' in e)
@@ -65,7 +82,7 @@ function placeMarkers(state: GameState, bundle: EditionBundle, sc: ScenarioDef):
   const next = stream(state.seed, 'layout', sc.id, 'markers')
   const markers: MarkerState[] = [...state.markers]
   sc.markers.forEach((def, i) => {
-    const place = def.place as { at?: PointSpec; zone?: ZoneSpec; apart?: string | number; clear?: string | number; r?: number }
+    const place = def.place as { at?: PointSpec; zone?: ZoneSpec; apart?: string | number; clear?: string | number; r?: number; pool?: string; spots?: PointSpec[] }
     if (!isLayoutPlace(place) || !markers[i]) return
     const gap = inchesOf(bundle, place.apart)
     const r = place.r ?? 0.5
@@ -76,7 +93,12 @@ function placeMarkers(state: GameState, bundle: EditionBundle, sc: ScenarioDef):
       const mk = markers.find((x, k) => k !== i && (x.id === name || x.face === name))
       return mk ? { ...mk.pos } : null
     }
-    if (place.at) pos = pointOf(bundle, f, place.at, lookup)
+    if (place.spots?.length) {
+      const pool = place.pool ?? 'spots'
+      const rank = sc.markers.slice(0, i).filter((o) => (o.place as { pool?: string }).pool === pool).length
+      const spot = poolSpot(state, sc, pool, rank, place.spots)
+      if (spot) pos = pointOf(bundle, f, spot, lookup)
+    } else if (place.at) pos = pointOf(bundle, f, place.at, lookup)
     else if (place.zone) {
       const placed = markers.filter((_, k) => k < i && sc.markers[k] && isLayoutPlace(sc.markers[k]!.place)).map((m) => ({ pos: m.pos, r }))
       const clearing = inchesOf(bundle, place.clear)
@@ -86,6 +108,19 @@ function placeMarkers(state: GameState, bundle: EditionBundle, sc: ScenarioDef):
       }, lookup, shapeLookup(state))
     }
     if (pos) markers[i] = { ...markers[i]!, pos }
+    // Power armor suits (box-1): which suit it is gets drawn now from a layout stream (never the game rng), so the object
+    // can be shot with that suit's own armor and Health; claiming it later equips exactly this suit.
+    const pool = (def.props as { suitPool?: string[] } | undefined)?.suitPool
+    if (pool?.length) {
+      const suit = pool[Math.min(pool.length - 1, Math.floor(next() * pool.length))]!
+      const green = recordOf(bundle, 'armor', suit)?.powerArmor?.green
+      const health = green?.attrBonus.end ?? 3
+      const rate = (t: 'physical' | 'energy' | 'radiation'): number => {
+        const v = green?.armor[t] as unknown
+        return typeof v === 'number' ? v : typeof v === 'object' && v !== null && typeof (v as { base?: unknown }).base === 'number' ? (v as { base: number }).base : 0
+      }
+      markers[i] = { ...markers[i]!, props: { ...markers[i]!.props, suit, health, maxHealth: health, armor: { physical: rate('physical'), energy: rate('energy'), radiation: rate('radiation') } } }
+    }
   })
   return { ...state, markers }
 }
@@ -116,7 +151,7 @@ function standIn(state: GameState, bundle: EditionBundle, sc: ScenarioDef, m: Mo
   const apart = inchesOf(bundle, zone.apart)
   const ok = (p: Vec2): boolean => {
     if (placementBlockers(state, p, baseRadius(m.base)).length > 0) return false
-    return !state.markers.some((mk) => solidRadius(mk) > 0 && Math.hypot(p.x - mk.pos.x, p.z - mk.pos.z) < solidRadius(mk) + baseRadius(m.base) + 0.3)
+    return !state.markers.some((mk) => solidClash(mk, p, baseRadius(m.base)))
   }
   const lookup = lookupFor(state)
   const opts = (gap: number) => ({ r, taken, gap, ok })
@@ -171,8 +206,8 @@ function placeModels(state: GameState, bundle: EditionBundle, sc: ScenarioDef): 
 /** A scenario object that blocks movement (props.blocksMove, such as the missile sled) also stands as an impassable piece of terrain. */
 function addObjectTerrain(state: GameState): GameState {
   const extra: TerrainInstance[] = state.markers.filter((m) => m.props.blocksMove === true).map((m) => ({
-    id: `obj-${m.id}`, pieceId: m.face ?? 'object', rulesType: 'scenarioTerrain', pos: { ...m.pos }, rot: 0,
-    footprint: { circle: { r: solidRadiusOf(m) } }, height: 1.5,
+    id: `obj-${m.id}`, pieceId: m.face ?? 'object', rulesType: 'scenarioTerrain', pos: { ...m.pos }, rot: objectRect(m) ? -(Number(m.props.rotDeg ?? 0) * Math.PI) / 180 : 0,
+    footprint: objectRect(m) ? { rect: { w: Number(m.props.lengthIn), d: Number(m.props.widthIn) } } : { circle: { r: solidRadiusOf(m) } }, height: typeof m.props.height === 'number' ? m.props.height : 1.5,
     props: { baseType: 'obstacle', impassable: true, cover: true, blocksLos: m.props.blocksLos === true },
   }))
   return extra.length ? { ...state, terrain: [...state.terrain, ...extra] } : state
@@ -216,6 +251,12 @@ export function enterReserves(state: GameState, bundle: EditionBundle, round: nu
       }
     })
   }
+  return enterGroups(s, bundle, sc, entering, round)
+}
+
+/** Bring the reserve models of the named groups ("<side>#<group index>") onto the table (round only seeds the stream). */
+export function enterGroups(state: GameState, bundle: EditionBundle, sc: ScenarioDef, entering: ReadonlySet<string>, round: number): GameState {
+  let s = state
   if (entering.size === 0) return s
   const taken = Object.values(s.models).filter((m) => !m.offTable && m.life === 'active').map((m) => ({ pos: m.pos, r: baseRadius(m.base) }))
   for (const key of entering) {
@@ -233,6 +274,17 @@ export function enterReserves(state: GameState, bundle: EditionBundle, round: nu
     }
   }
   return s
+}
+
+/** Call in the waiting reserve groups of a side whose `enters.when` matches (a scenario mechanic, not a round). */
+export function callReserves(state: GameState, bundle: EditionBundle, sideId: string, when: 'towerControl'): GameState {
+  const sc = state.scenarioId ? recordOf(bundle, 'scenarios', state.scenarioId) : undefined
+  if (!sc) return state
+  const entering = new Set<string>()
+  ;(deployOf(sc, sideId).groups ?? []).forEach((g, gi) => {
+    if (g.enters?.when === when && Object.values(state.models).some((m) => state.seats[m.owner]?.side === sideId && m.tokens.reserve === gi + 1)) entering.add(`${sideId}#${gi}`)
+  })
+  return enterGroups(state, bundle, sc, entering, state.round)
 }
 
 /** A brand-new model for a seat (a scenario spawn, such as a Deathclaw arriving). Returns the id. */
