@@ -1,7 +1,7 @@
 // Manifest of generated models (public/assets/models/manifest.json). Only slugs listed there are ever requested, so a
 // missing model stays procedural and never logs a 404. Unit slug = unit id; weapon slug = weapon id.
 import { useEffect, useState } from 'react'
-import { Euler, Matrix4 } from 'three'
+import { Euler, Matrix4, Vector3 } from 'three'
 import type { WeaponClass } from './equipped'
 
 type V3 = [number, number, number]
@@ -9,7 +9,8 @@ type V3 = [number, number, number]
  * centre on the table, y up, front +z, after `yaw` and the fit scale/lift in GlbBody). `rot`: weapon Euler (radians)
  * relative to "barrel along +z, level". `yaw`: radians about +y that turns the raw GLB so its head looks along +z.
  * A listed unit with no `hand` (beasts) holds nothing. `rightHand` is read as a legacy alias of `hand`. */
-export interface UnitEntry { hand?: V3; rot?: V3; height?: number; yaw?: number }
+export interface PoseEntry { file: string; hand: V3; support: V3; yaw?: number; height?: number }
+export interface UnitEntry { hand?: V3; rot?: V3; height?: number; yaw?: number; poses?: Partial<Record<WeaponClass, PoseEntry>> }
 export interface WeaponEntry { length?: number }
 /** Objective-object model: `file` relative to assets/models; `lengthIn` (longest horizontal side) or `heightIn` sets the
  * uniform fit (default longest side 1.2 in); `yaw` turns the raw model about +y. */
@@ -24,6 +25,7 @@ export interface Manifest {
 const EMPTY: Manifest = { defaults: {}, units: {}, weapons: {}, objects: {} }
 const SLUG = /^[a-z0-9][a-z0-9._-]*$/i
 const isV3 = (v: unknown): v is V3 => Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n))
+const CLASSES: readonly string[] = ['pistol', 'long', 'heavy', 'melee1', 'melee2', 'thrown']
 const rec = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {})
 
 /** Parse a manifest body; anything malformed gives empty maps. Entries may be objects or `true`/null (no overrides). Pure. */
@@ -39,7 +41,19 @@ export function parseManifest(raw: unknown): Manifest {
     if (!SLUG.test(slug)) continue
     const e = rec(v)
     const hand = isV3(e.hand) ? e.hand : isV3(e.rightHand) ? e.rightHand : undefined
+    const poses: Partial<Record<WeaponClass, PoseEntry>> = {}
+    for (const [cls, pv] of Object.entries(rec(e.poses))) {
+      const pe = rec(pv)
+      if (!CLASSES.includes(cls) || typeof pe.file !== 'string' || !/^[\w./@-]+\.glb$/i.test(pe.file) || pe.file.includes('..')) continue
+      if (!isV3(pe.hand) || !isV3(pe.support)) continue
+      poses[cls as WeaponClass] = {
+        file: pe.file, hand: pe.hand, support: pe.support,
+        ...(typeof pe.yaw === 'number' && Number.isFinite(pe.yaw) ? { yaw: pe.yaw } : {}),
+        ...(typeof pe.height === 'number' && pe.height > 0 ? { height: pe.height } : {}),
+      }
+    }
     out.units[slug] = {
+      ...(Object.keys(poses).length ? { poses } : {}),
       ...(hand ? { hand } : {}), ...(isV3(e.rot) ? { rot: e.rot } : {}),
       ...(typeof e.height === 'number' && e.height > 0 ? { height: e.height } : {}),
       ...(typeof e.yaw === 'number' && Number.isFinite(e.yaw) ? { yaw: e.yaw } : {}),
@@ -107,9 +121,34 @@ export function heldPose(cls: WeaponClass, hand: V3, rot: V3 | undefined): { pos
   return { position: [hand[0] + h.dx, hand[1] + h.dy, hand[2] + h.dz], rotation: [e.x, e.y, e.z] }
 }
 
+let posesOn = true
+/** Review hook (?gallery&nopose): turn pose selection off to compare with the default pose. */
+export function setPosesEnabled(on: boolean): void { posesOn = on }
+
+/** Pose entry for a unit holding a weapon of class `cls`, if the manifest defines one. */
+export function poseFor(m: Manifest, slug: string | undefined, cls: WeaponClass | undefined): PoseEntry | undefined {
+  if (!posesOn) return undefined
+  return slug && cls ? m.units[slug]?.poses?.[cls] : undefined
+}
+
+/** Weapon placement for a two-hand pose: grip at `hand`, barrel (+z) pointing from hand through `support`, weapon up
+ * kept as close to figure up (+y) as the aim allows. Rotation is an XYZ Euler. Pure. */
+export function aimedPose(hand: V3, support: V3): { position: V3; rotation: V3 } {
+  const z = new Vector3(support[0] - hand[0], support[1] - hand[1], support[2] - hand[2])
+  if (z.lengthSq() < 1e-9) z.set(0, 0, 1)
+  z.normalize()
+  let x = new Vector3(0, 1, 0).cross(z)
+  if (x.lengthSq() < 1e-9) x = new Vector3(1, 0, 0) // straight up or down: any side axis
+  x.normalize()
+  const y = z.clone().cross(x)
+  const e = new Euler().setFromRotationMatrix(new Matrix4().makeBasis(x, y, z), 'XYZ')
+  return { position: [hand[0], hand[1], hand[2]], rotation: [e.x, e.y, e.z] }
+}
+
 const base = (): string => import.meta.env.BASE_URL
 export const unitGlbUrl = (slug: string): string => `${base()}assets/models/units/${slug}.glb`
 export const objectGlbUrl = (file: string): string => `${base()}assets/models/${file}`
+export const poseGlbUrl = (file: string): string => `${base()}assets/models/${file}`
 export const weaponGlbUrl = (slug: string): string => `${base()}assets/models/weapons/${slug}.glb`
 
 let current: Manifest = EMPTY

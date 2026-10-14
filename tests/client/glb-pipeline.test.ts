@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { modeOfWeapon, pickEquipped, weaponClassOf } from '../../src/client/figures/equipped'
-import { heldPose, parseManifest, socketFor } from '../../src/client/figures/glbModels'
+import { aimedPose, heldPose, parseManifest, poseFor, socketFor } from '../../src/client/figures/glbModels'
 import { fitFigure } from '../../src/client/figures/GlbBody'
 import { parseTerrainManifest, terrainEntryFor } from '../../src/client/board/terrainGlb'
 import { objectKind } from '../../src/client/figures/ObjectModels'
@@ -76,5 +76,29 @@ describe('glb pipeline', () => {
     expect(Math.abs(lg.rotation[0])).toBeLessThan(0.1) // barrel level, not pitched up
     expect(lg.position[1]).toBeLessThanOrEqual(hand[1]) // held at the chest or hip, not raised past the face
     expect(heldPose('long', hand, [1, 2, 3])).toEqual({ position: hand, rotation: [1, 2, 3] })
+  })
+})
+
+describe('pose pilot', () => {
+  it('parses poses and tolerates malformed entries', () => {
+    const m = parseManifest({ units: { a: { hand: [0, 1, 0], poses: {
+      long: { file: 'units/a@long.glb', hand: [0.3, 1, 0.2], support: [0.1, 1, 0.8], yaw: 0.5 },
+      heavy: { file: '../x.glb', hand: [0, 0, 0], support: [0, 0, 1] },
+      melee2: { file: 'units/a@m.glb', hand: [0, 0] },
+      bogus: { file: 'units/b.glb', hand: [0, 0, 0], support: [0, 0, 1] } } }, b: { poses: 5 } } })
+    expect(poseFor(m, 'a', 'long')).toEqual({ file: 'units/a@long.glb', hand: [0.3, 1, 0.2], support: [0.1, 1, 0.8], yaw: 0.5 })
+    expect(poseFor(m, 'a', 'heavy')).toBeUndefined()
+    expect(poseFor(m, 'a', 'melee2')).toBeUndefined()
+    expect(m.units.b?.poses).toBeUndefined()
+    expect(poseFor(m, 'a', undefined)).toBeUndefined()
+  })
+  it('aimedPose points +z from hand to support with up kept up', () => {
+    const p = aimedPose([0, 1, 0], [0, 1, 2])
+    expect(p.position).toEqual([0, 1, 0])
+    p.rotation.forEach((r) => expect(Math.abs(r)).toBeLessThan(1e-9))
+    const q = aimedPose([0, 1, 0], [1, 1, 0]) // aim along +x: yaw +90 degrees
+    expect(q.rotation[1]).toBeCloseTo(Math.PI / 2)
+    const up = aimedPose([0, 0, 0], [0, 1, 1]) // aim up-forward: pitch barrel up (negative x rotation)
+    expect(up.rotation[0]).toBeCloseTo(-Math.PI / 4)
   })
 })

@@ -7,7 +7,14 @@ import { OrbitControls } from '@react-three/drei'
 import { FigureBody, HeldWeapon } from './Figures'
 import { tintFor } from './view'
 import { OBJECT_FACES, ObjectModel } from './ObjectModels'
-import type { WeaponMode } from './equipped'
+import type { WeaponClass, WeaponMode } from './equipped'
+import { useBundle } from '../contract'
+import { recordOf } from '../../engine/edition'
+import { weaponClassOf } from './equipped'
+import { poseFor, setPosesEnabled, useManifest } from './glbModels'
+
+if (typeof location !== 'undefined') setPosesEnabled(!new URLSearchParams(location.search).has('nopose'))
+
 
 /** Default weapon per unit: the first ranged weapon in its scenario starting loadouts (data/1e/scenarios), the brute's
  * sledgehammer, and the beasts' natural attacks (which draw nothing). */
@@ -36,6 +43,16 @@ export const GALLERY_OBJECTS: readonly string[] = OBJECT_FACES
 const OBJ_Z = -4.5
 const objX = (i: number) => (i - (GALLERY_OBJECTS.length - 1) / 2) * SPACING
 
+/** Weapon picker: one representative weapon per hold class, forced onto every figure so pose pilots can be reviewed. */
+export const CLASS_WEAPONS: Record<WeaponClass, { weapon: string; mode: WeaponMode }> = {
+  pistol: { weapon: '10mm-pistol', mode: 'ranged' },
+  long: { weapon: 'hunting-rifle', mode: 'ranged' },
+  heavy: { weapon: 'minigun', mode: 'ranged' },
+  melee1: { weapon: 'baseball-bat', mode: 'melee' },
+  melee2: { weapon: 'sledgehammer', mode: 'melee' },
+  thrown: { weapon: 'fragmentation-grenade', mode: 'ranged' },
+}
+
 const SPACING = 3.4
 const xOf = (i: number) => (i - (GALLERY.length - 1) / 2) * SPACING
 
@@ -61,9 +78,30 @@ function CameraRig({ focus }: { focus: number | null }) {
   return null
 }
 
+function GalleryFigure({ g, x, yaw, pick }: { g: (typeof GALLERY)[number]; x: number; yaw: number; pick: WeaponClass | null }) {
+  const bundle = useBundle()
+  const manifest = useManifest()
+  const [color, accent] = tintFor(g.seat)
+  const forced = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('weapon') : null // review hook: ?weapon=<id> on every figure
+  const weapon = forced || (pick ? CLASS_WEAPONS[pick].weapon : g.weapon)
+  const mode = forced ? 'ranged' : pick ? CLASS_WEAPONS[pick].mode : g.mode
+  const cls = weapon && !/bite|swipe|crush|claw/i.test(weapon)
+    ? weaponClassOf(weapon, bundle ? (recordOf(bundle, 'weapons', weapon) as Parameters<typeof weaponClassOf>[1]) : undefined) : undefined
+  const pe = poseFor(manifest, g.id, cls)
+  const marks = typeof location !== 'undefined' && new URLSearchParams(location.search).has('marks') // review hook: dots at the pose sockets (red hand, blue support)
+  return (
+    <group position={[x, 0, 0]} rotation={[0, yaw, 0]} name={`gallery-${g.id}`}>
+      <FigureBody id={`gallery-${g.id}`} slug={g.id} baseMm={g.baseMm} color={color} accent={accent} profile={g.id} cls={cls} />
+      <HeldWeapon profileId={g.id} baseMm={g.baseMm} weaponId={weapon} mode={mode} accent={accent} />
+      {marks && pe && ([['hand', pe.hand, '#ff2020'], ['support', pe.support, '#2060ff']] as const).map(([n, p, c]) => (<mesh key={n} position={p}><sphereGeometry args={[0.05, 12, 8]} /><meshBasicMaterial color={c} depthTest={false} /></mesh>))}
+    </group>
+  )
+}
+
 export function Gallery() {
   const [view, setView] = useState<GalleryView>('front')
   const [focus, setFocus] = useState<number | null>(null)
+  const [pick, setPick] = useState<WeaponClass | null>(null)
   const yaw = GALLERY_VIEWS[view]
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#2a2520' }} data-testid="gallery">
@@ -76,15 +114,9 @@ export function Gallery() {
           <planeGeometry args={[Math.max(44, GALLERY.length * SPACING + 4), 20]} />
           <meshStandardMaterial color="#8a7454" roughness={0.95} />
         </mesh>
-        {GALLERY.map((g, i) => {
-          const [color, accent] = tintFor(g.seat)
-          return (
-            <group key={g.id} position={[xOf(i), 0, 0]} rotation={[0, yaw, 0]} name={`gallery-${g.id}`}>
-              <FigureBody id={`gallery-${g.id}`} slug={g.id} baseMm={g.baseMm} color={color} accent={accent} profile={g.id} />
-              <HeldWeapon profileId={g.id} baseMm={g.baseMm} weaponId={g.weapon} mode={g.mode} accent={accent} />
-            </group>
-          )
-        })}
+        {GALLERY.map((g, i) => (
+          <GalleryFigure key={g.id} g={g} x={xOf(i)} yaw={yaw} pick={pick} />
+        ))}
         {GALLERY_OBJECTS.map((f, i) => (
           <group key={f} position={[objX(i), 0, OBJ_Z]} name={`gallery-object-${f}`}><ObjectModel face={f} revealed /></group>
         ))}
@@ -94,6 +126,9 @@ export function Gallery() {
       <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: 'calc(100vw - 16px)' }}>
         {(Object.keys(GALLERY_VIEWS) as GalleryView[]).map((v) => (
           <button key={v} type="button" data-testid={`gallery-cam-${v}`} aria-pressed={view === v} onClick={() => setView(v)}>{v}</button>
+        ))}
+        {(Object.keys(CLASS_WEAPONS) as WeaponClass[]).map((c) => (
+          <button key={c} type="button" data-testid={`gallery-weapon-${c}`} aria-pressed={pick === c} onClick={() => setPick(pick === c ? null : c)}>weapon: {c}</button>
         ))}
         <button type="button" data-testid="gallery-focus-all" aria-pressed={focus === null} onClick={() => setFocus(null)}>all</button>
         {GALLERY.map((g, i) => (

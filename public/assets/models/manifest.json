@@ -34,7 +34,23 @@
         0.39,
         1.35,
         0.25
-      ]
+      ],
+      "poses": {
+        "long": {
+          "file": "units/sole-survivor@long.glb",
+          "hand": [
+            -0.128,
+            1.141,
+            0.175
+          ],
+          "support": [
+            0.256,
+            1.045,
+            0.175
+          ],
+          "yaw": 0.352
+        }
+      }
     },
     "sole-survivor-day-one": {
       "file": "units/sole-survivor-day-one.glb",
@@ -80,7 +96,23 @@
         -0.82,
         1.74,
         0.27
-      ]
+      ],
+      "poses": {
+        "long": {
+          "file": "units/super-mutant@long.glb",
+          "hand": [
+            -0.206,
+            1.157,
+            0.249
+          ],
+          "support": [
+            0.532,
+            1.03,
+            0.249
+          ],
+          "yaw": -0.071
+        }
+      }
     },
     "brute": {
       "file": "units/brute.glb",
