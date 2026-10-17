@@ -24,6 +24,7 @@ import { pushBack } from './movement'
 import {
   isRejection, option, pushEvents, raiseDecision, reject, updateModel, type ActionDone, type ModuleDef, type StepResult, type Trigger,
 } from './registry'
+import { hooked } from './hooks'
 import { roll } from './rng'
 import { scenarioDefOf } from './scenario'
 import { hostile, sameTeam } from './sides'
@@ -73,6 +74,8 @@ export interface AttackPlan extends HitOdds {
   quick: boolean
   reaction: boolean
   free: boolean
+  /** Armor-reduction icons earned before the dice (Walked Fire streak, WPN-008); added to every hit's AR in the odds. */
+  extraAr?: number
 }
 
 // ---------- engagement (canonical here; melee.ts re-exports) ----------
@@ -226,6 +229,7 @@ export interface PlanInput {
   svSkill?: Skill
   extraMods?: Mod[]
   extraPools?: DicePool[]
+  extraAr?: number
 }
 
 /** Skill value with every modifier, the dice pool, and the exact odds (spec 13 s3, s7). */
@@ -263,6 +267,7 @@ export function composePlan(state: GameState, bundle: EditionBundle, p: PlanInpu
     damage: damageSrc.map((d) => ({ type: d.type, value: d.value, ...(d.lowerOfPhysEnergy ? { lowerOfPhysEnergy: true } : {}) })),
     area: damageSrc.find((d) => d.area)?.area ?? null,
     intoMelee: p.intoMelee, quick: p.flags.quick, reaction: p.flags.reaction, free: p.flags.free,
+    ...(p.extraAr ? { extraAr: p.extraAr } : {}),
   }
 }
 
@@ -311,7 +316,7 @@ export function attackPlan(state: GameState, bundle: EditionBundle, attackerId: 
   const mods: Mod[] = intoMelee ? [{ source: 'intoMelee', label: 'Target is tied up in close combat', value: ruleNum(bundle, 'intoMeleeBonus'), mode: 'add' }] : []
   return composePlan(state, bundle, {
     attackerId, targetId, ref, weaponUid: uid, band, critical, cover: coverOf(state, bundle, attackerId, targetId),
-    intoMelee, flags, extraMods: mods,
+    intoMelee, flags, extraMods: mods, ...(opts.extraAr ? { extraAr: opts.extraAr } : {}),
   })
 }
 
@@ -417,6 +422,23 @@ interface RunCtx {
   stage: 'accurate' | 'dodge' | 'crit' | 'done'
   noAttackerLuck: boolean
   extraCp: number
+  /** Walked Fire (WPN-008): the Shoot Action this shot belongs to, and the extra armor-reduction icons this shot earned. */
+  walk?: WalkState
+  walkAr?: number
+}
+
+/** A Walked Fire Shoot Action in progress (RoP p47, ERR p.10-12). Lives in the 'shoot.target' / luck decision context. */
+export interface WalkState {
+  /** Shots still to fire, counting the one being aimed. */
+  left: number
+  /** Intended target of the previous shot, and the run of successive hits on it so far. */
+  prev: Id | null
+  streak: number
+  /** The one Critical Point and the one Action Point this Shoot may yield have been taken (AP counts, max 1). */
+  cp: boolean
+  ap: number
+  /** Triggers of every shot so far: reactions wait for the whole Action. */
+  triggers: Trigger[]
 }
 
 const actionType = (ns: AttackNs): string => (ns === 'melee' ? 'melee.attack' : `${ns}.fire`)
@@ -429,7 +451,7 @@ function patchItem(s: GameState, modelId: ModelId, uid: string, patch: Partial<C
 }
 
 /** Roll an attack, then walk the luck windows (pending decisions) and resolve it. */
-export function startAttack(state: GameState, bundle: EditionBundle, ns: AttackNs, plan: AttackPlan): StepResult {
+export function startAttack(state: GameState, bundle: EditionBundle, ns: AttackNs, plan: AttackPlan, walk?: WalkState): StepResult {
   const purpose = `${ns}:${plan.attackerId}>${plan.targetId}`
   const tutorial = isTutorial(state, bundle)
   let s = state
@@ -446,7 +468,7 @@ export function startAttack(state: GameState, bundle: EditionBundle, ns: AttackN
   }
   const att = s.models[plan.attackerId]!
   if (att.bonusDice.length) s = updateModel(s, plan.attackerId, { bonusDice: [] })
-  return advance(s, bundle, { ns, plan, test, tutorial, stage: 'accurate', noAttackerLuck: plan.free, extraCp: 0 })
+  return advance(s, bundle, { ns, plan, test, tutorial, stage: 'accurate', noAttackerLuck: plan.free, extraCp: 0, ...(walk ? { walk } : {}) })
 }
 
 function raiseLuck(state: GameState, ask: 'accurate' | 'dodge' | 'crit', run: RunCtx): GameState {
@@ -516,8 +538,11 @@ export function resolveLuck(state: GameState, bundle: EditionBundle, action: Act
 }
 
 /** Resolve the attack once the dice are settled: hit or miss, then bookkeeping and the Action's end (or melee's slide). */
-function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResult {
-  const { plan, test, ns } = run
+function finish(state: GameState, bundle: EditionBundle, run0: RunCtx): StepResult {
+  const { plan, test, ns } = run0
+  const walk = run0.walk
+  // WPN-008: each successive hit on the same target adds one armor-reduction icon; a miss or a new target starts over.
+  const run: RunCtx = walk ? { ...run0, walkAr: walk.prev === plan.targetId ? walk.streak : 0 } : run0
   let s = state
   let pushedContact = false
   const triggers: Trigger[] = []
@@ -537,16 +562,36 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
 
   // ---- bookkeeping ----
   const hostileTarget = s.models[plan.targetId] ? hostile(s, s.models[plan.targetId]!.owner, A.owner) : false
-  if (!plan.quick && !plan.reaction && !plan.free && test.ap > 0 && s.activation?.modelId === plan.attackerId) { // AP-004/005
-    s = { ...s, activation: { ...s.activation, ap: s.activation.ap + test.ap } }
+  // Walked Fire yields at most 1 AP per Shoot Action (RoP p47).
+  const apGain = walk ? Math.min(test.ap, Math.max(0, 1 - walk.ap)) : test.ap
+  if (!plan.quick && !plan.reaction && !plan.free && apGain > 0 && s.activation?.modelId === plan.attackerId) { // AP-004/005
+    s = { ...s, activation: { ...s.activation, ap: s.activation.ap + apGain } }
+  }
+  let gainedCp = false
+  if (ref?.item && ref.def) {
+    const rating = ref.def.critical?.rating
+    if (plan.critical && rating !== undefined) s = patchItem(s, plan.attackerId, plan.weaponUid, { cp: Math.max(0, (ref.item.cp ?? 0) - rating) }) // CRIT-005
+    else if (test.success && hostileTarget && ns !== 'throw' && rating !== undefined && critCapable(s, bundle, plan.attackerId) && !walk?.cp) {
+      gainedCp = true // Walked Fire: one Critical Point per Shoot Action, whatever the dice say
+      s = patchItem(s, plan.attackerId, plan.weaponUid, { cp: Math.min(rating, (ref.item.cp ?? 0) + (walk ? 1 : 1 + test.cp + run.extraCp)) }) // CRIT-002/004
+    }
+  }
+  // WPN-008: next shot of a Walked Fire Shoot Action, aimed within the weapon's colour of this target.
+  let next: WalkState | null = null
+  if (walk) {
+    const upd: WalkState = {
+      left: walk.left - 1, prev: plan.targetId, streak: test.success ? (walk.prev === plan.targetId ? walk.streak + 1 : 1) : 0,
+      cp: walk.cp || gainedCp, ap: walk.ap + apGain,
+      triggers: dedupeTriggers([...walk.triggers, ...triggers]),
+    }
+    if (upd.left > 0 && isOnTable(s.models[plan.attackerId]!) && !s.models[plan.attackerId]!.conditions.includes('stunned')) {
+      const again = raiseWalkShot(s, bundle, plan, upd)
+      if (again) return { state: again }
+    }
+    next = upd
   }
   if (ref?.item && ref.def) {
     const patch: Partial<CarriedItem> = {}
-    const rating = ref.def.critical?.rating
-    if (plan.critical && rating !== undefined) patch.cp = Math.max(0, (ref.item.cp ?? 0) - rating) // CRIT-005
-    else if (test.success && hostileTarget && ns !== 'throw' && rating !== undefined && critCapable(s, bundle, plan.attackerId)) {
-      patch.cp = Math.min(rating, (ref.item.cp ?? 0) + 1 + test.cp + run.extraCp) // CRIT-002/004
-    }
     if (ref.def.slowFiring) patch.loaded = false
     if (ref.def.limitedUse || ref.def.grenade) patch.spent = true
     if (ref.def.primed && (ref.item.primed ?? 0) >= ref.def.primed.tokens) {
@@ -558,7 +603,7 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
     }
     if (ref.def.heavy && s.activation?.modelId === plan.attackerId) s = { ...s, activation: { ...s.activation, heavyFired: true } }
   }
-  const done: ActionDone = { modelId: plan.attackerId, type: actionType(ns), triggers }
+  const done: ActionDone = { modelId: plan.attackerId, type: actionType(ns), triggers: next ? next.triggers : triggers }
   const followable = pushedContact && isOnTable(s.models[plan.attackerId]!) && isOnTable(s.models[plan.targetId]!) // CH p15: a Push Back may be followed
   if (ns === 'melee' && !plan.free) {
     const me = s.models[plan.attackerId]!
@@ -572,6 +617,11 @@ function finish(state: GameState, bundle: EditionBundle, run: RunCtx): StepResul
   }
   if (followable) return { state: raiseFollow(s, plan.attackerId, plan.targetId, done, 'done') }
   return { state: s, done }
+}
+
+const dedupeTriggers = (list: Trigger[]): Trigger[] => {
+  const seen = new Set<string>()
+  return list.filter((t) => { const k = JSON.stringify(t); return seen.has(k) ? false : (seen.add(k), true) })
 }
 
 /** The Close Combat slide decision (CC-007). */
@@ -645,7 +695,7 @@ function resolveHit(state: GameState, bundle: EditionBundle, run: RunCtx): HitOu
     damage[0].value -= direct
   }
   const baseHit: Omit<Hit, 'targetId' | 'cover'> = {
-    attackerId: plan.attackerId, weaponUid: plan.weaponUid, damage, dmg: icons.dmg + fx.dmg + targetExtra, ar: icons.ar + fx.ar,
+    attackerId: plan.attackerId, weaponUid: plan.weaponUid, damage, dmg: icons.dmg + fx.dmg + targetExtra, ar: icons.ar + fx.ar + (run.walkAr ?? 0),
     ...(plan.critical ? { critical: true } : {}),
   }
   const cover = victimId === plan.targetId ? plan.cover.cover : coverOf(s, bundle, plan.attackerId, victimId).cover
@@ -765,8 +815,61 @@ export function gainPrimed(state: GameState, bundle: EditionBundle, modelId: Mod
   return changed ? updateModel(state, modelId, { carried }) : state
 }
 
+// ---------- target menus (also the next shot of a Walked Fire Shoot Action) ----------
+interface TargetRow { id: string; targetId: ModelId; targetMarkerId?: Id; band: 'short' | 'long'; pHit: number; sv: number; /** Walked Fire streak icons this shot starts with (WPN-008). */ extraAr?: number }
+
+/** Where the previous Walked Fire target stood: the next shot must be aimed within `maxIn` of it (edge to edge). */
+interface WalkAnchor { pos: Vec2; r: number; maxIn: number }
+
+function targetRows(state: GameState, bundle: EditionBundle, modelId: ModelId, uid: string, critical: boolean, wantBand: 'short' | 'long' | undefined, anchor?: WalkAnchor, walk?: WalkState): TargetRow[] {
+  const flags = actionFlags(state, modelId)
+  const near = (pos: Vec2, r: number): boolean => !anchor || Math.max(0, Math.hypot(pos.x - anchor.pos.x, pos.z - anchor.pos.z) - anchor.r - r) <= anchor.maxIn + EPS
+  const rows: TargetRow[] = []
+  for (const t of legalTargets(state, bundle, modelId, uid).filter((x) => !wantBand || x.band === wantBand)) {
+    const o = state.models[t.targetId]!
+    if (!near(o.pos, baseRadius(o.base))) continue
+    const extraAr = walk && walk.prev === t.targetId ? walk.streak : 0 // WPN-008
+    const plan = attackPlan(state, bundle, modelId, t.targetId, { weaponUid: uid, band: t.band, critical, ...flags, extraAr })
+    if (isRejection(plan)) continue
+    rows.push({ id: `${t.targetId}:${t.band}`, targetId: t.targetId, band: t.band, pHit: plan.pHit, sv: plan.sv, ...(extraAr ? { extraAr } : {}) })
+  }
+  for (const t of legalObjectTargets(state, bundle, modelId, uid).filter((o) => !wantBand || o.band === wantBand)) {
+    const mk = markerById(state, t.markerId)
+    if (mk && !near(mk.pos, baseRadius(typeof mk.props['baseMm'] === 'number' ? (mk.props['baseMm'] as number) : 40))) continue
+    const extraAr = walk && walk.prev === t.markerId ? walk.streak : 0 // WPN-008
+    const plan = objectAttackPlan(state, bundle, modelId, t.markerId, { weaponUid: uid, band: t.band, critical, ...flags, extraAr })
+    if (isRejection(plan)) continue
+    rows.push({ id: `${t.markerId}:${t.band}`, targetId: t.markerId, targetMarkerId: t.markerId, band: t.band, pHit: plan.pHit, sv: plan.sv, ...(extraAr ? { extraAr } : {}) })
+  }
+  return rows
+}
+
+function targetDecision(state: GameState, bundle: EditionBundle, ns: 'shoot' | 'throw', modelId: ModelId, uid: string, critical: boolean, rows: TargetRow[], walk?: WalkState): GameState {
+  const m = state.models[modelId]!
+  const options = rows.map((r) => option(
+    r.id, `${ns === 'throw' ? 'Throw at' : 'Fire at'} ${r.targetMarkerId ? (markerById(state, r.targetMarkerId)?.face ?? 'the object') : nameOf(state, bundle, r.targetId)} (${r.band}, ${Math.round(r.pHit * 100)}%${r.extraAr ? `, +${r.extraAr} armor reduction` : ''})`,
+    `${ns}.target`, { modelId, weaponUid: uid, ...(r.targetMarkerId ? { targetMarkerId: r.targetMarkerId } : { targetId: r.targetId }), band: r.band, critical }, m.owner,
+  ))
+  return raiseDecision(state, { seat: m.owner, kind: `${ns}.target`, canPass: false, context: { modelId, weaponUid: uid, critical, targets: rows, ...(walk ? { walk } : {}) }, options })
+}
+
+/** WPN-008: after a Walked Fire shot, ask where the next one goes (same target or any viable one within the weapon's colour); null when nothing is viable. */
+function raiseWalkShot(state: GameState, bundle: EditionBundle, plan: AttackPlan, walk: WalkState): GameState | null {
+  const ref = weaponRef(state, bundle, plan.attackerId, plan.weaponUid)
+  const wf = ref?.def.walkedFire
+  if (!wf) return null
+  const prev = state.models[plan.targetId]
+  const mk = plan.targetMarkerId ? markerById(state, plan.targetMarkerId) : undefined
+  const anchor: WalkAnchor | null = prev
+    ? { pos: prev.pos, r: baseRadius(prev.base), maxIn: rulerInches(bundle, wf.colour) }
+    : mk ? { pos: mk.pos, r: baseRadius(typeof mk.props['baseMm'] === 'number' ? (mk.props['baseMm'] as number) : 40), maxIn: rulerInches(bundle, wf.colour) } : null
+  if (!anchor) return null
+  const rows = targetRows(state, bundle, plan.attackerId, plan.weaponUid, false, undefined, anchor, walk)
+  return rows.length ? targetDecision(state, bundle, 'shoot', plan.attackerId, plan.weaponUid, false, rows, walk) : null
+}
+
 // ---------- the module ----------
-export const attack: ModuleDef = {
+export const attack: ModuleDef = hooked({
   id: 'attack',
   kinds: ['shoot', 'throw'],
   options(state: GameState, bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
@@ -804,26 +907,13 @@ export const attack: ModuleDef = {
       if ((ref.def.skill === 'throw') !== (ns === 'throw')) return reject('E_BAD_PARAM', 'Wrong action for this weapon.')
       const critical = action.critical === true
       const wantBand = action.band === 'short' || action.band === 'long' ? action.band : undefined
-      const flags = actionFlags(state, modelId)
-      const targets = legalTargets(state, bundle, modelId, uid).filter((t) => !wantBand || t.band === wantBand)
-      const rows: { id: string; targetId: ModelId; targetMarkerId?: Id; band: 'short' | 'long'; pHit: number; sv: number }[] = []
-      for (const t of targets) {
-        const plan = attackPlan(state, bundle, modelId, t.targetId, { weaponUid: uid, band: t.band, critical, ...flags })
-        if (isRejection(plan)) continue
-        rows.push({ id: `${t.targetId}:${t.band}`, targetId: t.targetId, band: t.band, pHit: plan.pHit, sv: plan.sv })
-      }
-      for (const t of legalObjectTargets(state, bundle, modelId, uid).filter((o) => !wantBand || o.band === wantBand)) {
-        const plan = objectAttackPlan(state, bundle, modelId, t.markerId, { weaponUid: uid, band: t.band, critical, ...flags })
-        if (isRejection(plan)) continue
-        rows.push({ id: `${t.markerId}:${t.band}`, targetId: t.markerId, targetMarkerId: t.markerId, band: t.band, pHit: plan.pHit, sv: plan.sv })
-      }
+      const rows = targetRows(state, bundle, modelId, uid, critical, wantBand)
       if (!rows.length) return reject('E_BAD_TARGET', 'No legal target.')
       const s0 = discardChargeBonus(state, modelId) // CHG-005
-      const options = rows.map((r) => option(
-        r.id, `${ns === 'throw' ? 'Throw at' : 'Fire at'} ${r.targetMarkerId ? (markerById(s0, r.targetMarkerId)?.face ?? 'the object') : nameOf(s0, bundle, r.targetId)} (${r.band}, ${Math.round(r.pHit * 100)}%)`,
-        `${ns}.target`, { modelId, weaponUid: uid, ...(r.targetMarkerId ? { targetMarkerId: r.targetMarkerId } : { targetId: r.targetId }), band: r.band, critical }, m.owner,
-      ))
-      return { state: raiseDecision(s0, { seat: m.owner, kind: `${ns}.target`, canPass: false, context: { modelId, weaponUid: uid, critical, targets: rows }, options }) }
+      // WPN-008: a Walked Fire weapon fires several shots in this one Shoot Action (a Critical Attack is a single shot).
+      const wf = ref.def.walkedFire
+      const walk: WalkState | undefined = wf && !critical && ns === 'shoot' ? { left: wf.shots, prev: null, streak: 0, cp: false, ap: 0, triggers: [] } : undefined
+      return { state: targetDecision(s0, bundle, ns, modelId, uid, critical, rows, walk) }
     }
     if (verb === 'target') {
       const modelId = String(action.modelId ?? '')
@@ -835,9 +925,9 @@ export const attack: ModuleDef = {
         ? objectAttackPlan(state, bundle, modelId, String(action.targetMarkerId), opts)
         : attackPlan(state, bundle, modelId, String(action.targetId ?? ''), opts)
       if (isRejection(plan)) return plan
-      return startAttack(state, bundle, ns, plan)
+      const walk = (state.pending.context as { walk?: WalkState }).walk
+      return startAttack(state, bundle, ns, plan, walk)
     }
     return reject('E_UNKNOWN_KIND', `Unknown ${ns} action ${action.type}.`)
   },
-}
-
+})

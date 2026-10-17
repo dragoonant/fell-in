@@ -30,8 +30,15 @@ vi.mock('../../src/engine/items', async (orig) => ({ ...(await orig<typeof impor
 vi.mock('../../src/engine/movement', () => ({
   movement: { id: 'movement', kinds: ['move'], options: () => [], resolve: () => ({ code: 'E_TODO', message: 'mock' }) },
   pushBack: (s: GameState, _b: unknown, id: string, from: unknown, colour: string) => { mocks.pushes.push({ id, from, colour }); return { state: s, inches: 0 } },
+  // BC-006: a stand-in break-away that walks the defender 4 in. along -z.
+  retreatPath: (s: GameState, _b: unknown, id: string) => [{ x: s.models[id]!.pos.x, z: s.models[id]!.pos.z - 4 }],
+  breakContact: (s: GameState, _b: unknown, id: string, _foe: string, path?: { x: number; z: number }[]) => {
+    const m = s.models[id]!
+    return { state: { ...s, models: { ...s.models, [id]: { ...m, pos: path?.[path.length - 1] ?? { x: m.pos.x, z: m.pos.z - 4 } } } } }
+  },
   validateMove: (_s: GameState, _b: unknown, _id: string, path: { x: number; z: number }[]) => ({ end: path[path.length - 1], inches: 1 }),
   // Put the charger in base contact with the target, on the near side.
+  chargeMines: (s: GameState) => ({ state: s, stopped: false }),
   chargeMove: (s: GameState, _b: unknown, id: string, targetId: string) => {
     const m = s.models[id]!, t = s.models[targetId]!
     const gap = (m.base + t.base) / 25.4 / 2
@@ -206,16 +213,48 @@ describe('charge and battle cry', () => {
     const stay = ok(melee.resolve(m.state, b, act(m.state, { type: 'battleCry.push', modelId: d.attackerId, targetId: d.targetId, push: false })))
     expect(stay.done).toBeTruthy()
   })
-  it('BC-001/006 a defender that out-rolls the charger strips the marker and the charge stays a trigger; immune models are not tested', () => {
+  it('BC-001/006 a defender that out-rolls the charger strips the marker, the charge stays a trigger, and the defender may back away for free', () => {
     mocks.svPenalty = {}
-    const d = charger()
+    mocks.hits.length = 0
+    const d0 = charger()
+    const d = { ...d0, state: patch(d0.state, { [d0.targetId]: { reaction: true } }) } // RoP p41: a Reaction needs a marker
     mocks.svPenalty = { [d.attackerId]: -7 } // charger SV 1: a 2 fails, the Settler (Cha 4) succeeds
     const b = fixed({ value: 2, icons: [] })
     const m = ok(melee.resolve(go(d, b).state, b, act(d.state, { type: 'charge.marker', modelId: d.attackerId, targetId: d.targetId, colour: 'black' }) as Action))
     mocks.svPenalty = {}
     expect(m.state.models[d.attackerId]!.chargeBonus).toEqual([])
-    expect(m.done!.triggers[0]).not.toHaveProperty('exempt')
     expect(m.state.events.find((e) => e.type === 'battleCry')).toMatchObject({ winner: 'defender' })
+    // BC-006: the defender is asked at once (stay is listed first so a bot that declines everything stays put)
+    expect(m.state.pending.kind).toBe('battleCry.escape')
+    expect(m.state.pending.seat).toBe('B')
+    expect(m.state.pending.options.map((o) => o.action.go)).toEqual([false, true])
+    const stay = ok(melee.resolve(m.state, b, act(m.state, { type: 'battleCry.escape', seat: 'B', modelId: d.targetId, go: false })))
+    expect(stay.done!.triggers[0]).not.toHaveProperty('exempt') // the charge is still a trigger for the defender
+    const before = m.state.models[d.targetId]!.pos
+    const left = ok(melee.resolve(m.state, b, act(m.state, { type: 'battleCry.escape', seat: 'B', modelId: d.targetId, go: true })))
+    expect(left.state.models[d.targetId]!.pos).not.toEqual(before)
+    expect(left.state.events.some((e) => e.type === 'battleCryEscape')).toBe(true)
+    expect(left.state.models[d.targetId]!.reaction).toBe(false) // the marker is spent (RoP p41)
+    expect(mocks.hits).toHaveLength(0) // no free attack for the charger
+    expect(left.done!.triggers[0]).toMatchObject({ exempt: [d.targetId] }) // the free Reaction is the defender's one answer to the charge
+    expect(left.state.models[d.attackerId]!.chargeBonus).toEqual([]) // the charger gains nothing
+    // BC-006: no Reaction marker, no break-away offer
+    mocks.svPenalty = { [d.attackerId]: -7 }
+    const bare = { ...d, state: patch(d.state, { [d.targetId]: { reaction: false } }) }
+    const nb = ok(melee.resolve(go(bare, b).state, b, act(bare.state, { type: 'charge.marker', modelId: d.attackerId, targetId: d.targetId, colour: 'black' }) as Action))
+    mocks.svPenalty = {}
+    expect(nb.state.pending.kind).not.toBe('battleCry.escape')
+    expect(nb.done).toBeTruthy()
+    // a Stunned defender cannot take the Reaction
+    mocks.svPenalty = { [d.attackerId]: -7 }
+    const stunned = { ...d.state, models: { ...d.state.models, [d.targetId]: { ...d.state.models[d.targetId]!, conditions: ['stunned' as const] } } }
+    const sd = { ...d, state: stunned }
+    const st = ok(melee.resolve(go(sd, b).state, b, act(sd.state, { type: 'charge.marker', modelId: d.attackerId, targetId: d.targetId, colour: 'black' }) as Action))
+    mocks.svPenalty = {}
+    expect(st.done).toBeTruthy()
+  })
+  it('BC-001 immune models are not tested', () => {
+    const b = fixed({ value: 2, icons: [] })
     const claw = charger('brute', 'deathclaw')
     const n = ok(melee.resolve(go(claw, b).state, b, act(claw.state, { type: 'charge.marker', modelId: claw.attackerId, targetId: claw.targetId, colour: 'green' }) as Action))
     expect(n.state.events.some((e) => e.type === 'battleCry')).toBe(false)

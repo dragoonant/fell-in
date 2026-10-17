@@ -11,7 +11,10 @@ For each damage type the attack deals (physical, energy, radiation; resolve each
    Strong bonus ever applies, whatever the sources. Rating "-" = 0; "X" = immune to that type.
 5. Unblocked damage = total - blocked (floor 0). Luck Tough may now reduce it by 1.
 6. Apply tokens (Power Armor first, section 4). Radiation flips tokens (section 3).
-7. Elimination check: tokens on the model (regular + radiation) >= Health -> removed (not "dead").
+7. Elimination check: tokens on the model (regular + radiation) >= Health -> removed (not "dead"). A model that is Ready and
+   not yet Used flips its Luck Token when it is eliminated during an Action, the activating model included (ERR p.8, RoP p20);
+   Luck side up earns one free Quick Action first. The engine raises the pending kind `damage.dying` (decline listed first)
+   and holds the finishing Action's `done` until it is over (hooks.ts; 00-architecture s1 "Runtime bag and tokens").
 8. Post-damage: weapon effects with "if target takes damage", conditions, Push Back, then Slide.
 9. Armor boost: one boost icon is spent after every hit, even if it gave nothing (one per Walked Fire hit).
 - Some weapons (e.g. Plasma Rifle) are blocked by the lower of physical/energy ratings, compared

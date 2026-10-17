@@ -10,14 +10,16 @@ import { computeSv, quickActionMod, rollColourDie, skillTest } from './dice'
 import { colourFor, colourShorter, recordOf, rulerColours, rulerInches, ruleObj } from './edition'
 import { attrOf, unitOf } from './forces'
 import {
-  baseDiameter, baseOnTable, baseRadius, dist, isLegalPlacement, isOnTable, norm, overlapIntervals, sub, surfaceElevation, sweepFrom,
+  baseDiameter, baseOnTable, baseRadius, clampToTable, dist, isLegalPlacement, isOnTable, norm, overlapIntervals, sub, surfaceElevation, sweepFrom,
 } from './geometry'
 import { engagedWith } from './attack'
+import { detonate, dropMine, mineCards, minesCrossed } from './mines'
 import { freeAttack } from './melee'
 import { isRejection, option, pushEvents, raiseDecision, reject, updateModel, type ModuleDef, type StepResult } from './registry'
-import { sameTeam } from './sides'
+import { hostile, sameTeam } from './sides'
 import { terrainPieces } from './terrain'
 import { gainAp } from './turnflow'
+import { hooked } from './hooks'
 import type { Action, DecisionOption, GameState, ModelId, Rejection, Vec2 } from './types'
 export { sweepStraight, validateAdvancePath, findPlacementNear, isLegalPlacement } from './geometry'
 
@@ -110,6 +112,35 @@ export function chargeMove(state: GameState, bundle: EditionBundle, modelId: Mod
   return { state: updateModel(state, modelId, { pos: w.end, elev: surfaceElevation(state, w.end, m.base) }) }
 }
 
+/**
+ * Mines on a charge (WPN-003, RoP p46): the charger's base crossing an active enemy trigger area on the way to contact, without
+ * ending in it, pauses the charge at the first touch and the blast goes off there. `from` is where the charge began and `state`
+ * already has the charger at its contact spot. Returns the state with the charger back at contact if it survived and the charge
+ * can still go on (`stopped` false); a dead charger or a dead target ends the charge (`stopped` true, state as it stands).
+ * Kept apart from chargeMove() so menu probes (canCharge) never roll blast dice.
+ */
+export function chargeMines(state: GameState, bundle: EditionBundle, modelId: ModelId, targetId: ModelId, from: Vec2, path: Vec2[]): { state: GameState; stopped: boolean } {
+  const m = state.models[modelId], t = state.models[targetId]
+  if (!m || !t) return { state, stopped: false }
+  const end = m.pos, elev = m.elev
+  // Route: the given waypoints, then the target; cut at the leg that holds the contact point.
+  const route: Vec2[] = []
+  const legs = [from, ...path, t.pos]
+  for (let i = 1; i < legs.length; i++) {
+    const a = legs[i - 1]!, b = legs[i]!
+    if (dist(a, b) < EPS) continue
+    if (dist(a, end) + dist(end, b) <= dist(a, b) + 1e-4) { route.push(end); break }
+    route.push(b)
+  }
+  if (route.length === 0 || dist(route[route.length - 1]!, end) > EPS) route.push(end)
+  let s = state
+  for (const c of minesCrossed(s, bundle, modelId, from, route, end)) {
+    s = detonate(updateModel(s, modelId, { pos: c.point }), bundle, c.mine)
+    if (!alive(s, modelId) || !alive(s, targetId)) return { state: s, stopped: true }
+  }
+  return { state: updateModel(s, modelId, { pos: end, elev }), stopped: false }
+}
+
 /** Push Back (CC-012): straight away from `from`, up to `colour`; stops on models/blocking terrain; table edge = 1 damage (MOVE-010, via damage.applyDirectDamage). */
 export function pushBack(state: GameState, bundle: EditionBundle, modelId: ModelId, from: Vec2, colour: Colour): { state: GameState; inches: number } {
   const m = state.models[modelId]
@@ -123,6 +154,47 @@ export function pushBack(state: GameState, bundle: EditionBundle, modelId: Model
     s = applyDirectDamage(s, bundle, modelId, 1, { type: 'physical', reason: 'pushed against the table edge' }).state
   }
   return { state: s, inches: sw.travelled }
+}
+
+/** Is the model still base-to-base with `foeId` if it stood at `end`? */
+const touching = (state: GameState, modelId: ModelId, foeId: ModelId, end: Vec2): boolean => {
+  const m = state.models[modelId], f = state.models[foeId]
+  return !!m && !!f && dist(end, f.pos) <= baseRadius(m.base) + baseRadius(f.base) + EPS
+}
+
+/**
+ * The default break-away for a Reaction Move (BC-006): straight away from the foe, as far as a Quick Action Move reaches
+ * (a legal, unblocked end spot that is out of base contact), or null when nothing works.
+ */
+export function retreatPath(state: GameState, bundle: EditionBundle, modelId: ModelId, foeId: ModelId): Vec2[] | null {
+  const m = state.models[modelId], f = state.models[foeId]
+  if (!m || !f || !isOnTable(m) || !isOnTable(f)) return null
+  const away = sub(m.pos, f.pos)
+  const dir = norm(Math.hypot(away.x, away.z) < EPS ? { x: 0, z: 1 } : away)
+  const colour = moveColour(state, bundle, modelId, { quick: true })
+  const reach = rulerInches(bundle, colour) + baseDiameter(m.base)
+  for (let d = reach; d > 0.2; d -= 0.25) {
+    const end = { x: m.pos.x + dir.x * d, z: m.pos.z + dir.z * d }
+    if (touching(state, modelId, foeId, end)) break
+    const v = validateMove(state, bundle, modelId, [end], { quick: true })
+    if (!isRejection(v)) return [end]
+  }
+  return null
+}
+
+/**
+ * Move out of base contact with `foeId` as a Reaction Quick Action without giving a free attack (BC-006, RoP p36).
+ * `path` is optional; the default is `retreatPath`. The end spot must be out of contact with that foe.
+ */
+export function breakContact(state: GameState, bundle: EditionBundle, modelId: ModelId, foeId: ModelId, path?: Vec2[]): { state: GameState } | Rejection {
+  const m = state.models[modelId]
+  if (!m || !isOnTable(m)) return reject('E_BAD_PARAM', 'That model is not on the table.')
+  const route = path && path.length ? path : retreatPath(state, bundle, modelId, foeId)
+  if (!route) return reject('E_PATH_BLOCKED', 'There is nowhere to back off to.')
+  const v = validateMove(state, bundle, modelId, route, { quick: true })
+  if (isRejection(v)) return v
+  if (touching(state, modelId, foeId, v.end)) return reject('E_NOT_LEGAL', 'The move must end out of base contact.')
+  return { state: updateModel(state, modelId, { pos: v.end, elev: surfaceElevation(state, v.end, m.base) }) }
 }
 
 // ---------- falling ----------
@@ -200,6 +272,12 @@ function moveTo(state: GameState, bundle: EditionBundle, action: Action): StepRe
       if (!alive(s, id)) return { state: s, done }
     }
   }
+  // Mines (WPN-003): crossing an active enemy mine's area without ending in it pauses the move at the first touch, and the blast
+  // goes off there; a model that survives carries on. A move that ends inside is handled once the Action is done (hooks.ts).
+  for (const c of minesCrossed(s, bundle, id, m.pos, path, w.end)) {
+    s = detonate(updateModel(s, id, { pos: c.point }), bundle, c.mine)
+    if (!alive(s, id)) return { state: s, done }
+  }
   if (exits) return { state: removeModel(s, bundle, id, 'left the table'), done } // MOVE-011
   // Climbing (MOVE-007): an Agility test; failing falls from where the climb began and ends the Action.
   if (climbing) {
@@ -212,15 +290,43 @@ function moveTo(state: GameState, bundle: EditionBundle, action: Action): StepRe
   return { state: s, done }
 }
 
-export const movement: ModuleDef = {
+/** Mine placement (WPN-003): up to Orange from the model's base, no movement; the mine card is used up. A Move Action is a Trigger. */
+function placeMine(state: GameState, bundle: EditionBundle, action: Action, id: ModelId | undefined): StepResult {
+  const m = id ? state.models[id] : undefined
+  if (!id || !m || !isOnTable(m)) return reject('E_BAD_PARAM', 'No model is placing a mine.')
+  if (engagedWith(state, id).length) return reject('E_ENGAGED', 'An engaged model cannot place a mine.')
+  const card = mineCards(state, bundle, id).find((c) => c.uid === String(action.weaponUid ?? ''))
+  if (!card) return reject('E_NO_ITEM', 'No mine to place.')
+  const reach = rulerInches(bundle, rulerColours(bundle)[0]!), r = baseRadius(m.base)
+  let at: Vec2
+  if (action.at !== undefined) {
+    const p = action.at as Vec2
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.z)) return reject('E_BAD_PARAM', 'Malformed mine position.')
+    if (dist(m.pos, p) - r > reach + EPS) return reject('E_TOO_FAR', 'A mine goes down within Orange of the model.')
+    if (!baseOnTable(state, p, 0)) return reject('E_PLACEMENT', 'The mine must lie on the table.')
+    at = { x: p.x, z: p.z }
+  } else { // default drop: Orange from the base edge, towards the nearest enemy
+    const foes = Object.values(state.models).filter((o) => isOnTable(o) && hostile(state, o.owner, m.owner))
+      .sort((a, b) => dist(a.pos, m.pos) - dist(b.pos, m.pos) || a.id.localeCompare(b.id))
+    const dir = norm(sub(foes[0]?.pos ?? { x: 0, z: 0 }, m.pos))
+    const d = Math.hypot(dir.x, dir.z) < EPS ? { x: 0, z: 1 } : dir
+    at = clampToTable(state, { x: m.pos.x + d.x * (r + reach), z: m.pos.z + d.z * (r + reach) }, 0)
+  }
+  return { state: dropMine(state, bundle, id, card.uid, at), done: { modelId: id, type: 'move.mine', triggers: [{ kind: 'action', sourceId: id }] } }
+}
+
+export const movement: ModuleDef = hooked({
   id: 'movement',
   kinds: ['move'],
-  options(state: GameState, _bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
+  options(state: GameState, bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
     const m = state.models[modelId]
     if (!m || !isOnTable(m)) return []
     if (m.conditions.includes('stunned')) return [option('shakeOff', 'Shake off the stun', 'move.shakeOff')] // COND-007
     const out = [option('move', 'Move', 'move.go')]
     if (m.conditions.includes('onFire')) out.push(option('putOut', 'Put out the fire', 'move.putOut'))
+    if (!engagedWith(state, modelId).length) { // WPN-003: an unengaged model places a mine with a Move Action
+      for (const c of mineCards(state, bundle, modelId)) out.push(option(`mine:${c.uid}`, `Place a mine (${recordOf(bundle, 'weapons', c.defId)?.name ?? 'mine'})`, 'move.mine', { modelId, weaponUid: c.uid }))
+    }
     return out
   },
   resolve(state: GameState, bundle: EditionBundle, action: Action): StepResult {
@@ -241,6 +347,7 @@ export const movement: ModuleDef = {
       }
       case 'move.to': return moveTo(state, bundle, action)
       case 'move.cancel': return id ? { state, done: { modelId: id, type: 'move.cancel', triggers: [] } } : reject('E_BAD_PARAM', 'No model is moving.')
+      case 'move.mine': return placeMine(state, bundle, action, id)
       case 'move.shakeOff': {
         if (!id || !model) return reject('E_BAD_PARAM', 'No model is moving.')
         if (!model.conditions.includes('stunned')) return reject('E_CONDITION', 'The model is not stunned.')
@@ -256,4 +363,4 @@ export const movement: ModuleDef = {
       default: return reject('E_NOT_LEGAL', `${action.type} is not a movement choice.`)
     }
   },
-}
+})

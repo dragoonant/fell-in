@@ -1,7 +1,8 @@
 // Checklist (owner A): CHG BC CC (charge bonus, Battle Cry, close combat, slide, free attacks). Spec 11 s4.
 // Owns 'charge.*', 'melee.*' and 'battleCry.*'. Charge movement itself is movement.chargeMove() (owner T).
 //
-// Pending kinds raised here: 'charge.marker' (black or green bonus), 'battleCry.push' (optional Push Back), 'melee.slide'
+// Pending kinds raised here: 'charge.marker' (black or green bonus), 'battleCry.push' (optional Push Back), 'battleCry.escape' (BC-006: a winning defender
+// may back off for free), 'melee.slide'
 // (optional reposition; the same action type with a `path` slides, without one stays put) and 'melee.luck' (see attack.ts).
 // Charge Bonus bookkeeping: ModelState.chargeBonus holds the markers; tokens['charged:<targetId>'] = 1 names the charged model.
 import type { Colour, DicePool, EditionBundle, Skill } from '../data/types'
@@ -16,7 +17,7 @@ import { hasLos } from './los'
 import { modelDistance } from './measure'
 import { hostile } from './sides'
 import { inObjectContact, markerById, meleeableMarkers, withProbe } from './objects'
-import { chargeMove, pushBack, validateMove } from './movement'
+import { breakContact, chargeMines, chargeMove, pushBack, retreatPath, validateMove } from './movement'
 import {
   isRejection, option, pushEvents, raiseDecision, reject, updateModel, type ActionDone, type ModuleDef, type StepResult, type Trigger,
 } from './registry'
@@ -26,6 +27,7 @@ import {
   weaponRef, improvisedUid, type AttackOptsEx, type AttackPlan, type WeaponRef,
   raiseFollow, raiseSlide,
 } from './attack'
+import { hooked } from './hooks'
 import type { Action, DecisionOption, GameState, Mod, ModelId, Rejection, Vec2 } from './types'
 import type { Band, CoverInfo } from './query'
 
@@ -178,6 +180,10 @@ function chargeGo(state: GameState, bundle: EditionBundle, action: Action): Step
   if (isRejection(moved)) return moved
   let s = moved.state
   if (!engagedWith(s, id).includes(targetId)) return reject('E_TOO_FAR', 'The charge did not end in base contact.') // CHG-001
+  // WPN-003: crossing a live enemy mine's area on the way pauses the charge for the blast; a dead charger or target ends it here.
+  const mined = chargeMines(s, bundle, id, targetId, m.pos, path)
+  s = mined.state
+  if (mined.stopped) return { state: s, done: chargeDone(id, false, targetId) }
   // CHG-005: starting a new charge drops any older markers.
   s = updateModel(s, id, { chargeBonus: [], tokens: dropCharged(s.models[id]!.tokens) })
   return {
@@ -216,9 +222,10 @@ function chargeMarker(state: GameState, bundle: EditionBundle, action: Action): 
   s = pushEvents(d.state, d.events)
   const who = opposed(a.test, d.test, 'a') // BC-002: ties go to the charger
   s = pushEvents(s, [{ type: 'battleCry', chargerId: id, targetId, winner: who === 'a' ? 'charger' : who === 'b' ? 'defender' : 'none' }])
-  if (who === 'b') { // BC-006: the charger loses the marker; the charge stays a trigger
+  if (who === 'b') { // BC-006: the charger loses the marker and gets no push; the charge stays a trigger
     s = updateModel(s, id, { chargeBonus: [], tokens: dropCharged(s.models[id]!.tokens) })
-    return { state: s, done: chargeDone(id, false, targetId) }
+    const escape = escapeDecision(s, bundle, id, targetId)
+    return escape ? { state: escape } : { state: s, done: chargeDone(id, false, targetId) }
   }
   if (who === null) return { state: s, done: chargeDone(id, false, targetId) }
   s = updateModel(s, id, { chargeBonus: ['black', 'green'] }) // BC-003
@@ -232,6 +239,39 @@ function chargeMarker(state: GameState, bundle: EditionBundle, action: Action): 
       ],
     }),
   }
+}
+
+/**
+ * BC-006 (RoP p36): a defender that wins the Battle Cry may at once use a Reaction to leave the engagement with no free attack.
+ * A Reaction needs a Reaction marker next to the model (RoP p41), so a defender without one gets no offer. Offered only to a
+ * defender that can act (not Stunned or Frozen) and has somewhere to go; 'stay' is listed first.
+ */
+function escapeDecision(state: GameState, bundle: EditionBundle, chargerId: ModelId, defenderId: ModelId): GameState | null {
+  const d = state.models[defenderId]
+  if (!d || !isOnTable(d) || !d.reaction || hasCondition(d, 'stunned') || hasCondition(d, 'frozen')) return null
+  if (!engagedWith(state, defenderId).includes(chargerId) || !retreatPath(state, bundle, defenderId, chargerId)) return null
+  return raiseDecision(state, {
+    seat: d.owner, kind: 'battleCry.escape', canPass: false, context: { modelId: defenderId, chargerId },
+    options: [
+      option('stay', 'Stand your ground', 'battleCry.escape', { modelId: defenderId, go: false }, d.owner),
+      option('go', `Back away from ${nameOf(state, bundle, chargerId)} (free Reaction, no free attack)`, 'battleCry.escape', { modelId: defenderId, go: true }, d.owner),
+    ],
+  })
+}
+
+/**
+ * Answer to 'battleCry.escape'. Leaving uses the defender's Reaction: its marker is removed (RoP p41) and the Move is a Quick
+ * Action (RULING). The defender then gets no second Reaction to the charge; everyone else still may react to it.
+ */
+function battleCryEscape(state: GameState, bundle: EditionBundle, action: Action): StepResult {
+  const ctx = state.pending.context as { modelId: ModelId; chargerId: ModelId }
+  if (typeof action.go !== 'boolean') return reject('E_BAD_PARAM', 'Choose to back away or stay.')
+  if (!action.go) return { state, done: chargeDone(ctx.chargerId, false, ctx.modelId) }
+  if (action.path !== undefined && !validPath(action.path)) return reject('E_BAD_PARAM', 'Malformed path.')
+  const moved = breakContact(state, bundle, ctx.modelId, ctx.chargerId, action.path as Vec2[] | undefined)
+  if (isRejection(moved)) return moved
+  const s = pushEvents(updateModel(moved.state, ctx.modelId, { reaction: false }), [{ type: 'battleCryEscape', modelId: ctx.modelId, chargerId: ctx.chargerId, to: { ...moved.state.models[ctx.modelId]!.pos } }])
+  return { state: s, done: chargeDone(ctx.chargerId, true, ctx.modelId) } // the reaction is used: no second one for the defender
 }
 
 function battleCryPush(state: GameState, bundle: EditionBundle, action: Action): StepResult {
@@ -281,7 +321,7 @@ function meleeSlide(state: GameState, bundle: EditionBundle, action: Action): St
 }
 
 // ---------- the module ----------
-export const melee: ModuleDef = {
+export const melee: ModuleDef = hooked({
   id: 'melee',
   kinds: ['charge', 'melee', 'battleCry'],
   options(state: GameState, bundle: EditionBundle, modelId: ModelId): DecisionOption[] {
@@ -332,7 +372,8 @@ export const melee: ModuleDef = {
       case 'charge.marker': return chargeMarker(state, bundle, action)
       case 'battleCry.push': return battleCryPush(state, bundle, action)
       case 'battleCry.follow': return pushFollow(state, bundle, action)
+      case 'battleCry.escape': return battleCryEscape(state, bundle, action)
       default: return reject('E_UNKNOWN_KIND', `Unknown action ${action.type}.`)
     }
   },
-}
+})

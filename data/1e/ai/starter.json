@@ -1133,7 +1133,7 @@
       "wounded"
     ],
     "notes": [
-      "Placeholder cells and priorities from Sole Survivor Day One (outer columns); Assault Rifle per AIH s4."
+      "Placeholder cells and priorities from Sole Survivor Day One (outer columns); Assault Rifle is a placeholder pick, not printed on the unit card (2p_cards.pdf p4-5); AIH s4 only names it for the Settler example."
     ],
     "source": "placeholder"
   },
@@ -1151,9 +1151,9 @@
         }
       },
       {
-        "label": "1-1",
+        "label": "1",
         "when": {
-          "other": "health:1-1"
+          "other": "health:1"
         }
       }
     ],
@@ -1231,7 +1231,7 @@
       "wounded"
     ],
     "notes": [
-      "Placeholder cells and priorities from Sole Survivor Day One (outer columns); Combat Shotgun per AIH s4 and RR p2."
+      "Placeholder cells and priorities from Sole Survivor Day One (outer columns); Combat Shotgun is a placeholder pick, not printed on the unit card (2p_cards.pdf p4-5); AIH s4 and RR p2 only name it for this scenario."
     ],
     "source": "placeholder"
   }

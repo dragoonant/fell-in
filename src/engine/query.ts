@@ -44,6 +44,8 @@ export interface AttackOpts {
   band?: Band
   quick?: boolean
   reaction?: boolean
+  /** Armor-reduction icons already earned before the dice (Walked Fire shots 2+ on the same target, WPN-008); odds-only, the roll adds its own. */
+  extraAr?: number
 }
 
 export interface HitOdds {
@@ -87,8 +89,9 @@ const objectAttackPlanOk = (state: GameState, bundle: EditionBundle, attackerId:
 
 /** Joint (dmg, ar) outcomes on a hit for a plan (a Critical Attack always hits, so it is the bare pool). */
 function onHitOf(bundle: EditionBundle, plan: AttackPlan): { dmg: number; ar: number; p: number }[] {
-  if (plan.critical) return poolJoint(bundle, plan.pool).map((o) => ({ dmg: o.dmg, ar: o.ar, p: o.p }))
-  return skillOdds(bundle, plan.sv, plan.pool).onHit
+  const extra = plan.extraAr ?? 0 // WPN-008: Walked Fire streak icons
+  if (plan.critical) return poolJoint(bundle, plan.pool).map((o) => ({ dmg: o.dmg, ar: o.ar + extra, p: o.p }))
+  return skillOdds(bundle, plan.sv, plan.pool).onHit.map((o) => (extra ? { ...o, ar: o.ar + extra } : o))
 }
 
 const mean = (d: readonly number[]): number => d.reduce((a, p, i) => a + p * i, 0)

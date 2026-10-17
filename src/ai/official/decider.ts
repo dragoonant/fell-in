@@ -75,6 +75,24 @@ interface ActMem {
 
 const MAX_DECISIONS_PER_ACTIVATION = 16
 
+/** AP effects an AI card lists in notes as `ap:removeDamage` / `ap:removeRad`, in the order CH p16 spends them (regular damage first). */
+const AP_EFFECTS = ['removeDamage', 'removeRad'] as const
+
+/**
+ * The AP effect to spend now, from the legal menu: `{ type: 'ap.spend', effect }` (additive engine contract, 18 s8.9). Only effects the
+ * card shows; removal only when the model has something to remove; one AP per decision, asked again until none is left.
+ */
+export function apEffect(card: AiCardDef, me: ModelState, legal: readonly Action[]): Action | null {
+  const shown = new Set((card.notes ?? []).filter((n) => n.startsWith('ap:')).map((n) => n.slice(3).replace('removeRadiation', 'removeRad')))
+  for (const effect of AP_EFFECTS) {
+    if (!shown.has(effect)) continue
+    if (effect === 'removeDamage' ? me.damage < 1 : me.rad < 1) continue
+    const a = legal.find((x) => x.type === 'ap.spend' && x.effect === effect)
+    if (a) return a
+  }
+  return null
+}
+
 /** Build the official decider for one AI seat. Same seed and inputs -> same answers. */
 export function createOfficialAiDecider(opts: OfficialAiOpts): OfficialAiDecider {
   const log: AiDecisionLog[] = []
@@ -132,9 +150,13 @@ export function createOfficialAiDecider(opts: OfficialAiOpts): OfficialAiDecider
           break
         }
         case 'shoot.luck': case 'throw.luck': case 'melee.luck': {
-          // The engine offers Accurate, Dodge and Critical flips only; the AI spends Luck on Tough alone (CH p16).
-          action = legal.find((a) => a.use === false) ?? legal[0]!
-          entry.activity = 'luck.keep'
+          // The AI spends Luck on Tough alone, and only a Heroic model does (CH p16): Accurate, Dodge and Critical flips are kept.
+          // 'tough' is the additive ask the engine will raise when LUCK-004 lands (18 s8.9); until then every offer is declined.
+          const who = String(pending.context.targetId ?? pending.context.modelId ?? '')
+          const tough = pending.context.ask === 'tough' && !!view.models[who]?.heroic && view.models[who]!.owner === view.seat && view.models[who]!.luck > 0
+          const use = tough ? legal.find((a) => a.use === true) : undefined
+          action = use ?? legal.find((a) => a.use === false) ?? legal[0]!
+          entry.activity = use ? 'luck.tough' : 'luck.keep'
           break
         }
         case 'search.found': {
@@ -145,6 +167,18 @@ export function createOfficialAiDecider(opts: OfficialAiOpts): OfficialAiDecider
         case 'item.choose': {
           action = [...legal].sort((a, b) => Number(a.index) - Number(b.index))[0]!
           entry.activity = 'item.firstBranch'
+          break
+        }
+        case 'battleCry.escape': {
+          // BC-006: the AI never Prepares or takes a Reaction (AI-028), so it stands its ground.
+          action = legal.find((a) => a.go === false) ?? legal[0]!
+          entry.activity = 'battleCry.escape.stay'
+          break
+        }
+        case 'damage.dying': {
+          // DMG-005: the free Quick Action is not a Reaction and CH p16 is silent; the AI takes none (RULING, Unsourced).
+          action = legal.find((a) => a.take === false) ?? legal[0]!
+          entry.activity = 'damage.dying.decline'
           break
         }
         case 'charge.marker': {
@@ -230,7 +264,12 @@ export function createOfficialAiDecider(opts: OfficialAiOpts): OfficialAiDecider
       const end = legal.find((a) => a.type === 'turn.end')
       const quickOptions = legal.filter((a) => a.quick === true)
       // Only a Heroic model with V.A.T.S. Action Points takes a Quick Action, after its two Actions (CH p16).
-      if (mem.actionIndex === 'quick' && (mem.quickTaken || !(me.heroic && quickOptions.length))) { entry.activity = 'turn.end'; entry.chain = ['activation']; return end ?? null }
+      if (mem.actionIndex === 'quick' && (mem.quickTaken || !(me.heroic && quickOptions.length))) {
+        // Left-over AP go on the effects the AI card shows, after the normal responses, regular damage before radiation (CH p16).
+        const ap = apEffect(card, me, legal)
+        if (ap && mem.decisions <= MAX_DECISIONS_PER_ACTIVATION) { entry.activity = `ap.${ap.effect}`; entry.chain = ['ap']; return ap }
+        entry.activity = 'turn.end'; entry.chain = ['activation']; return end ?? null
+      }
       if (mem.actionIndex === 'quick') mem.quickTaken = true // one Quick Action per activation, whatever the AP left (CH p16)
       if (mem.decisions > MAX_DECISIONS_PER_ACTIVATION && end) { entry.activity = 'turn.end.cap'; entry.chain = ['cap']; return end }
       const usable = mem.moveFailed ? legal.filter((a) => a.type !== 'move.go') : legal

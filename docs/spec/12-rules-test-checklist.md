@@ -329,6 +329,12 @@ One line = one testable rule. Engine tests are named by ID, e.g. `it('DICE-004 .
 - AI-028: The AI seat declines reaction offers (AI models never Prepare). (RULING; CH p11-14)
 - AI-029: Objects (Red Rocket, Missile sled) are targeted only via O (Defeat [object]); base contact with an object is not an engagement. (18 s8.5; RR p2)
 - AI-031: O is impossible for a Use objective when the AI side already holds the item or the model lacks the skill the marker needs. (CH p13)
+- AI-032: A Careful AI model that declined a Push Back follow-up makes no Close Combat, Charge or engage move on that enemy again this activation; Reckless and other enemies are unaffected. (ERR p.16)
+- AI-033: A Heroic AI model with a Luck token uses it for Tough and keeps it for Accurate, Dodge and Critical. (CH p16)
+- AI-034: Left-over AP go only on card-listed effects after the Actions, regular damage before radiation. (CH p16)
+- AI-035: A hound Using an Investigation marker walks to within its Awareness capped at Red, then peeks. (AIH s2, s4 p7)
+- AI-036: Use [Presence] on the Tech: take the Use when offered, else close to Presence range in line of sight, unengaged; impossible without the skill. (AIH s4 p7)
+- AI-037: The AI seat declines the BC-006 escape Reaction and the DMG-005 free Quick Action, whatever the option order. (RULING; CH p16)
 - COOP-001: The team readies one model per team turn; each player then uses all or none of their own Ready models. (COOP s2)
 - COOP-002: Team players' models only react to AI Actions, or to any model being hit. (COOP s2)
 

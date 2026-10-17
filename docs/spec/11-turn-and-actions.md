@@ -65,7 +65,9 @@ A model with no icon for a skill cannot test it (RoP s2.4 p10).
   is not a trigger for the defender, the charger gets the second marker (total one black + one green),
   and may Push Back the defender up to its Battle Cry colour (may follow to stay in contact). Defender
   wins: the charger discards its marker and gets no push; the charge stays a trigger; the defender may
-  use its Reaction to move out without giving a free attack. Triggers resolve after the whole Battle Cry. [BC-001..006]
+  use its Reaction to move out without giving a free attack. That Reaction needs a Reaction marker next to the defender and
+  removes it (RoP p41). The engine asks at once with the pending kind `battleCry.escape` (stay listed first; see
+  00-architecture s1 "Runtime bag and tokens"). Triggers resolve after the whole Battle Cry. [BC-001..006]
 - Engaged: base-to-base with an opposing model. Engaged models may only make Close Combat attacks, only
   against models they are engaged with (RoP s2.13 p24).
 - Close combat test uses the weapon's skill icon. Every model has an Improvised Weapon (melee skill, 1

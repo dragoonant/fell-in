@@ -178,10 +178,15 @@ export function canDoObjective(view: AiView, bundle: EditionBundle, me: ModelSta
     case 'goTo':
       return subject.points.length > 0
     case 'use': {
-      // An item an AI model already carries resolves to its carrier: nothing left to use (CH p13).
-      if (!markersOf.length) return false
       const unit = recordOf(bundle, 'units', me.profileId)
       const has = (sk: string): boolean => !!unit?.skills.some((s) => s.skill === sk)
+      // Use [Presence] on a model that nobody carries a marker on (the Escaped Tech): needs Presence and a model the AI side does not hold (AIH s4 p7).
+      if (!markersOf.length && subject.kind === 'model') {
+        const held = new Set((view.markers ?? []).map((m) => m.carriedBy))
+        return has('presence') && subject.ids.some((id) => !held.has(id) && view.models[id] && view.models[id]!.owner !== me.owner)
+      }
+      // An item an AI model already carries resolves to its carrier: nothing left to use (CH p13).
+      if (!markersOf.length) return false
       // Carrying or flipping an object, or looking at an investigation marker, needs no skill (AIH s2 Use); a searchable
       // or a marker with a skill (lock, terminal) needs that very skill, Search by default (engine items.ts).
       return markersOf.some((m) => {

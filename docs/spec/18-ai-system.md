@@ -318,3 +318,9 @@ activity chosen (e.g. `cc.charge`), the target and its `TargetRanking` (each pri
 and any tie with its seed key. The decider keeps the logs in memory (tests read them) and attaches the newest one
 to its answer as `action.aiLog`; engine TODO: `apply` moves `aiLog` into an `{ type: 'ai.decision', ... }` event and
 strips it before the owner validates the action.
+
+### 8.9 Additive engine contracts used by the AI (M4b follow-up)
+Offered by the engine only when it is built; until then the decider's branches are dormant (RULINGs in needs-rules-check.md).
+- `expertise.use` with `targetId` (a model, no `markerId`): Use [Presence] on the Tech. `ap.spend` with `effect` `removeDamage` | `removeRad`: AP on a card effect.
+- Luck decisions (`shoot.luck`, `throw.luck`, `melee.luck`) with `context.ask: 'tough'` and `context.targetId`: Tough (LUCK-004).
+- Live now: model token `noFollow:<enemyId>` (melee.ts) bars a Careful AI model from Close Combat on that enemy for the rest of the activation.

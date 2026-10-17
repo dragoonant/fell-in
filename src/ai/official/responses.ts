@@ -2,7 +2,7 @@
 // the list (re-walked before every Action, CH p16) and returns the concrete answer to the open decision.
 import type { AiCardDef, EditionBundle } from '../../data/types'
 import { engagedWith, isEngaged, rangeBandOf } from '../../engine/attack'
-import { rulerInches } from '../../engine/edition'
+import { recordOf, rulerInches } from '../../engine/edition'
 import { baseDiameter, baseOnTable, baseRadius, isOnTable } from '../../engine/geometry'
 import { hasLos } from '../../engine/los'
 import { modelDistance } from '../../engine/measure'
@@ -15,7 +15,7 @@ import type { AiView } from '../types'
 import { withModelAt } from '../world'
 import { legalObjectTargets } from '../../engine/attack'
 import { objectGap, withProbe } from '../../engine/objects'
-import { canDoObjective } from './objectives'
+import { canDoObjective, scenarioOf } from './objectives'
 import { chooseWeapon, defendThreat, rankTargets, shootable, validTargets, type RankFor } from './targeting'
 import type { AiDecisionLog, AiMethod, AiResponse, AiSettings, ResolvedCell, ResolvedSubject, TargetRanking } from './types'
 import { centreDistance, enemiesOf, exposure, fieldFor, friendsOf, qOf, weaponDefOf } from './util'
@@ -84,7 +84,7 @@ function shootBand(q: GameState, bundle: EditionBundle, me: ModelState, t: Tgt, 
 // ---------------------------------------------------------------------------------------------------------------------
 // Movement planning
 // ---------------------------------------------------------------------------------------------------------------------
-export type MoveStop = 'full' | 'range' | 'charge' | 'moveReach' | 'contact' | 'onto' | 'objectContact' | 'disengage'
+export type MoveStop = 'full' | 'range' | 'charge' | 'moveReach' | 'contact' | 'onto' | 'objectContact' | 'disengage' | 'presence' | 'peek'
 export interface MoveReq {
   /** Points to approach (the target's or Subject's position). */
   goals: Vec2[]
@@ -212,6 +212,21 @@ function contactPlan(ctx: ResponseCtx, t: Tgt, reach: number): Vec2[] | null {
   return null
 }
 
+/** Presence ruler in inches for the model (Use [Presence], AIH s4 p7), or null when it has no Presence skill. */
+export function presenceReach(bundle: EditionBundle, me: ModelState): number | null {
+  const row = recordOf(bundle, 'units', me.profileId)?.skills.find((k) => k.skill === 'presence')
+  return row?.colour ? rulerInches(bundle, row.colour as never) : null
+}
+
+/** How far this AI model can look at a face-down Investigation marker: its Awareness, capped by the scenario's peekCap.ai (The Escaped Tech: wind). */
+export function peekReach(view: AiView, bundle: EditionBundle, me: ModelState): number {
+  const unit = recordOf(bundle, 'units', me.profileId)
+  const aware = unit ? rulerInches(bundle, unit.awareness) : 0
+  const cap = scenarioOf(view, bundle)?.markers.find((m) => m.kind === 'investigation' && (m.props as { peekCap?: { ai?: string } } | undefined)?.peekCap?.ai)
+  const colour = (cap?.props as { peekCap?: { ai?: string } } | undefined)?.peekCap?.ai
+  return colour ? Math.min(aware, rulerInches(bundle, colour as never)) : aware
+}
+
 /** One scored end spot along a route. */
 interface Cand { s: Sample; threat: number; cover: number }
 
@@ -249,11 +264,18 @@ export function planMove(ctx: ResponseCtx, req: MoveReq): Vec2[] | null {
       case 'range': return !!req.weaponUid && shootBand(qq, ctx.bundle, moved, t, req.weaponUid) !== null && gapTo(qq, moved, t) >= yellow - 0.05
       case 'charge': return t.kind === 'model' && gapTo(qq, moved, t) <= chargeReachIn - 0.05 && hasLos(qq, me.id, t.id)
       case 'moveReach': return gapTo(qq, moved, t) <= moveReachIn - 0.05
+      case 'presence': { const r = presenceReach(ctx.bundle, me); return r !== null && t.kind === 'model' && gapTo(qq, moved, t) <= r - 0.05 && hasLos(qq, me.id, t.id) }
+      case 'peek': {
+        const mk = qq.markers.find((x) => x.id === t.id)
+        if (!mk) return false
+        const p = withProbe(qq, mk)
+        return centreDistance(moved.pos, mk.pos) - baseRadius(moved.base) <= peekReach(ctx.view, ctx.bundle, me) - 0.05 && hasLos(p.state, me.id, p.probeId)
+      }
       default: return false
     }
   }
   // Already inside Charge or Move reach: this list step is spent, the next step moves (no 0.3 in creeping).
-  if ((req.stop === 'charge' || req.stop === 'moveReach') && stopHit(me.pos)) return null
+  if ((req.stop === 'charge' || req.stop === 'moveReach' || req.stop === 'presence' || req.stop === 'peek') && stopHit(me.pos)) return null
   const shootableOnly = req.stop === 'range'
 
   for (const route of routesTo(ctx, req.goals, A)) {
@@ -366,6 +388,11 @@ function attackInner(ctx0: ResponseCtx, chain: string[], o: AttackOpts): Planned
   if (o.only) cands = candidatesFor(ctx, method, o.only)
   else cands = (method === 'close' ? enemiesOf(view, me) : enemiesOf(view, me)).map(tgtOfModel)
   if (!cands.length) return null
+  // A Careful model that declined to follow up a Push Back may not make a base-contact attack on that enemy again this activation (ERR p.16).
+  if (method === 'close' && careful) {
+    cands = cands.filter((c) => !barredRecontact(me, c.id))
+    if (!cands.length) return null
+  }
 
   if (method === 'close') {
     const reachable = (c: Tgt): boolean => c.kind === 'model' ? true : true
@@ -439,6 +466,11 @@ function attackInner(ctx0: ResponseCtx, chain: string[], o: AttackOpts): Planned
     }
   }
   return null
+}
+
+/** True when the model declined a Push Back follow-up on this enemy earlier in the activation (engine token noFollow:<id>, cleared at the next activation). */
+export function barredRecontact(me: ModelState, enemyId: Id): boolean {
+  return (me.tokens[`noFollow:${enemyId}`] ?? 0) > 0
 }
 
 /** Close Combat (step 1): strike the best engaged valid target with the chosen weapon. */
@@ -617,7 +649,8 @@ function attackFallback(ctx: ResponseCtx, chain: string[]): Planned {
 
 function interactAction(ctx: ResponseCtx, ids: readonly Id[]): Action | null {
   const types = new Set(['search.interact', 'expertise.use', 'scenario.pickup', 'search.peek', 'item.pickup'])
-  const opts = menu(ctx).filter((a) => types.has(a.type) && ids.includes(String(a.markerId)))
+  // A Presence Use on a model carries targetId (not markerId): additive engine contract, 18 s8.9.
+  const opts = menu(ctx).filter((a) => types.has(a.type) && ids.includes(String(a.markerId ?? a.targetId)))
   if (!opts.length) return null
   return [...opts].sort((a, b) => a.type.localeCompare(b.type) || String(a.markerId).localeCompare(String(b.markerId)))[0]!
 }
@@ -638,7 +671,14 @@ function objectiveInner(ctx: ResponseCtx, chain: string[]): Planned | null {
       const act = interactAction(ctx, subject.ids)
       if (act) return plan(ctx, act, base, 'use.interact', { target: { id: String(act.markerId), kind: 'marker' } }, { kind: 'none' })
       const sub = nearestSubject(ctx)
+      if (sub && sub.kind === 'model') return usePresence(ctx, base, sub)
       if (sub && sub.kind === 'marker') {
+        // Looking at an Investigation marker is a ranged check from Awareness (AIH s2), capped by the scenario wind: get within that, not into contact.
+        if (markerOf(view, sub.id)?.kind === 'investigation') {
+          const peekReq: MoveReq = { goals: [sub.pos], target: sub, stop: 'peek', careful: !ctx.cell.reckless, noEngage: true }
+          const goP = menu(ctx).find((a) => a.type === 'move.go')
+          if (goP && planMove(ctx, peekReq)) return plan(ctx, goP, base, 'use.peekApproach', { target: targetLog(sub) }, { kind: 'move', req: peekReq })
+        }
         const req: MoveReq = { goals: [sub.pos], target: sub, stop: 'objectContact', careful: !ctx.cell.reckless, noEngage: false }
         const go = menu(ctx).find((a) => a.type === 'move.go')
         if (go && planMove(ctx, req)) return plan(ctx, go, base, 'use.contact', { target: targetLog(sub) }, { kind: 'move', req })
@@ -647,6 +687,24 @@ function objectiveInner(ctx: ResponseCtx, chain: string[]): Planned | null {
     }
     default: return null
   }
+}
+
+/**
+ * Use [Presence] on a model Subject (The Escaped Tech phase 2, AIH s4 p7): 1. the Presence Use when the engine offers it (interactAction);
+ * 2. get unengaged, in line of sight and inside the model's Presence ruler; 3. M. Already in position and no Use offered: stay put, the
+ * scenario module makes the test at the end of the AI turn (RULING).
+ */
+function usePresence(ctx: ResponseCtx, base: string[], sub: Tgt): Planned | null {
+  if (presenceReach(ctx.bundle, ctx.me) === null) return null
+  const q = qOf(ctx.view, ctx.bundle)
+  if (engagedWith(q, ctx.me.id).length === 0) {
+    const req: MoveReq = { goals: [sub.pos], target: sub, stop: 'presence', careful: !ctx.cell.reckless, noEngage: true }
+    const go = menu(ctx).find((a) => a.type === 'move.go')
+    if (go && planMove(ctx, req)) return plan(ctx, go, base, 'use.presenceApproach', { target: targetLog(sub) }, { kind: 'move', req })
+    const r = presenceReach(ctx.bundle, ctx.me)!
+    if (gapTo(q, ctx.me, sub) <= r - 0.05 && hasLos(q, ctx.me.id, sub.id)) return endPlan(ctx, base, 'use.presenceHold')
+  }
+  return moveToSubject(ctx, [...base, 'M'], false)
 }
 
 export function fallBack(ctx: ResponseCtx, chain: string[]): Planned {

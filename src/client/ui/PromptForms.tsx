@@ -42,8 +42,8 @@ export function TargetsForm({ copy, pending }: { copy: PromptCopy; pending: Pend
             data-testid={`prompt-option-${o.id}`} onClick={() => setPick(pending.id, o.id)}>{o.label}</button>
         ))}
       </div>
-      {a && typeof a.targetId === 'string' && (
-        <OddsPanel attacker={attacker} target={a.targetId}
+      {a && typeof (a.targetId ?? a.targetMarkerId) === 'string' && (
+        <OddsPanel attacker={attacker} target={String(a.targetId ?? a.targetMarkerId)}
           {...(typeof a.weaponUid === 'string' ? { weaponUid: a.weaponUid } : {})}
           {...(a.band === 'short' || a.band === 'long' || a.band === 'melee' ? { band: a.band } : {})} />
       )}

@@ -3,12 +3,14 @@
 // versus own ratings and lower-of ties pick whatever gives the target the least expected damage.
 // One generic removal mechanism; the engine owns every number the UI shows.
 import type { ArmorDef, ArmorValue, Attr, EditionBundle, UnitDef } from '../data/types'
-import { armorRoll } from './dice'
+import { armorRoll, flipLuck } from './dice'
 import { diceDef, recordOf, ruleNum } from './edition'
 import { unitOf } from './forces'
 import { itemMods } from './items'
-import { pushEvents, reject, TodoError, updateModel, type ModuleDef, type StepResult } from './registry'
-import type { Action, CarriedItem, DecisionOption, GameState, Mod, ModelId, ModelState, WastelandDamageType } from './types'
+import {
+  allOptions, moduleFor, option, pushEvents, raiseDecision, reject, TodoError, updateModel, type ActionDone, type ModuleDef, type StepResult,
+} from './registry'
+import type { Action, ActionContext, CarriedItem, DecisionOption, GameState, Mod, ModelId, ModelState, WastelandDamageType } from './types'
 
 /** Armor against one damage type after cards: rating (0 = '-'), Strong bonus, immunity ('X'). `has` = a rating exists (cover and AR only matter then). */
 export interface ArmorRating { base: number; strong: number; immune: boolean; has: boolean }
@@ -311,13 +313,106 @@ export function heal(state: GameState, bundle: EditionBundle, modelId: ModelId, 
   return updateModel(state, modelId, { damage, rad, carried })
 }
 
-/** Remove a model from play (tokens >= Health). Marks it dead and Used, and drops any scenario object it carried. */
+// ---------- DMG-005: an eliminated Ready model's free Quick Action (RoP p20; ERR p.9) ----------
+/** Namespaces whose Quick Actions a just-eliminated model may take; every one is resolved by a module wrapped in hooks.ts. */
+const FREE_NS: ReadonlySet<string> = new Set(['move', 'shoot', 'throw', 'charge', 'melee', 'battleCry'])
+const nsOf = (type: string): string => type.split('.')[0]!
+
+/** A free Quick Action in progress: who takes it, the Action that eliminated them (restored afterwards) and whether it has started. */
+export interface Dying { modelId: ModelId; done: ActionDone; action: ActionContext | null; active: boolean }
+interface DyingBag { dying?: Dying | null }
+export const dyingOf = (s: GameState): Dying | null => (s.scenario as unknown as DyingBag).dying ?? null
+function setDying(s: GameState, d: Dying | null): GameState {
+  const { dying: _old, ...rest } = s.scenario as unknown as DyingBag & Record<string, unknown>
+  return { ...s, scenario: (d ? { ...rest, dying: d } : rest) as unknown as GameState['scenario'] }
+}
+const revive = (s: GameState, id: ModelId): GameState => updateModel(s, id, { life: 'active', offTable: false })
+
+/**
+ * Flip the Luck Token for a Ready, unused model that was just eliminated during an Action; Luck side up earns the free Quick Action
+ * (no chaining). The activating model counts: it is Used only after it finishes all its Actions (ERR p.8, RoP p20).
+ */
+function grantFreeAction(state: GameState, before: ModelState, reason: string): GameState {
+  const ctx = state.action
+  if (before.readiness !== 'ready' || reason === 'left the table') return state
+  if (!ctx || !FREE_NS.has(nsOf(ctx.type)) || dyingOf(state)) return state
+  const f = flipLuck(state, 'eliminated:luck', before.id)
+  let s = pushEvents(f.state, [f.event, { type: 'eliminationLuck', modelId: before.id, lucky: f.lucky }])
+  if (f.lucky) s = updateModel(s, before.id, { tokens: { ...s.models[before.id]!.tokens, freeAction: 1 } })
+  return s
+}
+
+/** The model is removed for good once its free Action is over (even if it healed meanwhile), and drops what it carried. */
+export function finishDying(state: GameState, d: Dying): GameState {
+  const m = state.models[d.modelId]
+  let s = setDying(state, null)
+  if (m) {
+    const { freeAction: _spent, ...tokens } = m.tokens
+    s = updateModel(s, d.modelId, { life: 'dead', offTable: true, readiness: 'used', reaction: false, chargeBonus: [], conditions: [], bonusDice: [], tokens })
+    s = { ...s, markers: s.markers.map((k) => (k.carriedBy === d.modelId ? { ...k, carriedBy: undefined, pos: m.pos } : k)) }
+  }
+  return { ...s, action: d.action }
+}
+
+/**
+ * After an Action finishes: if an eliminated model earned a free Quick Action, ask its owner (pass is listed first). Models with
+ * nothing legal to do just lose the chance. `raised` = a 'damage.dying' decision is open and `done` must wait for it.
+ */
+export function offerFreeAction(state: GameState, bundle: EditionBundle, done: ActionDone): { state: GameState; raised: boolean } {
+  let s = state
+  if (dyingOf(s)) return { state: s, raised: false }
+  for (const id of Object.values(s.models).filter((m) => m.tokens['freeAction']).map((m) => m.id).sort()) {
+    const m = s.models[id]!
+    const { freeAction: _f, ...tokens } = m.tokens
+    const quick: ActionContext = { modelId: id, type: 'menu', quick: true, reaction: false, free: false, itemUsed: false }
+    const opts = allOptions({ ...revive(s, id), action: quick }, bundle, id).filter((o) => FREE_NS.has(nsOf(o.action.type)))
+    if (opts.length === 0) { s = updateModel(s, id, { tokens }); continue }
+    s = setDying(s, { modelId: id, done, action: s.action, active: false })
+    return {
+      raised: true,
+      state: raiseDecision(s, {
+        seat: m.owner, kind: 'damage.dying', canPass: false, context: { modelId: id },
+        options: [
+          option('pass', 'Take no free action', 'damage.dying', { modelId: id, take: false }, m.owner),
+          ...opts.map((o) => {
+            const { decisionId: _d, seat: _s, ...inner } = o.action
+            return option(`take:${o.id}`, `Free Quick Action: ${o.label}`, 'damage.dying', { modelId: id, take: true, inner }, m.owner)
+          }),
+        ],
+      }),
+    }
+  }
+  return { state: s, raised: false }
+}
+
+/** Answer to 'damage.dying': pass (the model goes) or start the chosen Quick Action, which the owning module resolves as usual. */
+function resolveDying(state: GameState, bundle: EditionBundle, action: Action): StepResult {
+  const d = dyingOf(state)
+  if (!d || d.modelId !== action.modelId || typeof action.take !== 'boolean') return reject('E_NOT_LEGAL', 'No free Quick Action is open.')
+  if (!action.take) {
+    const left = finishDying(state, d)
+    const next = offerFreeAction(left, bundle, d.done)
+    return next.raised ? { state: next.state } : { state: next.state, done: d.done }
+  }
+  const inner = action.inner as Action | undefined
+  if (!inner || typeof inner.type !== 'string' || !FREE_NS.has(nsOf(inner.type))) return reject('E_BAD_PARAM', 'Missing free action.')
+  const mod = moduleFor(inner.type)
+  if (!mod) return reject('E_UNKNOWN_KIND', `Nothing resolves ${inner.type}.`)
+  const owner = state.models[d.modelId]!.owner
+  // The wrapped module finishes the removal when this Action reports done (hooks.ts), giving back the original Action's done.
+  let s = setDying(revive(state, d.modelId), { ...d, active: true })
+  s = { ...s, action: { modelId: d.modelId, type: inner.type, quick: true, reaction: false, free: false, itemUsed: false } }
+  return mod.resolve(s, bundle, { ...inner, decisionId: state.pending.id, seat: owner })
+}
+
+/** Remove a model from play (tokens >= Health). Marks it dead and Used, and drops any scenario object it carried. DMG-005 may follow. */
 export function removeModel(state: GameState, _bundle: EditionBundle, modelId: ModelId, reason: string): GameState {
   const m = state.models[modelId]
   if (!m || m.life === 'dead') return state
   let s = updateModel(state, modelId, { life: 'dead', offTable: true, readiness: 'used', reaction: false, chargeBonus: [], conditions: [], bonusDice: [] })
   s = { ...s, markers: s.markers.map((k) => (k.carriedBy === modelId ? { ...k, carriedBy: undefined, pos: m.pos } : k)) }
-  return pushEvents(s, [{ type: 'removed', modelId, reason }])
+  s = pushEvents(s, [{ type: 'removed', modelId, reason }])
+  return grantFreeAction(s, m, reason)
 }
 
 /**
@@ -350,8 +445,9 @@ export const damage: ModuleDef = {
   options(_state: GameState, _bundle: EditionBundle, _modelId: ModelId): DecisionOption[] {
     return []
   },
-  resolve(state: GameState, _bundle: EditionBundle, action: Action): StepResult {
-    // Armor picks are automatic in M2, so no 'damage.*' decision is ever open.
+  resolve(state: GameState, bundle: EditionBundle, action: Action): StepResult {
+    // Armor picks are automatic in M2; the one 'damage.*' decision is the DMG-005 free Quick Action.
+    if (action.type === 'damage.dying') return resolveDying(state, bundle, action)
     return reject('E_UNKNOWN_KIND', `no damage decision is open (${action.type} vs ${state.pending.kind})`)
   },
 }

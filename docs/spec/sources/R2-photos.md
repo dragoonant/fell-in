@@ -31,3 +31,18 @@ Search engines (Bing images, DDG) returned nothing usable after the first query;
 - Photos of the six starter-set AI cards at readable resolution (only Sole Survivor/Aviator/Goddard at card scale in CH spread).
 - Reddit cheat sheets thread (blocked 403), BGG filepage 170006 "AI response flowcharts" (403, needs a real browser; promising).
 - eBay listings: not reachable via curl search.
+
+## Second pass: Settler, Enslaved Tech, Dogmeat, Mutant Hound AI cards (2026-10-17)
+Result: none of the four matrices could be sourced; the cards stay placeholders. Routes tried, in order:
+| Route | What was checked | Result |
+|---|---|---|
+| Local official PDFs | Campaign Handbook (all 52 pages text-searched, p12-16 and tutorial pages p46-50 rendered), `reference_cards_w9.pdf`, `2p_cards.pdf` (p4-7 are the unit cards for these four, stats only), AI Handbook, Co-op Handbook, `ai_response_flowcharts.pdf` | No AI matrices; the CH prints only the Super Mutant and Sole Survivor Day One cards as examples. The four models appear only in worked examples and force lists. |
+| BGG image gallery (api.geekdo.com, objectid 226176, ~230 images, 16 candidates downloaded and read) | e.g. 4318998, 4336913, 4772042, 5738958, 5760043, 4884000 | Gameplay and box shots only; 5738958 shows the Target Priorities reference card and a unit card, no AI card. |
+| BGG files list (same object) | 11 files | Only the flowcharts PDF (already held) and unrelated solo or campaign add-ons. |
+| Modiphius Shopify product JSON | Wave 1-3 AI deck bundle (images Wave2, Wave3, Wave1Crop, back of deck) and Wave 1 Fundamentals deck | Card list confirms all four AI cards exist in the Wave 1 print-and-play deck (paid PDF). Wave1Crop shows only Super Mutant and Deathclaw. |
+| eBay (curl, `www.ebay.com/sch`) | Search for the Wave 1 Fundamentals deck | HTTP 403, no `i.ebayimg.com` URLs reachable. |
+| Fan wiki (fallout.fandom.com MediaWiki API) | "Fallout: Wasteland Warfare cards" page, Mutant Hound and Dogmeat card images | Works, but holds unit cards only (stats, no matrix); no AI card images. |
+| Search (WebSearch x4, Bing images via curl, GitHub repo search, Reddit JSON) | Card names plus "AI card", "matrix", "unboxing" | Retail listings, wallpaper noise, no card photos; Kuribos unboxing blog has no readable card images. |
+Still needed: a readable photo or scan of the four cards (Wave 1 Fundamentals deck, the Wave 1 print-and-play AI PDF, or the owner's own copy of either).
+
+Note (cosmetic fix): the placeholder Settler and Enslaved Tech cards list Assault Rifle and Combat Shotgun as standard equipment, but the 2p unit cards (p4-5) print no EQUIPPED weapons for them, unlike Dogmeat and Mutant Hound (bite only); the weapons are play picks, flagged in the card notes, not sourced data. The one-value Health column is labelled "1".

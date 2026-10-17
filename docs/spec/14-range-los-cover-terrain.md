@@ -94,4 +94,6 @@ World unit = 1 inch. Ruler data lives in `data/<edition>/rulers.json` (see `20`)
   the effect lands where the line meets an obstacle. Target-only extra effects are lost on scatter.
 - Mines: unengaged model, Move Action, place within Orange; active from the start of the owner's next
   turn; triggers on opposing models that end any Action inside the trigger radius (short-range colour)
-  or whose base enters it on a path that would end outside (pause the move, resolve the blast).
+  or whose base enters it on a path that would end outside (pause the move, resolve the blast). That holds for a Charge too.
+  Placing is the Action `move.mine` (an Action type on the activation menu, not a pending kind) and the markers live in `state.scenario.mines` (mines.ts; 00-architecture s1 "Runtime bag
+  and tokens"). The end-of-Action check runs from hooks.ts; the pass-through check runs from movement.ts and melee.ts.

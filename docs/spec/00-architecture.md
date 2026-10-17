@@ -29,12 +29,30 @@ src/engine/   pure TypeScript, no DOM, no Math.random. State in, state out.
   items.ts      I: item.* expertise.* search.*  item use and durations, expertise tests, markers
   scenario.ts   I: scenario.* deploy.*      victory, round end, scenario actions
   forces.ts     I: (no decisions)           stat lookups (unitOf, attrOf, skillBase), force cost/validation
+  hooks.ts      after-Action pass: mines, DMG-005 free Quick Action (wraps movement/attack/melee resolve)
+  mines.ts      WPN-003 mine markers (runtime bag on state.scenario)
 src/data/     (M1) JSON bundle + schemas
 src/ai/       (M4) deciders: random, easy, normal; Web Worker host
   official/     (M4b) official AI card decider (spec 18 s8): matrix, targeting, responses, objectives
 src/client/   React 19 + R3F + zustand; never mutates GameState, never computes a rules number
 tools/        sim, audio pipeline, model optimizer, workflows
 ```
+
+### Runtime bag and tokens (additive; no frozen file changed)
+- `hooks.ts` wraps the resolve of movement, attack and melee. Whenever a step reports an Action done it runs, in order:
+  the WPN-003 mine check for the finishing model, then the DMG-005 offer. When a Ready, unused model was eliminated during
+  the Action and its Luck flip came up lucky, the module's `done` is held back and replaced by a `damage.dying` decision;
+  the held `done` is returned once that free Action ends (`Dying.active` tells the two apart).
+- `mines.ts` keeps its runtime state in the scenario bag (the ScenarioState type is not widened): `state.scenario.mines`
+  (`MineState[]`: id, owner, pos, weaponId, placedAt = action-log length at the drop), read through `minesOf(state)`.
+  damage.ts keeps `state.scenario.dying` (the open DMG-005 record: model, held done, Action context, active flag), read
+  through `dyingOf(state)`.
+- New decision and action names, all inside namespaces that already exist, so `apply.ts` dispatch is unchanged: the pending
+  kinds `battleCry.escape` (melee.ts; the winning defender's break-away Reaction, spec 11 s4) and `damage.dying` (damage.ts;
+  the free Quick Action, spec 15 s1), and the Action type `move.mine` (movement.ts; placing a mine, offered on the
+  activation menu and answered as a Move Action, spec 14 s7).
+- New model tokens: `freeAction` (set on an eliminated model whose flip was lucky, cleared when the offer is answered) and
+  `noFollow:<id>` (the model declined a Push Back follow-up on that enemy; cleared when its next activation begins).
 
 ## 2. Units and the table
 - 1 world unit = 1 inch; x/z ground plane, y up; origin at the table centre; default table 36 x 36 in.
