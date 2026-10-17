@@ -1,4 +1,6 @@
 // Game over recap: winner, reason, final scores and a Play again button (same seat setup, fresh seed).
+import { ArtImage } from './art'
+import { keyArtUrl, resultArtKey } from './artView'
 import { game, seatLabel, useControllers, useGame, useGameResult, usePresented } from '../contract'
 
 export function GameOver() {
@@ -8,9 +10,11 @@ export function GameOver() {
   const g = useGame()
   if (!result || !state) return null
   const again = () => { game.newGame({ seats: g.seatOrder.map((s) => controllers[s] ?? 'bot'), ...(g.scenarioId ? { scenarioId: g.scenarioId } : {}) }) }
+  const art = resultArtKey(result.winner, controllers)
   const dead = Object.values(state.models).filter((m) => m.life === 'dead' || m.offTable).length
   return (
     <div className="gameover" data-testid="hud-result" role="dialog" aria-label="Game over">
+      {art && <ArtImage src={keyArtUrl(art)} className="go-art" testId={`result-art-${art}`} />}
       <div className="panel">
         <h2 data-testid="result-title">{result.winner ? `${seatLabel(result.winner)} wins${result.level ? ` (${result.level} victory)` : ''}` : 'A draw'}</h2>
         <p data-testid="result-reason">{result.reason}</p>

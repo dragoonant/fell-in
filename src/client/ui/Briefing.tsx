@@ -7,6 +7,8 @@ import { readParams } from '../params'
 import { buildBriefing } from './briefingView'
 import { useUiStore } from './uiStore'
 import { HowToPlayButton } from './HowToPlay'
+import { ArtImage, FactionMark, useSeatFactions } from './art'
+import { scenarioArtUrl } from './artView'
 
 /** Mount with key={epoch}: opens once per new game (not on a mid-game load, nor under ?test=1 unless ?briefing=1). */
 export function Briefing() {
@@ -16,6 +18,7 @@ export function Briefing() {
   const g = useGame()
   const state = usePresented()
   const scn = useMemo(() => bundle?.records.scenarios.find((s) => s.id === (state?.scenarioId ?? g.scenarioId)) ?? null, [bundle, state?.scenarioId, g.scenarioId])
+  const factions = useSeatFactions()
   const round0 = (state?.round ?? 0) === 0
   useEffect(() => {
     let quiet = false
@@ -42,10 +45,11 @@ export function Briefing() {
   return (
     <div className="briefing-back" data-testid="briefing" role="dialog" aria-modal="true" aria-label={`${model.title} briefing`}>
       <div className="panel briefing">
+        {scn && <ArtImage src={scenarioArtUrl(scn.id)} className="b-art" testId="briefing-art" />}
         <h2 data-testid="briefing-title">{model.title}</h2>
         <p className="b-story">{model.story}</p>
-        {model.goals.map((r) => <p key={r.seat} className="b-goal" data-testid="briefing-goal"><b>{r.label}</b> {r.text}</p>)}
-        {model.enemy.map((r) => <p key={r.seat} className="b-goal enemy" data-testid="briefing-enemy"><b>{r.label}</b> {r.text}</p>)}
+        {model.goals.map((r) => <p key={r.seat} className="b-goal" data-testid="briefing-goal"><FactionMark faction={factions[r.seat]} size={16} /><b>{r.label}</b> {r.text}</p>)}
+        {model.enemy.map((r) => <p key={r.seat} className="b-goal enemy" data-testid="briefing-enemy"><FactionMark faction={factions[r.seat]} size={16} /><b>{r.label}</b> {r.text}</p>)}
         <div className="sect">How to win</div>
         <ul>{model.howToWin.map((t, i) => <li key={i}>{t}</li>)}{!model.howToWin.some((t) => /round/i.test(t)) && <li>{model.rounds}.</li>}</ul>
         {model.tips.length > 0 && <><div className="sect">Tips</div><ul>{model.tips.map((t, i) => <li key={i}>{t}</li>)}</ul></>}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Survivors mark">
+  <circle cx="32" cy="32" r="29" fill="#1f2a2e" stroke="#d9a441" stroke-width="3"/>
+  <path d="M10 40 H54" stroke="#d9a441" stroke-width="3" stroke-linecap="round"/>
+  <path d="M16 40 A16 16 0 0 1 48 40 Z" fill="#d9a441"/>
+  <g stroke="#d9a441" stroke-width="3" stroke-linecap="round">
+    <path d="M32 14 V19"/><path d="M17 21 L21 25"/><path d="M47 21 L43 25"/>
+  </g>
+  <path d="M14 47 L22 52 L30 47 L38 52 L46 47 L50 49" fill="none" stroke="#d9a441" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

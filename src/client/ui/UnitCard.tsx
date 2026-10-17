@@ -1,6 +1,7 @@
 // Unit card panel in our own design: stats, skills, weapons with ruler colours, armor, damage/rads, conditions.
 import type { Attr, Colour, DamageType, WeaponDef } from '../../data/types'
 import { conditionWord, modelName, rulerInches, seatLabel, useBundle, usePresented } from '../contract'
+import { Portrait } from './art'
 import { COLOUR_HEX, armorText, num } from './format'
 
 const ATTR_ORDER: Attr[] = ['str', 'per', 'end', 'cha', 'int', 'agi', 'luc']
@@ -47,8 +48,11 @@ export function UnitCard({ id }: { id: string | null }) {
   return (
     <div className={`card life-${m.life}`} data-testid="unit-card">
       <div className="card-head">
-        <b data-testid="unit-card-name">{modelName(state, m.id)}</b>
-        <span className="dim">{seatLabel(m.owner)}{unit?.faction ? ` · ${unit.faction}` : ''}</span>
+        <Portrait unitId={m.profileId} faction={unit?.faction} name={modelName(state, m.id)} size={52} />
+        <span className="card-head-text">
+          <b data-testid="unit-card-name">{modelName(state, m.id)}</b>
+          <span className="dim">{seatLabel(m.owner)}{unit?.faction ? ` · ${unit.faction}` : ''}</span>
+        </span>
       </div>
       <div className="chips">
         <span className={`chip ready-${m.readiness}`}>{READY_WORD[m.readiness]}</span>

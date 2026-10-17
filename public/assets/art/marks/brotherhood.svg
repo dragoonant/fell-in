@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Brotherhood mark">
+  <polygon points="32,3 61,32 32,61 3,32" fill="#2a2326" stroke="#b9bcc2" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="none" stroke="#b9bcc2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 29 L32 17 L44 29"/>
+    <path d="M20 38 L32 26 L44 38"/>
+    <path d="M20 47 L32 35 L44 47"/>
+  </g>
+  <path d="M32 12 V52" stroke="#a8404a" stroke-width="3" stroke-linecap="round"/>
+</svg>

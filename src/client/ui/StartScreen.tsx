@@ -7,6 +7,8 @@ import { PALETTE } from '../theme'
 import { asTheme, THEMES } from '../board/themes'
 import { audio } from '../audio/manager'
 import { HowToPlay, HowToPlayButton } from './HowToPlay'
+import { ArtImage } from './art'
+import { keyArtUrl, scenarioArtUrl } from './artView'
 import './start/start.css'
 import {
   aiScenarios, ageLabel, asTeam, asTier, buildOptions, DEFAULT_SCENARIO_ID, groupScenarios, MODES, OFFICIAL_TIER, OPPONENTS, pickDefaultScenario, scenarioPreview, scenarioSummary,
@@ -66,12 +68,13 @@ export function StartScreen() {
   }
   const pick = (s: ScenarioChoice) => (
     <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => setScenarioId(s.id)}>
+      <ArtImage src={scenarioArtUrl(s.id)} className="sc-thumb" testId={`scenario-art-${s.id}`} />
       {s.name}<small>{scenarioSummary(s)}</small>
     </button>
   )
 
   return (
-    <main className="start" data-testid="start-screen">
+    <main className="start" data-testid="start-screen" style={{ '--start-art': `url("${keyArtUrl('start-screen')}")` } as React.CSSProperties}>
       <div className="start-card sc">
         <p className="eyebrow">An unofficial fan project</p>
         <h1>Fell-in: Wasteland Warfair</h1>
@@ -92,6 +95,7 @@ export function StartScreen() {
             const pv = scenarioPreview(chosen)
             return (
               <div className="sc-brief" data-testid="scenario-preview">
+                <ArtImage src={scenarioArtUrl(chosen.id)} className="sc-brief-art" testId="scenario-preview-art" />
                 <p className="sc-story">{pv.story}</p>
                 <p><b>Your goal:</b> {pv.goal}</p>
                 <p><b>Length:</b> {pv.rounds}</p>

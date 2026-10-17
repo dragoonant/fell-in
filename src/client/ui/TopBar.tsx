@@ -1,5 +1,6 @@
 // Top bar: round, whose turn, readiness per side, speed, skip, rails and menu.
 import { SPEED_PRESETS, game, presentation, seatLabel, useGame, usePresented, usePresentedTurn, useSettings, useWaitingFor } from '../contract'
+import { FactionMark, useSeatFactions } from './art'
 import { useUiStore } from './uiStore'
 import { HowToPlay, HowToPlayButton } from './HowToPlay'
 
@@ -14,6 +15,9 @@ export function TopBar() {
   const setBriefing = useUiStore((s) => s.setBriefing)
   const toggleLeft = useUiStore((s) => s.toggleLeft)
   const toggleRight = useUiStore((s) => s.toggleRight)
+  const statusOpen = useUiStore((s) => s.statusOpen)
+  const toggleStatus = useUiStore((s) => s.toggleStatus)
+  const factions = useSeatFactions()
   const counts = (seat: string) => {
     const mine = Object.values(state?.models ?? {}).filter((m) => m.owner === seat && m.life !== 'dead' && !m.offTable)
     return { ready: mine.filter((m) => m.readiness === 'ready').length, unready: mine.filter((m) => m.readiness === 'unready').length, used: mine.filter((m) => m.readiness === 'used').length }
@@ -29,12 +33,17 @@ export function TopBar() {
       <div className="topbar-seats">
         {g.seatOrder.map((seat) => {
           const c = counts(seat)
+          const score = state?.seats[seat] ? `score ${state.seats[seat]!.score}` : ''
+          const head = `${seatLabel(seat)}${state?.advantage === seat ? ' *' : ''}`
+          const full = `${head}: ${c.ready} ready, ${c.unready} not yet, ${c.used} used${score ? `, ${score}` : ''}`
           return (
-            <span key={seat} className={`seatpill${turn.seat === seat ? ' on' : ''}`} data-testid={`seat-${seat}`}>
-              {seatLabel(seat)}{state?.advantage === seat ? ' *' : ''}: {c.ready} ready, {c.unready} not yet, {c.used} used{state?.seats[seat] ? `, score ${state.seats[seat]!.score}` : ''}
+            <span key={seat} className={`seatpill${turn.seat === seat ? ' on' : ''}`} data-testid={`seat-${seat}`} title={full}>
+              <FactionMark faction={factions[seat]} size={14} />
+              {statusOpen ? full : `${head}${score ? `: ${score}` : ''}`}
             </span>
           )
         })}
+        <button data-testid="hud-status" className="status-toggle" aria-pressed={statusOpen} title="Show how many units are ready, waiting and used" onClick={toggleStatus}>Counts</button>
       </div>
       <div className="topbar-tools">
         <select aria-label="Animation speed" data-testid="hud-speed" value={String(speed)} onChange={(e) => presentation.setSpeed(Number(e.target.value))}>

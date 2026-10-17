@@ -20,3 +20,14 @@
 .sc-brief { margin-top: 10px; padding: 8px 12px; border-left: 3px solid var(--teal); background: #1d1812; font-size: 13px; line-height: 1.45; }
 .sc-brief p { margin: 3px 0; }
 .sc-brief .sc-story { opacity: .9; font-style: italic; }
+
+/* scenario thumbnails (public/assets/art/scenarios/<id>.webp, 768x432); each hides itself when its file is missing */
+.sc-thumb { display: block; width: 132px; max-width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 3px; margin: 0 0 5px; background: #14110d; }
+.sc-chip:has(.sc-thumb) { width: 156px; }
+.sc-brief-art { display: block; width: 100%; max-height: 130px; object-fit: cover; border-radius: 3px; margin-bottom: 8px; }
+@media (max-width: 600px) {
+  .start .start-card.sc { padding: 16px 14px; width: calc(100% - 12px); background: rgba(29,26,22,.94); }
+  .sc h1 { font-size: 26px; }
+  .sc-chip:has(.sc-thumb) { width: calc(50% - 4px); }
+  .sc-thumb { width: 100%; }
+}

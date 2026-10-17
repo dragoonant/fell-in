@@ -10,6 +10,7 @@ import { EventFeed } from './EventFeed'
 import { GameOver } from './GameOver'
 import { Prompt } from './Prompt'
 import { Roster } from './Roster'
+import { SelectionChip } from './SelectionChip'
 import { TopBar } from './TopBar'
 import { useUiStore } from './uiStore'
 import './hud.css'
@@ -52,6 +53,7 @@ export function Hud() {
       <ObjectiveTracker />
       <AiCardPanel />
       {leftOpen && <Roster />}
+      <SelectionChip />
       {rightOpen && <EventFeed />}
       <div className="dock">
         {rejection && (
