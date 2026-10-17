@@ -5,6 +5,7 @@
 //                        human,official = solo against the official AI cards; human,human,official = 2-player co-op
 //   ?seed=<word>         repeatable games; put the seed in every bug report
 //   ?scenario=<id>       scenario id from data/1e/scenarios (default: the engine's default skirmish)
+//   ?theme=suburbs       themed board for open skirmish tables: suburbs | red-rocket | junkyard (scenarios with their own terrain ignore it)
 //   ?speed=fast          animation speed: instant | fast | normal | slow | <number> (0 = instant)
 //   ?fps                 frame-rate meter;  ?gallery  figure gallery
 // Any of seats/scenario/test also skips the start screen.
@@ -18,6 +19,8 @@ export interface Params {
   seatsGiven: boolean
   seed: string | null
   scenario: string | null
+  /** ?theme, a themed-board name (validated by the engine), or null. */
+  theme: string | null
   /** Speed multiplier from ?speed, or null to keep the saved setting. */
   speed: number | null
   gallery: boolean
@@ -47,9 +50,10 @@ export function readParams(search = typeof location === 'undefined' ? '' : locat
     seatsGiven: seatsRaw !== null,
     seed: q.get('seed'),
     scenario: q.get('scenario'),
+    theme: (q.get('theme') ?? '').trim().toLowerCase() || null,
     speed: parseSpeed(q.get('speed')),
     gallery: q.has('gallery'),
     fps: q.has('fps'),
-    autostart: test || seatsRaw !== null || q.has('scenario'),
+    autostart: test || seatsRaw !== null || q.has('scenario') || q.has('theme'),
   }
 }

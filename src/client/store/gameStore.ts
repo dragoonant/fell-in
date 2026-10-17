@@ -7,6 +7,7 @@ import type { EditionBundle } from '../../data/types'
 import { apply } from '../../engine/apply'
 import { legalActions } from '../../engine/pending'
 import { createGame } from '../../engine/setup'
+import type { TerrainTheme } from '../../engine/terrainCatalog'
 import type { Action, GameState, PendingDecision, RejectionCode, SeatId } from '../../engine/types'
 import { enqueueBatch, resetPresentation } from '../presentation/director'
 import { setLabelContext } from '../presentation/labels'
@@ -36,6 +37,8 @@ export interface GameStoreState {
   seatOrder: SeatId[]
   seed: string
   scenarioId: string | null
+  /** Themed board name (suburbs, red-rocket, junkyard) when one was requested, else null. */
+  theme: string | null
   lastRejection: ClientRejection | null
   /** Set when the engine threw (an engine bug); answers stop until a new game or load. */
   fatal: string | null
@@ -46,7 +49,7 @@ export interface GameStoreState {
 }
 
 const INITIAL: GameStoreState = {
-  state: null, bundle: null, controllers: {}, seatOrder: [], seed: '', scenarioId: null, lastRejection: null, fatal: null, version: 0, epoch: 0,
+  state: null, bundle: null, controllers: {}, seatOrder: [], seed: '', scenarioId: null, theme: null, lastRejection: null, fatal: null, version: 0, epoch: 0,
 }
 export const useGameStore = create<GameStoreState>(() => ({ ...INITIAL }))
 
@@ -122,10 +125,10 @@ function newEvents(before: GameState, after: GameState): SeqEvent[] {
 /** Bumps on every new game or loaded save; per-game caches (the official AI memory) key on it. */
 export let gameEpoch = 0
 
-function begin(state: GameState, bundle: EditionBundle, controllers: Record<SeatId, SeatController>, seed: string, scenarioId: string | null): void {
+function begin(state: GameState, bundle: EditionBundle, controllers: Record<SeatId, SeatController>, seed: string, scenarioId: string | null, theme: string | null = null): void {
   gameEpoch++
   useGameStore.setState({
-    ...INITIAL, state, bundle, controllers, seatOrder: [...state.seatOrder], seed, scenarioId, version: useGameStore.getState().version + 1, epoch: gameEpoch,
+    ...INITIAL, state, bundle, controllers, seatOrder: [...state.seatOrder], seed, scenarioId, theme, version: useGameStore.getState().version + 1, epoch: gameEpoch,
   })
   setLabelContext({ bundle, controllers, seatOrder: state.seatOrder })
   resetPresentation(state)
@@ -141,14 +144,14 @@ export function newGame(opts: NewGameOptions = {}): ClientRejection | null {
     bundle = edition(opts.edition)
     const ids = seatIds(seats)
     state = createGame(bundle, {
-      seed, seats: ids, ...(opts.scenarioId ? { scenarioId: opts.scenarioId } : {}),
+      seed, seats: ids, ...(opts.scenarioId ? { scenarioId: opts.scenarioId } : {}), ...(opts.theme ? { theme: opts.theme as TerrainTheme } : {}),
       ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
     })
   } catch (e) {
     return reject('E_CLIENT', e instanceof Error ? e.message : String(e), null, 'The game could not be set up with those choices.')
   }
   const controllers = Object.fromEntries(state.seatOrder.map((id, i) => [id, seats[i] ?? 'bot'])) as Record<SeatId, SeatController>
-  begin(state, bundle, controllers, seed, opts.scenarioId ?? state.scenarioId ?? null)
+  begin(state, bundle, controllers, seed, opts.scenarioId ?? state.scenarioId ?? null, opts.theme ?? null)
   return null
 }
 
@@ -207,6 +210,8 @@ export function setController(seat: SeatId, c: SeatController): void {
 // ---------- save / continue ----------
 export interface ClientSave {
   kind: 'fell-in-save'; v: 1; savedAt: string; edition: string; seed: string; scenarioId: string | null
+  /** Themed board, so a load rebuilds the same terrain. */
+  theme?: string | null
   /** Controllers in seat order. */
   seats: SeatController[]
   round: number
@@ -217,7 +222,7 @@ export function exportSave(): ClientSave | null {
   const s = useGameStore.getState()
   if (!s.state || !s.bundle) return null
   return {
-    kind: 'fell-in-save', v: 1, savedAt: new Date().toISOString(), edition: s.bundle.edition, seed: s.seed, scenarioId: s.scenarioId,
+    kind: 'fell-in-save', v: 1, savedAt: new Date().toISOString(), edition: s.bundle.edition, seed: s.seed, scenarioId: s.scenarioId, ...(s.theme ? { theme: s.theme } : {}),
     seats: s.seatOrder.map((id) => s.controllers[id] ?? 'bot'), round: s.state.round, log: s.state.log,
   }
 }
@@ -235,7 +240,7 @@ export function importSave(data: unknown): ClientRejection | null {
     const seats = d.seats && d.seats.length >= 2 ? d.seats : (['human', 'bot'] as SeatController[])
     const ids = seatIds(seats)
     state = createGame(bundle, {
-      seed: d.seed, seats: ids, ...(d.scenarioId ? { scenarioId: d.scenarioId } : {}),
+      seed: d.seed, seats: ids, ...(d.scenarioId ? { scenarioId: d.scenarioId } : {}), ...(d.theme ? { theme: d.theme as TerrainTheme } : {}),
       ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
     })
     for (const a of d.log) {
@@ -244,7 +249,7 @@ export function importSave(data: unknown): ClientRejection | null {
       state = r.state
     }
     const controllers = Object.fromEntries(state.seatOrder.map((id, i) => [id, seats[i] ?? 'bot'])) as Record<SeatId, SeatController>
-    begin(state, bundle, controllers, d.seed, d.scenarioId ?? null)
+    begin(state, bundle, controllers, d.seed, d.scenarioId ?? null, d.theme ?? null)
   } catch (e) {
     return reject('E_CLIENT', e instanceof Error ? e.message : String(e), null, 'That save could not be loaded.')
   }

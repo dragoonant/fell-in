@@ -4,6 +4,7 @@ import { continueGame, hasAutosave, launchGame, loadScenarioChoices, readAutosav
 import { SPEED_PRESETS, useSettingsStore } from '../store/settingsStore'
 import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
+import { asTheme, THEMES } from '../board/themes'
 import { audio } from '../audio/manager'
 import { HowToPlay, HowToPlayButton } from './HowToPlay'
 import './start/start.css'
@@ -13,7 +14,9 @@ import {
 } from './start/startView'
 
 const PREF_KEY = 'fell-in.start'
-interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier; team: TeamSize }
+interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier; team: TeamSize; theme?: string | null }
+/** Scenarios whose table is open (plain edge deployment), so a themed board can dress it. Others keep the terrain their rules are laid out on. */
+const THEMEABLE = new Set(['box-1'])
 
 export function StartScreen() {
   const saved = useMemo(() => readJson<Partial<Prefs>>(PREF_KEY) ?? {}, [])
@@ -23,6 +26,7 @@ export function StartScreen() {
   const [mode, setMode] = useState<PlayMode>(saved.mode ?? 'bot')
   const [tier, setTier] = useState<OpponentTier>(asTier(saved.tier))
   const [team, setTeam] = useState<TeamSize>(asTeam(saved.team))
+  const [theme, setTheme] = useState<string | null>(asTheme(saved.theme))
   const [seed, setSeed] = useState('')
   const speed = useSettingsStore((s) => s.speed)
   const setSettings = useSettingsStore((s) => s.set)
@@ -56,8 +60,9 @@ export function StartScreen() {
   const others = groups.filter((g) => g.id !== 'box')
 
   const start = () => {
-    writeJson(PREF_KEY, { scenarioId, mode, tier, team })
-    launchGame(buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier, team }))
+    writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme })
+    const themed = !official && theme && THEMEABLE.has(scenarioId) ? { theme } : {}
+    launchGame({ ...buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier, team }), ...themed })
   }
   const pick = (s: ScenarioChoice) => (
     <button key={s.id} className="sc-chip" aria-pressed={s.id === scenarioId} data-testid={`scenario-${s.id}`} onClick={() => setScenarioId(s.id)}>
@@ -94,6 +99,25 @@ export function StartScreen() {
             )
           })()}
         </section>
+
+        {!official && (
+          <section className="sc-sec" aria-label="Table theme">
+            <h2 className="sc-h">Table theme</h2>
+            <div className="sc-row" data-testid="theme-picker">
+              <button className="sc-chip" aria-pressed={theme === null} data-testid="theme-none" disabled={!THEMEABLE.has(scenarioId)} style={THEMEABLE.has(scenarioId) ? undefined : { opacity: 0.45 }} onClick={() => setTheme(null)}>
+                Scenario layout<small>The terrain the scenario was written for.</small>
+              </button>
+              {THEMES.map((t) => (
+                <button key={t.id} className="sc-chip" aria-pressed={theme === t.id} data-testid={`theme-${t.id}`} disabled={!THEMEABLE.has(scenarioId)} style={THEMEABLE.has(scenarioId) ? undefined : { opacity: 0.45 }} onClick={() => setTheme(t.id)}>
+                  {t.label}<small>{t.blurb}</small>
+                </button>
+              ))}
+            </div>
+            <p className="sc-note" data-testid="theme-note">
+              {THEMEABLE.has(scenarioId) ? 'Dresses the open skirmish table. Dice and objectives do not change.' : 'Only the open skirmish table (Skirmish 1) can be re-dressed; this scenario keeps its own terrain.'}
+            </p>
+          </section>
+        )}
 
         {!official && <section className="sc-sec" aria-label="Mode">
           <h2 className="sc-h">Mode</h2>

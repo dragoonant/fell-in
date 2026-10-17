@@ -1,0 +1,20 @@
+{
+  "promptTemplate": "a single {desc}, weathered post-war wasteland prop, three-quarter view from slightly above, isolated on a plain white background, soft even light, no text, no people",
+  "pieces": [
+    { "slug": "ruined-house-shell", "theme": "suburbs", "size": [8, 7, 6], "rulesType": "building", "desc": "ruined two-storey suburban house shell with a collapsed roof, broken siding and brick walls, empty window frames and charred timber beams" },
+    { "slug": "collapsed-garage", "theme": "suburbs", "size": [6, 5, 3.5], "rulesType": "building", "desc": "collapsed single-car suburban garage with a sagging broken roof, buckled door frame and rubble inside" },
+    { "slug": "picket-fence-run", "theme": "suburbs", "size": [6, 0.4, 1.3], "rulesType": "obstacle", "desc": "straight run of broken wooden picket fence, leaning posts and missing slats, peeling paint" },
+    { "slug": "mailbox-row", "theme": "suburbs", "size": [3, 0.6, 1.5], "rulesType": "obstacle", "desc": "row of three dented rusted curbside mailboxes on weathered wooden posts" },
+    { "slug": "rusted-playground-frame", "theme": "suburbs", "size": [4, 3, 3], "rulesType": "obstruction", "desc": "rusted metal playground swing and climbing frame with bent bars and a broken swing seat" },
+    { "slug": "fallen-lamp-post", "theme": "suburbs", "size": [6, 1, 0.8], "rulesType": "obstacle", "desc": "fallen street lamp post lying on its side, bent rusted pole with a smashed lamp head" },
+    { "slug": "gas-pump-pair", "theme": "red-rocket", "size": [2.5, 1.2, 2], "rulesType": "obstacle", "desc": "pair of old rusted roadside fuel pumps on a small cracked concrete island, faded paint and shattered dials" },
+    { "slug": "service-bay-lift", "theme": "red-rocket", "size": [4, 3, 2.5], "rulesType": "obstruction", "desc": "garage service bay hydraulic car lift raising a stripped rusted car body, oil stains and tools around it" },
+    { "slug": "roadside-billboard", "theme": "red-rocket", "size": [6, 1, 5], "rulesType": "obstruction", "desc": "large roadside billboard on tall steel legs with a tattered blank panel, rusted frame and a small maintenance catwalk" },
+    { "slug": "tyre-mountain", "theme": "red-rocket", "size": [4, 4, 2.2], "rulesType": "obstacle", "desc": "big heap of worn black tyres piled into a rounded mound" },
+    { "slug": "crushed-car-stack", "theme": "junkyard", "size": [5, 2.5, 4], "rulesType": "obstruction", "desc": "tall stack of four crushed flat rusted car bodies piled on top of one another" },
+    { "slug": "scrap-press", "theme": "junkyard", "size": [4, 3, 3.5], "rulesType": "obstruction", "desc": "industrial scrap metal baling press machine with a rusted hydraulic ram and a heavy steel frame" },
+    { "slug": "scrap-wall-section", "theme": "junkyard", "size": [6, 0.8, 2.5], "rulesType": "obstruction", "desc": "straight section of defensive wall welded from scrap metal sheets and corrugated panels" },
+    { "slug": "appliance-heap", "theme": "junkyard", "size": [3.5, 3, 2], "rulesType": "obstacle", "desc": "heap of discarded rusted household appliances: a washing machine, a refrigerator and a stove piled together" },
+    { "slug": "rusted-crane-base", "theme": "junkyard", "size": [3, 3, 5], "rulesType": "obstruction", "desc": "base of a rusted industrial crane, a lattice tower segment on a concrete footing with a short jib arm" }
+  ]
+}

@@ -14,6 +14,8 @@ export interface NewGameOptions {
   seats?: SeatController[]
   /** Engine seed; random when omitted. */
   seed?: string
+  /** Themed board for open skirmish tables: suburbs | red-rocket | junkyard (other scenarios keep their own terrain). */
+  theme?: string
   /** Data edition (default from data/editions.json). */
   edition?: string
 }

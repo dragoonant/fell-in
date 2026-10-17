@@ -7,7 +7,7 @@ import { baseRadius } from './geometry'
 import { pushEvents, raiseDecision } from './registry'
 import { roll, seedRng } from './rng'
 import { deployScenario } from './scenarios/deploy'
-import { themedTerrain } from './terrainCatalog'
+import { themedTerrain, themeFits, type TerrainTheme } from './terrainCatalog'
 import type { CarriedItem, CarriedKind, GameState, MarkerState, ModelState, SeatController, SeatId, SeatState, TerrainInstance } from './types'
 
 export const TABLE_IN = 36 // M0 demo only; real games take the table from the scenario record
@@ -39,6 +39,8 @@ export interface CreateGameOpts {
   forces?: Partial<Record<SeatId, ScenarioForce[]>>
   /** Who answers each seat's decisions (spec 18 s8.2). Default 'human'; the seat named 'ai' defaults to 'official'. */
   controllers?: Partial<Record<SeatId, SeatController>>
+  /** A themed board (suburbs, red-rocket, junkyard). Applies only to open skirmish tables (themeFits); every other scenario keeps its own terrain. */
+  theme?: TerrainTheme | null
 }
 
 /** Every M2 rules field of a fresh model (unready, no tokens, nothing carried). */
@@ -140,6 +142,7 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
   if (!sc) throw new Error(`createGame: no scenario "${scenarioId}" in edition ${bundle.edition}`)
   const requested = opts.seats ?? ['A', 'B']
   const [w, d] = sc.tableIn
+  const theme = opts.theme && themeFits(sc) ? opts.theme : null
   const controllerOf = (seat: SeatId): SeatController => opts.controllers?.[seat] ?? (seat === 'ai' ? 'official' : 'human')
   const aiSideIdx = sc.sides.findIndex((x) => x.ai)
   const hasAi = aiSideIdx >= 0 && requested.some((x) => controllerOf(x) === 'official')
@@ -219,7 +222,7 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     decisionSeq: 0,
     models,
     // A scenario that lists its own terrain (even an empty list, as the small tutorial tables do) gets exactly that; others get the generic set.
-    terrain: sc.terrain ? [] : w === 36 && d === 36 ? themedTerrain(sc.id) : simpleTerrain(w, d),
+    terrain: theme ? themedTerrain(sc.id, theme) : sc.terrain ? [] : w === 36 && d === 36 ? themedTerrain(sc.id) : simpleTerrain(w, d),
     clouds: [],
     scenario: { table: { w, d } },
     pending: { id: 'd:0', seat: seatOrder[0]!, kind: 'turn.start', context: {}, options: [], canPass: false },
@@ -232,7 +235,9 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
     markers: placeMarkers(bundle, sc, w),
   }
   // Scenario layout from data (terrain, markers, zones) comes last: it overrides the generic rows and the AI marker draw's positions.
-  const game = deployScenario(hasAi ? setUpAiForces(base, seatOrder.filter((x) => controllerOf(x) === 'official')) : base, bundle)
+  // A themed board replaces the scenario's own terrain list (the markers and zones still come from its record).
+  const deployBundle: EditionBundle = theme ? { ...bundle, records: { ...bundle.records, scenarios: bundle.records.scenarios.map((x) => (x.id === sc.id ? { ...x, terrain: [] } : x)) } } : bundle
+  const game = deployScenario(hasAi ? setUpAiForces(base, seatOrder.filter((x) => controllerOf(x) === 'official')) : base, deployBundle)
   // A human seat opens the game; the AI never has to answer the start prompt.
   const opener = seatOrder.find((x) => controllerOf(x) !== 'official') ?? seatOrder[0]!
   return raiseDecision(game, {

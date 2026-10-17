@@ -3,10 +3,11 @@ import { useEffect, useMemo } from 'react'
 import { useThree } from '@react-three/fiber'
 import { PALETTE } from '../theme'
 import { makeGroundMaterial } from './groundMaterial'
+import { tintFor } from './themes'
 
-export function Mat({ w, d }: { w: number; d: number }) {
+export function Mat({ w, d, theme }: { w: number; d: number; theme?: string | null }) {
   const gl = useThree((s) => s.gl)
-  const material = useMemo(() => makeGroundMaterial(w, d, gl), [w, d, gl])
+  const material = useMemo(() => makeGroundMaterial(w, d, gl, tintFor(theme)), [w, d, gl, theme])
   useEffect(() => () => material.dispose(), [material])
   return (
     <group>

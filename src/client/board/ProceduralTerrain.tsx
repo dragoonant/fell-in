@@ -131,10 +131,92 @@ export function ConcreteWall({ w, d, h, id }: { w: number; d: number; h: number;
   )
 }
 
+/** Cracked asphalt road strip: dark slab, worn edge lines, a dashed centre line and a few cracks. Lies flat (a few hundredths of an inch tall). */
+export function RoadStrip({ w, d, id }: { w: number; d: number; id: string }) {
+  const v = idVariant(id)
+  const dashes = Math.max(3, Math.round(w / 1.6))
+  const cracks: [number, number, number, number][] = Array.from({ length: Math.max(3, Math.round(w / 2.5)) }, (_, i) => {
+    const x = -w / 2 + ((i * 5 + v * 3) % 11) / 11 * w + w / 22
+    const z = (((i * 7 + v) % 9) / 9 - 0.5) * d * 0.8
+    return [x, z, 0.5 + ((i + v) % 3) * 0.35, ((i * 37 + v * 11) % 100) / 100 * 1.2 - 0.6]
+  })
+  return (
+    <group>
+      <Box p={[0, 0.02, 0]} s={[w, 0.04, d]} c="#4a4947" r={1} />
+      <Box p={[0, 0.045, d / 2 - 0.12]} s={[w - 0.2, 0.012, 0.07]} c="#b9b49f" r={1} />
+      <Box p={[0, 0.045, -d / 2 + 0.12]} s={[w - 0.2, 0.012, 0.07]} c="#b9b49f" r={1} />
+      {Array.from({ length: dashes }, (_, i) => (
+        <Box key={i} p={[-w / 2 + (w * (i + 0.5)) / dashes, 0.048, 0]} s={[(w / dashes) * 0.5, 0.01, 0.09]} c="#cbb35c" r={0.9} />
+      ))}
+      {cracks.map(([x, z, len, rot], i) => (
+        <mesh key={i} position={[x, 0.052, z]} rotation={[0, rot, 0]}>
+          <boxGeometry args={[len, 0.008, 0.035]} /><meshStandardMaterial color="#1f1e1d" roughness={1} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Low rubble field: a flat dusty base with chunks of broken concrete, brick and bent rebar. */
+export function RubbleField({ w, d, h, id }: { w: number; d: number; h: number; id: string }) {
+  const v = idVariant(id)
+  const n = Math.max(10, Math.round(w * d * 1.4))
+  const cols = ['#8d8b84', '#9a5a3e', '#6f6e69', '#b8b2a4']
+  const chunks = Array.from({ length: n }, (_, i) => {
+    const a = ((i * 53 + v * 17) % 97) / 97, b = ((i * 29 + v * 7) % 89) / 89, c = ((i * 11 + v) % 7) / 7
+    const s = 0.25 + c * 0.45
+    return { p: [(a - 0.5) * (w - 0.5), (s * 0.7) / 2 * Math.min(1, h / 0.6) + 0.02, (b - 0.5) * (d - 0.5)] as V3, s: [s, s * 0.7 * Math.min(1, h / 0.6), s * (0.7 + c * 0.4)] as V3, rot: a * 6, col: cols[i % cols.length]! }
+  })
+  return (
+    <group>
+      <Box p={[0, 0.02, 0]} s={[w, 0.04, d]} c="#7a6f5e" r={1} />
+      {chunks.map((k, i) => (
+        <mesh key={i} position={k.p} rotation={[0.2 * (i % 3), k.rot, 0.15 * (i % 2)]} castShadow receiveShadow>
+          <boxGeometry args={k.s} /><meshStandardMaterial color={k.col} roughness={1} />
+        </mesh>
+      ))}
+      {[0.2, 0.6, 0.8].map((f, i) => (
+        <mesh key={i} position={[(f - 0.5) * w, 0.35, ((i * 0.31 + 0.2) % 1 - 0.5) * d]} rotation={[0.4, i, 0.5]}>
+          <boxGeometry args={[0.04, 0.9, 0.04]} /><meshStandardMaterial color="#8a4a2a" roughness={0.6} metalness={0.4} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Radioactive puddle: an irregular glowing pool built from overlapping discs, with a bright rim and a faint halo. */
+export function Puddle({ w, d }: { w: number; d: number }) {
+  const lobes: [number, number, number][] = [[0, 0, 0.5], [-0.28, 0.12, 0.3], [0.3, -0.1, 0.32], [0.08, 0.28, 0.24], [-0.1, -0.26, 0.26]]
+  return (
+    <group scale={[1, 1, d / w]}>
+      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[w * 0.62, 28]} />
+        <meshBasicMaterial color="#58d62a" transparent opacity={0.1} depthWrite={false} />
+      </mesh>
+      {lobes.map(([x, z, r], i) => (
+        <group key={i}>
+          <mesh position={[x * w, 0.03 + i * 0.002, z * w]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[r * w, 28]} />
+            <meshStandardMaterial color="#3fa52a" emissive="#35c81c" emissiveIntensity={0.9} transparent opacity={0.85} depthWrite={false} />
+          </mesh>
+          <mesh position={[x * w, 0.034 + i * 0.002, z * w]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[r * w * 0.94, r * w, 28]} />
+            <meshBasicMaterial color="#b6ff6a" transparent opacity={0.7} depthWrite={false} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  )
+}
+
 /** The procedural model for a pieceId with a custom look, or null (the generic box handles the rest). */
 export function customTerrain(pieceId: string, id: string, w: number, d: number, h: number): ReactElement | null {
   switch (pieceId) {
     case 'hazard-zone': return <HazardPatch w={w} d={d} />
+    case 'asphalt-road-long':
+    case 'asphalt-road-short': return <RoadStrip w={w} d={d} id={id} />
+    case 'rubble-patch': return <RubbleField w={w} d={d} h={h} id={id} />
+    case 'radioactive-puddle': return <Puddle w={w} d={d} />
     case 'school-wall': return <SchoolWall w={w} d={d} h={h} />
     case 'impassable-wall': return <ConcreteWall w={w} d={d} h={h} id={id} />
     case 'diner': return <Diner w={w} d={d} h={h} />

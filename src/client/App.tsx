@@ -14,7 +14,7 @@ function paramsLaunch() {
   const p = readParams()
   // The official AI needs a scenario with an AI side; default to the first solo one.
   const scenarioId = p.scenario ?? (p.seats.includes('official') ? 'ai-rr' : null)
-  return { seats: p.seats, ...(p.seed ? { seed: p.seed } : {}), ...(scenarioId ? { scenarioId } : {}) }
+  return { seats: p.seats, ...(p.seed ? { seed: p.seed } : {}), ...(scenarioId ? { scenarioId } : {}), ...(p.theme ? { theme: p.theme } : {}) }
 }
 
 export function App() {

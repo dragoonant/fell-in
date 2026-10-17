@@ -36,7 +36,8 @@ function makeMacro(): CanvasTexture {
   return tex
 }
 
-export function makeGroundMaterial(w: number, d: number, gl: WebGLRenderer): MeshStandardMaterial {
+/** `tint` multiplies the mat (a themed board passes its theme colour; default is the sand). */
+export function makeGroundMaterial(w: number, d: number, gl: WebGLRenderer, tint: string = PALETTE.sand): MeshStandardMaterial {
   const loader = new TextureLoader()
   const aniso = gl.capabilities.getMaxAnisotropy()
   const repeat = new Vector2(w / INCHES_PER_TILE, d / INCHES_PER_TILE)
@@ -53,7 +54,7 @@ export function makeGroundMaterial(w: number, d: number, gl: WebGLRenderer): Mes
   const macro = makeMacro()
   macro.anisotropy = aniso
   const mat = new MeshStandardMaterial({
-    color: PALETTE.sand,
+    color: tint,
     map: load('diff', true),
     normalMap: load('nor_gl', false),
     roughnessMap: load('rough', false),

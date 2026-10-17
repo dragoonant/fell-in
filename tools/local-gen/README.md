@@ -37,3 +37,6 @@ Starting a studio that is down (in the background): `node server.js` in the stud
   and `faceCount`. Text-to-3D pauses at `awaiting_pick`; the CLI auto-picks candidate 0.
 - Audio SFX are stereo FLAC and voice is 24 kHz mono WAV: encode to mp3 before committing.
 - Never name the franchise or a studio in a prompt (IP rule in CLAUDE.md).
+
+## Hunyuan Studio does not queue (terrain stage, 2026-10-17)
+Parallel submissions to port 7860 run at the same time and fail out of memory. Submit one Hunyuan job at a time (about 3 minutes each) and retry failures; `gen-terrain.mjs` does this. Flux and the Audio Studio do serialise their own jobs.

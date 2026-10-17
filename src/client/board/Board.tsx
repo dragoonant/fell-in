@@ -13,6 +13,7 @@ import { TerrainPieces } from './Terrain'
 import { TerrainTooltip } from './TerrainTooltip'
 import { Zones } from './Zones'
 import { cameraPose } from './layout'
+import { themeOfTerrain } from './themes'
 
 /** Keeps a demand canvas drawing: once per presented change, every frame while a beat or tween plays. */
 function Invalidator() {
@@ -28,6 +29,7 @@ const START = cameraPose('overview', { w: 36, d: 36 })
 
 export function Board(): ReactElement {
   const table = usePresented()?.scenario.table ?? { w: 36, d: 36 }
+  const theme = themeOfTerrain(usePresented()?.terrain)
   const fps = fpsEnabled()
   return (
     <div style={{ position: 'absolute', inset: 0 }} data-testid="board">
@@ -37,7 +39,7 @@ export function Board(): ReactElement {
         <hemisphereLight args={['#f1dfb8', '#4a3826', 0.9]} />
         <directionalLight position={[18, 36, 14]} intensity={2.2} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.03}
           shadow-camera-left={-28} shadow-camera-right={28} shadow-camera-top={28} shadow-camera-bottom={-28} />
-        <Mat w={table.w} d={table.d} />
+        <Mat w={table.w} d={table.d} theme={theme} />
         <Zones />
         <TerrainPieces />
         <ObjectiveLabels />
