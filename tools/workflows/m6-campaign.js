@@ -73,7 +73,7 @@ Add checklist IDs CAMP-001.., SETT-001.., PERK-001.., BOOST-001.., QUEST-001.., 
 if (STAGE === 'build') {
   const build = await parallel([
     () => agent(`${COMMON}
-You own ONLY: data/1e/campaign/** (new), src/data/campaign*.ts (loader + validator additions), tools/validate-data.ts (campaign checks only), tests/data/campaign-*.test.ts.
+You own ONLY: data/1e/campaign/** (new), data/1e/perks/ (move its records into data/1e/campaign/perks.json and delete the folder if spec 19 says so), src/data/campaign*.ts (loader + validator additions), src/data/types.ts (ONLY the additive ScenarioForce.perks and ScenarioDef.campaign fields spec 20 names), tools/validate-data.ts (campaign checks only), tests/data/campaign-*.test.ts.
 Read docs/spec/19 (all), docs/spec/20 section "Campaign records", docs/spec/sources/CH-CAMPAIGN.md (where each card lives), src/data/* (loader pattern), one existing data file per kind for style.
 Enter every record the spec and the inventory name, starter set first: structures (cost, prerequisites, effect), perks (cost, who may buy, effect; starter-set perks and the errata-named ones), boosts, events, quests (parts), explore cards, injuries table, caps awards per scenario result. Effects are declarative where a field fits (caps, draws, rerolls, stat mods) and {"code": "<hook>"} otherwise; name each hook in a short list at the top of the file. Every record carries source {file, page}. Prose fields are written from a one-line mechanical summary in our own words. Validator: ids unique, sources present, hooks named, costs numbers. npm run validate:data and npm test must pass. ${KEEP}`,
       { label: 'build:data', phase: 'Build', schema: RESULT, model: 'sonnet' }),

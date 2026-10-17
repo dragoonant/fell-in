@@ -133,3 +133,27 @@ Per-decision AI time sits behind an env var (CI is slow). Engine step under 5 ms
     events `objectDamage`, `objectRemoved`, `objectPushed`. `query.hitOdds/rangeBand/coverFor/expectedDamage/killOdds` accept
     a marker id as the target. New scenario Action `scenario.push` (Str test, scenario-defined).
   - `apply` moves an attached `action.aiLog` into an `{type:'ai.decision', ...}` event and strips it from the action and log.
+
+## 11. Campaign layer (M6, additive; spec 19 s7)
+- `src/campaign/` is a pure layer beside the engine, never inside it: `types.ts` (Campaign, CampaignPlayer,
+  RosterModel, PoolCard, StructureInst, QuestProgress, CampaignLogEntry, CampaignAction), `reducer.ts` (pure
+  `(campaign, action) => campaign`, one action per between-battle step), `sequence.ts` (the ordered step list
+  with the decision each step asks for), `battle.ts` (`toBattle` / `fromBattle`), `hooks.ts` (campaign-side
+  `{code}` hooks), `store.ts` (localStorage `fell-in.campaign.v1` behind `src/client/store/storage.ts`).
+- Frozen contracts untouched: no edit to `types.ts`, `decider.ts`, `view.ts`, `rng.ts` or `pending.ts`. The
+  layer calls `createGame(bundle, {seed, seats, scenarioId, forces, controllers})` and reads the final
+  `GameState` (`result`, `log`, `models`) after `result` is set; it never reads a live game, so hidden
+  information (section 4) is never crossed.
+- Determinism (section 6): every campaign draw derives its stream from `deriveSeed(campaign.id, round, step, n)`
+  in `src/engine/rng.ts`; the campaign log records every action, so replaying the log from the seed rebuilds the
+  campaign. The battle seed is `deriveSeed(campaign.id, round, 'battle')` unless the player types one.
+- Additive data types (not frozen engine files): `ScenarioForce.perks?: string[]` and `ScenarioDef.campaign?`
+  in `src/data/types.ts`, the campaign record kinds in spec 20 "Campaign records". `setup.ts` passes `perks`
+  through to `ModelState` via the runtime bag (`tokens` / `notes`, section "Runtime bag and tokens") until the
+  engine models Perk effects; the engine owns their numbers when it does.
+- Client: `src/client/ui/settlement/` renders `sequence.ts` generically (one panel per step, the step's legal
+  choices as controls); "Campaign" on the start screen offers New (confirm when a save exists) or Continue;
+  "To battle" launches `GameScreen` with the campaign's forces versus bot, hot-seat or the Wasteland AI; game
+  over returns to the settlement with `fromBattle` applied. Test hooks: `?campaign=new&seed=` and
+  `?campaign=continue`.
+- Performance: a full settlement phase (every structure used) resolves in under 50 ms; the save is under 64 KB.

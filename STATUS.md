@@ -25,8 +25,10 @@ Milestone reached: **M4f** (versus bot, official AI card system, scenarios from 
 - Modules: turnflow/movement (rounds, activation, AP, reactions, move/climb/fall), attack/melee (shoot, throw,
   blast, crits, luck, charge, battle cry, close combat), damage/conditions, items/scenario/forces.
 - `npm run sim -- --games N --seed s`: random bots, full games, invariants; 50 games 0 errors, max step 1.4 ms.
-- Not built: object/point targets (SHOT-003; GA tutorials can't be won), BC-006, DMG-005, Walked Fire, mines;
-  box scenarios entered from spec summary end in draws (re-enter from box_scenarios_1-5.pdf).
+- M4g (2026-10-17): object targets (SHOT-003), BC-006 (break-away needs and spends a Reaction marker, RoP p41),
+  DMG-005 (free Action on a kill, the activating model included, ERR p8), Walked Fire and mines (rule only; no
+  starter-set weapon or mine item yet) are in, with `src/engine/{hooks,mines}.ts` and tests/engine/rules-gaps.test.ts.
+  New decision kinds `battleCry.escape` and `damage.dying` (spec 00). Box scenarios come from their PDFs (M4d).
 
 ## Official AI (M4b)
 - Built from the Campaign Handbook section 3 and AI scenarios (CH p8-16, p40-42); spec 18 section 8. Owner rule: official
@@ -40,8 +42,11 @@ Milestone reached: **M4f** (versus bot, official AI card system, scenarios from 
 - `data/1e/ai/starter.json`: Super Mutant, Brute, Sole Survivor Day One from CH; Sole Survivor, Aviator, Goddard,
   Deathclaw from card photos; Settler, Enslaved Tech, Dogmeat, Mutant Hound still placeholders.
 - `npm run sim -- --official --games N`: all 7 AI/co-op scenarios finish, 0 errors, deterministic.
-- Gaps: ai-tech Presence/peek rules, AI spending AP on card effects, Luck "Tough", no-re-contact after a declined
-  follow, coop-cage Stuffed Monkey card. E2E "activate, move by drag" fails on main too (pre-existing).
+- M4g: no re-contact after a declined follow is in (AI-032..036). Still open: the engine does not yet offer
+  `expertise.use` (Presence on the Tech), `ap.spend` for card effects or the Luck "Tough" ask, so the decider's
+  handling of them (spec 18 s8.9) is unexercised; the Stuffed Monkey card has no source (no-effect item, RULING);
+  the Settler, Enslaved Tech, Dogmeat and Mutant Hound AI cards stay placeholders until the owner's cards are
+  photographed (routes tried in docs/spec/sources/R2-photos.md). E2E passes 9 of 9.
 
 ## Scenario briefings (M4c)
 - Every scenario has a `briefing` (story, goal per side, how to win, tips; spec 20). Start-screen preview, opening

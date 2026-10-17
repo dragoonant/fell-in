@@ -319,3 +319,78 @@ Additive only; the `ScenarioDef` type is unchanged (`deploy`, `terrain`, `place`
   marker params are no longer read (the exit markers remain as the AI's walking target). Terrain piece `diner` (8 x 6 in, building).
 - Engine code behind them: `src/engine/scenarios/objshape.ts` (rectangular objects), `objects.ts` (`attackBonusGreen` through the probe,
   `{base, strong}` armor), `attack.ts composePlan` (the extra green die), `items.ts peekViewer` (`peekCap`).
+
+## Campaign records (M6, additive; spec 19)
+New folder `data/1e/campaign/` holding the Campaign Handbook content as declarative JSON, one file per kind:
+`structures.json`, `perks.json`, `boosts.json`, `events.json`, `quests.json`, `explore.json`, `injuries.json`,
+`caps-awards.json`. Every record is `{ id, name, cost?, effect, source }` where `effect` is either declarative
+fields of the kind below or the escape hatch `{ "code": "<hook>", "args"? }` resolved in `src/campaign/hooks.ts`
+(campaign-side hooks) or `src/engine/hooks` (battle-side hooks such as an Event's rule). Sources: CH p<n>, ERR
+p.N, SHEET (settlement sheet), COST "PERKS"; `"placeholder"` marks a card whose text no local source shows
+(`docs/spec/sources/CH-CAMPAIGN.md` section 3). The loader adds these kinds to `KINDS`; `src/data/types.ts`
+gains the interfaces below; `validate.ts` checks the rules at the end of this section. `PerkDef` (section 3)
+already exists: `perks.json` moves under `campaign/` and gains the optional fields shown; the empty
+`data/1e/perks/` folder is removed.
+
+```ts
+type BoostType = 'practiced'|'cunning'|'tactical'|'instinctive';
+type ItemClass = 'any'|'junkGear'|'weapon'|'armor'|'clothing'|'foodDrink'|'medical'|'chem'|'mod'|'armorMod'|'powerArmorMod'|'robotMod'|'creatureMod';
+type StructureGroup = 'infrastructure'|'crafting'|'item'|'boost'|'other'|'exploration';
+
+interface StructureDef { id: string; name: string; group: StructureGroup; cost: number;   // caps; Land: cost 500, questsAlt 5
+  power?: number;                 // Power needed in Step 2; default 1; 0 = "No Power required"
+  water?: number;                 // Water needed (Crop Field 1)
+  provides?: { power?: number; water?: number; slots?: number };
+  requires?: { perks?: string[]; structures?: string[] };   // any-of for perks (Gun Nut family), all-of for structures
+  max?: number;                   // per settlement (Crop Field 5, Listening Post 1, markets 1, ...)
+  starting?: number;              // copies a new settlement gets free (CH p18)
+  effect: StructureEffect | Code; source: Source }
+type StructureEffect =
+  | { op: 'draw'; deck: 'item'|'boost'; itemClass?: ItemClass; boostType?: BoostType; draw: number; keep: number; perStructure?: boolean }
+  | { op: 'drawPerCropField'; itemClass: 'foodDrink'; maxDraw: 5; keep: 1 }
+  | { op: 'retain'; items: 1; boosts: 2 }        // Maintenance Shed
+  | { op: 'stores'; items: 1; boosts: 2 }        // Stores
+  | { op: 'locker'; items: 1 }
+  | { op: 'explore'; capsPerUse?: number; repeatable?: boolean }
+  | { op: 'exploreRedraw' }
+  | { op: 'modifyDraw'; how: 'redrawAll'|'drawExtra'|'keepExtra'; n?: number }
+  | { op: 'reuse' } | { op: 'nameItem' }
+  | { op: 'market'; itemClass: ItemClass; draw: 4 }
+  | { op: 'repairPowerArmor'; suits: 1 }
+  | { op: 'armorBoost'; n: 1 }
+  | { op: 'none' };                              // generators, pumps, Crop Field, Land (their numbers sit on provides/water)
+
+interface PerkDef { id: string; name: string; text: string; effects: Effect[]; cost: number; source: Source;
+  settlementWide?: boolean;       // Armorer, Blacksmith, Gun Nut *, Local Leader *, Robotics Expert, Creature Trainer
+  requires?: { perks?: string[]; attrs?: Partial<Record<Attr, number>>; unique?: boolean; notTypes?: UnitType[] };
+  grants?: { structure: string }[];   // free Weapons / Armor Workbench (perk_cards_w9 p27-28)
+  allowsMods?: ItemClass[] }          // Gun Nut (Rifle): weapon mods on rifles, etc.
+interface BoostDef { id: string; name: string; type: BoostType; text: string; cost?: number; timing: string;   // 'anyAction'|'skillTest'|'effectDice'|...
+  effect: Effect[] | Code; source: Source }
+interface EventDef { id: string; name: string; text: string; flip: boolean; persists?: boolean;   // stays in play past round end
+  consequence?: boolean; owner?: 'player';        // a Consequence card (face up, resolves on top)
+  effect: Effect[] | Code; source: Source }
+interface QuestDef { id: string; name: string; title: string; part?: string;   // 'revenge', 'Revenge', '1' | '2a'
+  story: string; task: string; next?: string[];   // ids of the parts the completed card unlocks
+  reward: { caps?: number; items?: string[]; boosts?: number; consequence?: string; code?: Code }[];   // by outcome order
+  repeatable?: boolean; source: Source }
+interface ExploreDef { id: string; name: string; text: string;
+  test?: { skill?: Skill; attr?: Attr; mod?: number };
+  outcomes: { when: 'pass'|'fail'|'pay'|'always'; caps?: number; items?: number; itemClass?: ItemClass; damage?: number; consequence?: string; code?: Code }[];
+  source: Source }
+interface InjuryDef { id: string; name: string; text: string; effects: Effect[]; source: Source }   // reserved for Homestead; CH has none
+interface CapsAwardDef { id: string; scenarioId?: string;   // absent = the default table (CH p19)
+  winner: number; loser: number; draw?: 'winner'|number; bigForceBonus?: { from: number; each: number };
+  byLevel?: { major?: number; minor?: number }; source: Source }
+```
+- `ScenarioForce` (section 3) gains optional `perks?: string[]` (ids of PerkDef equipped on every model of the
+  entry) and `ScenarioDef` gains optional `campaign?: { linkedId?: string; order?: number; consequences?: { side: string;
+  level: 'major'|'minor'; applyTo: 'next'|'final'; effect: Effect[] | Code; text: string }[] }` for the five
+  linked scenarios (CH p35-39). Additive; no existing record changes.
+- Validator additions: every campaign record has `id`, `name`, `source` and `effect` (or the kind's declarative
+  fields); `StructureDef.cost >= 0`, `draw >= keep`, `max >= 1`; `requires.perks` and `grants.structure` resolve to
+  ids; `QuestDef.next` ids exist and share the `title`; `BoostDef.type` is one of the four; `CapsAwardDef` with no
+  `scenarioId` appears exactly once; `scenarioId` values exist. A `"placeholder"` source is allowed only on
+  boosts, events, quests and explore records (the known card-text gaps) and the validator reports their count.
+- Campaign save shape (`fell-in.campaign.v1`, `src/campaign/types.ts`, spec 19 s7) is versioned by the key;
+  a save from another edition or an unknown version is refused with a message, never migrated silently.
