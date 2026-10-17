@@ -123,7 +123,7 @@
 .rail-left .roster { max-height: calc(100vh - 160px); overflow-y: auto; }
 
 /* prompt dock: narrow, bottom-centre, above a safe area */
-.dock { bottom: 56px; width: min(420px, calc(100vw - 24px)); max-height: 38vh; }
+.dock { bottom: 12px; width: min(420px, calc(100vw - 24px)); max-height: 38vh; }
 .dock .panel { padding: 6px 10px; }
 .hint { margin-bottom: 5px; }
 
@@ -183,3 +183,18 @@
   .sel-chip { display: none; }
   .ai-card { top: 96px; right: 6px; width: 170px; }
 }
+
+/* decision prompt: a compact single-row bar anchored at the bottom (title, one line, buttons), expanding upward on hover or focus.
+   Collapsed it is ~40 px tall, so at 1280x800 it covers well under 90 px of the table above the bottom edge. */
+.dock:has(.prompt.compact) { width: min(660px, calc(100vw - 24px)); }
+.prompt.compact { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; padding: 5px 10px; }
+.prompt.compact h3 { margin: 0; white-space: nowrap; }
+.prompt.compact .hint { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prompt.compact .tip { display: none; }
+.prompt.compact .options { margin: 0; flex-wrap: nowrap; justify-content: flex-end; }
+.prompt.compact .options button { white-space: nowrap; }
+.prompt.compact:hover, .prompt.compact:focus-within { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 8px 12px; }
+.prompt.compact:hover .hint, .prompt.compact:focus-within .hint { white-space: normal; overflow: visible; }
+.prompt.compact:hover .tip, .prompt.compact:focus-within .tip { display: block; margin: 0; }
+.prompt.compact:hover .options, .prompt.compact:focus-within .options { flex-wrap: wrap; justify-content: flex-start; margin-top: 2px; }
+@media (max-width: 600px) { .dock:has(.prompt.compact) { width: calc(100vw - 16px); } }

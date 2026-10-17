@@ -54,3 +54,16 @@ export function useGlbInstance(url: string | undefined): Object3D | null {
 }
 
 export const glbStatus = (url: string): 'idle' | 'loading' | 'ready' | 'failed' => cache.get(url)?.status ?? 'idle'
+
+/** Load state of `url` (starts the request); re-renders the caller when any load settles. Cheap: no node clone. */
+export function useGlbStatus(url: string | undefined): 'idle' | 'loading' | 'ready' | 'failed' {
+  const [, setTick] = useState(0)
+  if (url) request(url)
+  useEffect(() => {
+    if (!url) return
+    const l = () => setTick((n) => n + 1)
+    listeners.add(l)
+    return () => { listeners.delete(l) }
+  }, [url])
+  return url ? glbStatus(url) : 'idle'
+}

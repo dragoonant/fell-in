@@ -10,7 +10,7 @@ import { audio, type AudioSettings } from './manager'
 import { roundVoiceId } from './manifest'
 import { yourTurnRound } from './triggers'
 
-const box: React.CSSProperties = { position: 'fixed', right: 12, bottom: 12, zIndex: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }
+const box: React.CSSProperties = { position: 'fixed', right: 12, bottom: 34, zIndex: 6, display: 'flex', flexDirection: 'row-reverse', alignItems: 'flex-end', gap: 6 }
 
 /** `death-<kind>` for a model, read from its unit record. */
 function deathSoundFor(modelId: string): string {

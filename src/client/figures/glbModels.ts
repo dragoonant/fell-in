@@ -131,6 +131,13 @@ export function poseFor(m: Manifest, slug: string | undefined, cls: WeaponClass 
   return slug && cls ? m.units[slug]?.poses?.[cls] : undefined
 }
 
+/** The pose entry to place a held weapon by: the manifest pose only once its GLB is ready (the figure body is then the
+ * posed one), otherwise undefined so the weapon sits at the class HOLDS transform on the default figure. Never hides the weapon. Pure. */
+export function readyPose(m: Manifest, slug: string | undefined, cls: WeaponClass | undefined, statusOf: (url: string) => 'idle' | 'loading' | 'ready' | 'failed'): PoseEntry | undefined {
+  const pe = poseFor(m, slug, cls)
+  return pe && statusOf(poseGlbUrl(pe.file)) === 'ready' ? pe : undefined
+}
+
 /** Weapon placement for a two-hand pose: grip at `hand`, barrel (+z) pointing from hand through `support`, weapon up
  * kept as close to figure up (+y) as the aim allows. Rotation is an XYZ Euler. Pure. */
 export function aimedPose(hand: V3, support: V3): { position: V3; rotation: V3 } {

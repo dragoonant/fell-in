@@ -10,9 +10,10 @@ import { engagedWith } from '../../engine/attack'
 import { recordOf } from '../../engine/edition'
 import { ProceduralFigure } from './Procedural'
 import { GlbBase, GlbBody, useFittedFigure } from './GlbBody'
+import { glbStatus, useGlbStatus } from './glbLoader'
 import { NOMINAL_LENGTH, Weapon } from './Weapon'
 import { isNaturalWeapon, modeOfWeapon, pickEquipped, weaponClassOf, type WeaponClass, type WeaponMode } from './equipped'
-import { aimedPose, figureHeight, heldPose, poseFor, poseGlbUrl, socketFor, unitGlbUrl, useManifest, weaponGlbUrl } from './glbModels'
+import { aimedPose, figureHeight, heldPose, poseFor, poseGlbUrl, readyPose, socketFor, unitGlbUrl, useManifest, weaponGlbUrl } from './glbModels'
 import { facingYaw, lookOf, pipCounts, pipSlots, tintFor, turnToward } from './view'
 
 const TURN_RATE = 9 // rad/s
@@ -64,13 +65,16 @@ export function FigureBody({ id, slug, baseMm, color, accent, profile, cls }: { 
 export function HeldWeapon({ profileId, baseMm, weaponId, mode, accent }: { profileId: string; baseMm: number; weaponId: string | undefined; mode: WeaponMode; accent: string }) {
   const manifest = useManifest()
   const bundle = useBundle()
-  if (!weaponId || isNaturalWeapon(weaponId)) return null
-  const sock = socketFor(manifest, profileId, baseMm)
-  if (!sock) return null
-  const def = bundle ? (recordOf(bundle, 'weapons', weaponId) as Parameters<typeof weaponClassOf>[1]) : undefined
-  const cls = weaponClassOf(weaponId, def)
-  const pe = poseFor(manifest, profileId, cls)
-  const pose = pe ? aimedPose(pe.hand, pe.support) : heldPose(cls, sock.hand, sock.rot)
+  const held = !!weaponId && !isNaturalWeapon(weaponId)
+  const def = held && bundle ? (recordOf(bundle, 'weapons', weaponId) as Parameters<typeof weaponClassOf>[1]) : undefined
+  const cls = held ? weaponClassOf(weaponId, def) : undefined
+  // Until the pose GLB is ready the default figure shows, so the weapon sits at its HOLDS transform (never hidden); then swap.
+  const wanted = poseFor(manifest, profileId, cls)
+  useGlbStatus(wanted ? poseGlbUrl(wanted.file) : undefined)
+  const sock = held ? socketFor(manifest, profileId, baseMm) : undefined
+  if (!weaponId || !held || !sock) return null
+  const pe = readyPose(manifest, profileId, cls, glbStatus)
+  const pose = pe ? aimedPose(pe.hand, pe.support) : heldPose(cls!, sock.hand, sock.rot)
   return (
     <Weapon mode={mode} accent={accent} url={manifest.weapons[weaponId] ? weaponGlbUrl(weaponId) : undefined}
       length={(manifest.weapons[weaponId]?.length ?? NOMINAL_LENGTH[mode]) * Math.max(1, figureHeight(baseMm) / figureHeight(32))}

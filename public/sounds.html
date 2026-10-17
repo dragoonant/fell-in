@@ -28,6 +28,11 @@
 <p class="note">Tap an id to play it; tapping another stops the first. Music can loop to check the seam. Name the ids to redo and they get regenerated with a new seed.</p>
 <div id="err"></div>
 <div id="groups"></div>
+<h2>Synthesised fallback</h2>
+<p class="note">The built-in synth plays when a file is missing. Auditioning it needs the dev server (npm run dev), which serves its source; on the published site this section says so.</p>
+<div id="synth-note" class="note"></div>
+<div id="synth" class="grid"></div>
+<div id="synth-moods" class="grid" style="margin-top:8px"></div>
 <div class="bar">
   <b id="now">nothing playing</b>
   <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Position">
@@ -97,6 +102,40 @@
     });
   }).catch(function (e) { $('err').textContent = 'Could not load the audio manifest: ' + e.message; });
 })();
+</script>
+<script type="module">
+// Synthesised fallback (recipes in src/client/audio/synth.ts). Only reachable from the Vite dev server; a build bundles it into the game, not this page.
+var note = document.getElementById('synth-note');
+try {
+  var path = '../src/client/audio/synth.ts';
+  var mod = await import(/* @vite-ignore */ new URL(path, location.href).pathname);
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  var out = ctx.createGain(); out.gain.value = 0.8; out.connect(ctx.destination);
+  var music = ctx.createGain(); music.gain.value = 0.2; music.connect(ctx.destination);
+  var grid = document.getElementById('synth');
+  mod.SOUND_IDS.forEach(function (id) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = id; b.dataset.sound = id;
+    b.addEventListener('click', async function () { await ctx.resume(); mod.RECIPES[id]({ ctx: ctx, out: out, t: ctx.currentTime + 0.02, p: 1, v: 1 }); });
+    grid.appendChild(b);
+  });
+  var player = null, timer = null;
+  function mood(m) {
+    if (player) player.fadeOut(1.8);
+    clearInterval(timer); player = null;
+    if (!m) return;
+    player = new mod.MoodPlayer(ctx, music, m, 1.8);
+    var p = player;
+    timer = setInterval(function () { p.tick(ctx.currentTime + 0.5); }, 120);
+  }
+  var moods = document.getElementById('synth-moods');
+  [['calm', 'Music: calm'], ['battle', 'Music: battle'], [null, 'Music: stop']].forEach(function (x) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = x[1];
+    b.addEventListener('click', async function () { await ctx.resume(); mood(x[0]); });
+    moods.appendChild(b);
+  });
+} catch (e) {
+  note.textContent = 'Synth section unavailable here (dev server only).';
+}
 </script>
 </body>
 </html>
