@@ -12,7 +12,7 @@ import type { Action, GameState, PendingDecision, RejectionCode, SeatId } from '
 import { enqueueBatch, resetPresentation } from '../presentation/director'
 import { setLabelContext } from '../presentation/labels'
 import type { SeqEvent } from '../presentation/cues'
-import { AUTOSAVE_KEY, type NewGameOptions, type SeatController } from './launch'
+import { AUTOSAVE_KEY, useLaunchStore, type NewGameOptions, type SeatController } from './launch'
 import { readJson, removeKey, writeJson } from './storage'
 
 export type { NewGameOptions, SeatController }
@@ -122,6 +122,11 @@ function newEvents(before: GameState, after: GameState): SeqEvent[] {
   return after.events.slice(from).map((event, i) => ({ seq: from + i + 1, event }))
 }
 
+/** Campaign forces and hand-off of the running game (saved with it so a Continue rebuilds the same models). */
+let activeHandOff: Pick<NewGameOptions, 'forces' | 'campaign'> | null = null
+/** The running game was launched from the settlement (saved, so a resumed game still ends with Back to settlement). */
+let activeFromCampaign = false
+
 /** Bumps on every new game or loaded save; per-game caches (the official AI memory) key on it. */
 export let gameEpoch = 0
 
@@ -145,11 +150,14 @@ export function newGame(opts: NewGameOptions = {}): ClientRejection | null {
     const ids = seatIds(seats)
     state = createGame(bundle, {
       seed, seats: ids, ...(opts.scenarioId ? { scenarioId: opts.scenarioId } : {}), ...(opts.theme ? { theme: opts.theme as TerrainTheme } : {}),
+      ...(opts.forces ? { forces: opts.forces } : {}), ...(opts.campaign ? { campaign: opts.campaign } : {}),
       ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
     })
   } catch (e) {
     return reject('E_CLIENT', e instanceof Error ? e.message : String(e), null, 'The game could not be set up with those choices.')
   }
+  activeFromCampaign = !!opts.fromCampaign
+  activeHandOff = opts.forces || opts.campaign ? { ...(opts.forces ? { forces: opts.forces } : {}), ...(opts.campaign ? { campaign: opts.campaign } : {}) } : null
   const controllers = Object.fromEntries(state.seatOrder.map((id, i) => [id, seats[i] ?? 'bot'])) as Record<SeatId, SeatController>
   begin(state, bundle, controllers, seed, opts.scenarioId ?? state.scenarioId ?? null, opts.theme ?? null)
   return null
@@ -212,6 +220,11 @@ export interface ClientSave {
   kind: 'fell-in-save'; v: 1; savedAt: string; edition: string; seed: string; scenarioId: string | null
   /** Themed board, so a load rebuilds the same terrain. */
   theme?: string | null
+  /** Campaign battle forces per seat id and engine hand-off, so a load rebuilds the same models. */
+  forces?: NewGameOptions['forces']
+  campaign?: NewGameOptions['campaign']
+  /** The game was a campaign battle (Back to settlement at game over). */
+  fromCampaign?: boolean
   /** Controllers in seat order. */
   seats: SeatController[]
   round: number
@@ -223,6 +236,8 @@ export function exportSave(): ClientSave | null {
   if (!s.state || !s.bundle) return null
   return {
     kind: 'fell-in-save', v: 1, savedAt: new Date().toISOString(), edition: s.bundle.edition, seed: s.seed, scenarioId: s.scenarioId, ...(s.theme ? { theme: s.theme } : {}),
+    ...(activeHandOff?.forces ? { forces: activeHandOff.forces } : {}), ...(activeHandOff?.campaign ? { campaign: activeHandOff.campaign } : {}),
+    ...(activeFromCampaign ? { fromCampaign: true } : {}),
     seats: s.seatOrder.map((id) => s.controllers[id] ?? 'bot'), round: s.state.round, log: s.state.log,
   }
 }
@@ -241,6 +256,7 @@ export function importSave(data: unknown): ClientRejection | null {
     const ids = seatIds(seats)
     state = createGame(bundle, {
       seed: d.seed, seats: ids, ...(d.scenarioId ? { scenarioId: d.scenarioId } : {}), ...(d.theme ? { theme: d.theme as TerrainTheme } : {}),
+      ...(d.forces ? { forces: d.forces } : {}), ...(d.campaign ? { campaign: d.campaign } : {}),
       ...(seats.includes('official') ? { controllers: Object.fromEntries(ids.map((id, i) => [id, seats[i]!])) } : {}),
     })
     for (const a of d.log) {
@@ -250,6 +266,9 @@ export function importSave(data: unknown): ClientRejection | null {
     }
     const controllers = Object.fromEntries(state.seatOrder.map((id, i) => [id, seats[i] ?? 'bot'])) as Record<SeatId, SeatController>
     begin(state, bundle, controllers, d.seed, d.scenarioId ?? null, d.theme ?? null)
+    activeFromCampaign = !!d.fromCampaign
+    useLaunchStore.setState({ inCampaignBattle: activeFromCampaign })
+    activeHandOff = d.forces || d.campaign ? { ...(d.forces ? { forces: d.forces } : {}), ...(d.campaign ? { campaign: d.campaign } : {}) } : null
   } catch (e) {
     return reject('E_CLIENT', e instanceof Error ? e.message : String(e), null, 'That save could not be loaded.')
   }
@@ -278,6 +297,7 @@ export function installAutosave(): () => void {
 
 /** Tests: forget the current game. */
 export function resetGameStore(): void {
+  activeHandOff = null; activeFromCampaign = false
   useGameStore.setState({ ...INITIAL })
   resetPresentation(null)
 }

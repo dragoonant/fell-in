@@ -1,8 +1,10 @@
 // Start screen (start chunk: imports only store/launch.ts, store/settingsStore.ts, store/storage.ts, no engine).
-import { useEffect, useMemo, useState } from 'react'
-import { continueGame, hasAutosave, launchGame, loadScenarioChoices, readAutosaveSummary, type ScenarioChoice } from '../store/launch'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { closeCampaign, continueGame, hasAutosave, hasCampaignSave, launchGame, loadCampaignFactions, loadScenarioChoices, openCampaign, readAutosaveSummary, readCampaignSummary, useLaunchStore, type ScenarioChoice } from '../store/launch'
+import { readParams } from '../params'
+import type { SettlementHost } from './settlement/host'
 import { SPEED_PRESETS, useSettingsStore } from '../store/settingsStore'
-import { readJson, writeJson } from '../store/storage'
+import { readJson, removeKey, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
 import { asTheme, THEMES } from '../board/themes'
 import { audio } from '../audio/manager'
@@ -15,12 +17,40 @@ import {
   type OpponentTier, type PlayMode, type TeamSize,
 } from './start/startView'
 
+// The settlement is its own chunk (campaign layer + data), loaded only when the player opens a campaign.
+const SettlementScreen = lazy(() => import('./settlement/SettlementScreen').then((m) => ({ default: m.SettlementScreen })))
+
 const PREF_KEY = 'fell-in.start'
-interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier; team: TeamSize; theme?: string | null }
+interface Prefs { scenarioId: string; mode: PlayMode; tier: OpponentTier; team: TeamSize; theme?: string | null; faction?: string | null }
 /** Scenarios whose table is open (plain edge deployment), so a themed board can dress it. Others keep the terrain their rules are laid out on. */
 const THEMEABLE = new Set(['box-1'])
 
 export function StartScreen() {
+  const campaignOpen = useLaunchStore((s) => s.campaignOpen)
+  // ?campaign=1 / new / continue opens the settlement once, at boot.
+  useEffect(() => {
+    const p = readParams()
+    if (p.campaign && !useLaunchStore.getState().campaignOpen && !bootedCampaign) { bootedCampaign = true; openCampaign(p.campaign, p.seed) }
+  }, [])
+  if (campaignOpen) {
+    return (
+      <Suspense fallback={<div className="start" data-testid="loading"><p className="tag">Opening the settlement...</p></div>}>
+        <SettlementScreen onLeave={closeCampaign} host={SETTLEMENT_HOST} />
+      </Suspense>
+    )
+  }
+  return <StartMenu />
+}
+let bootedCampaign = false
+
+/** What the lazy settlement chunk may use of the main chunk (see settlement/host.ts). */
+const SETTLEMENT_HOST: SettlementHost = {
+  launchGame, loadScenarioChoices, loadCampaignFactions, hasCampaignSave, readJson, writeJson, removeKey,
+  openRequest: () => { const s = useLaunchStore.getState(); return { mode: s.campaignMode, seed: s.campaignSeed, faction: s.campaignFaction } },
+  testMode: () => readParams().test,
+}
+
+function StartMenu() {
   const saved = useMemo(() => readJson<Partial<Prefs>>(PREF_KEY) ?? {}, [])
   const [list, setList] = useState<ScenarioChoice[]>([])
   const [loadFailed, setLoadFailed] = useState(false)
@@ -33,6 +63,15 @@ export function StartScreen() {
   const speed = useSettingsStore((s) => s.speed)
   const setSettings = useSettingsStore((s) => s.set)
   const autosave = hasAutosave() ? readAutosaveSummary() : null
+  const campaignSave = hasCampaignSave() ? readCampaignSummary() : null
+  const [factions, setFactions] = useState<{ id: string; name: string }[]>([])
+  const [faction, setFaction] = useState<string | null>(saved.faction ?? null)
+  useEffect(() => {
+    let alive = true
+    loadCampaignFactions().then((l) => { if (alive) setFactions(l) }, () => undefined)
+    return () => { alive = false }
+  }, [])
+  const campaignFaction = factions.find((f) => f.id === faction)?.id ?? factions[0]?.id ?? null
 
   // The welcome line speaks once, on the first click (which also unlocks Web Audio).
   useEffect(() => {
@@ -62,7 +101,7 @@ export function StartScreen() {
   const others = groups.filter((g) => g.id !== 'box')
 
   const start = () => {
-    writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme })
+    writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme, faction })
     const themed = !official && theme && THEMEABLE.has(scenarioId) ? { theme } : {}
     launchGame({ ...buildOptions({ scenarioId: list.length ? scenarioId : null, mode, seed, sides: chosen?.sides ?? 2, tier, team }), ...themed })
   }
@@ -178,6 +217,26 @@ export function StartScreen() {
             </button>
           )}
         </div>
+
+        <section className="sc-sec" aria-label="Campaign">
+          <h2 className="sc-h">Campaign</h2>
+          <p className="sc-note">Build a settlement between battles: spend caps, store gear, pick the next fight.</p>
+          {factions.length > 1 && (
+            <div className="sc-row" data-testid="campaign-faction" style={{ marginTop: 6 }}>
+              {factions.map((f) => (
+                <button key={f.id} className="sc-chip" aria-pressed={campaignFaction === f.id} data-testid={`campaign-faction-${f.id}`} onClick={() => { setFaction(f.id); writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme, faction: f.id }) }}>{f.name}</button>
+              ))}
+            </div>
+          )}
+          <div className="sc-actions" style={{ marginTop: 8, justifyContent: 'flex-start' }}>
+            <button className="go alt" data-testid="campaign-new" onClick={() => openCampaign('new', null, campaignFaction)}>New campaign</button>
+            {campaignSave && (
+              <button className="go alt" data-testid="campaign-continue" onClick={() => openCampaign('continue')}>
+                Continue campaign ({campaignSave.name}, round {campaignSave.round}, {campaignSave.caps} caps)
+              </button>
+            )}
+          </div>
+        </section>
 
         <p className="fine" data-testid="disclaimer">
           Unofficial fan project, not affiliated with Modiphius Entertainment, Bethesda Softworks or ZeniMax. By evilgouki.

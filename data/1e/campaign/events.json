@@ -1,0 +1,232 @@
+{
+  "kind": "events",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}"
+  },
+  "hooks": {
+    "todo": "Placeholder: the card's text is in no local source, the campaign layer treats it as having no effect.",
+    "eventNoLongRange": "While in play no model may make a long-range attack.",
+    "eventOneActionModel": "Each player secretly picks one of their own models at the same time; it gets only one Action this round (Quick Actions are unaffected).",
+    "eventLightningStorm": "At the end of every round in play, 2 random models are struck; roll the stated dice per victim and apply energy damage. Stays in play until the end icon is rolled.",
+    "eventOneActionEach": "Every model may use only one of its two usual Actions this round.",
+    "eventFallOneHeightLower": "Falling damage is worked out as if the fall were one height step lower.",
+    "eventAttack": "A Consequence attack: resolve the stated skill value and damage on any one model of the owner's choice."
+  },
+  "records": [
+    {
+      "id": "dust-cloud",
+      "name": "Dust Cloud",
+      "text": "A choking dust cloud rolls in: for the round no one can make long-range attacks.",
+      "flip": true,
+      "effect": {
+        "code": "eventNoLongRange"
+      },
+      "source": [
+        "CH p4",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "unbearable-heat",
+      "name": "Unbearable Heat",
+      "text": "The heat is oppressive: every player picks one of their models, all at once, and that model gets only one Action this round.",
+      "flip": false,
+      "effect": {
+        "code": "eventOneActionModel",
+        "args": {
+          "models": 1,
+          "actions": 1,
+          "simultaneous": true,
+          "quickActionsUnaffected": true
+        }
+      },
+      "source": [
+        "CH p4",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "lightning-storm",
+      "name": "Lightning Storm",
+      "text": "Lightning hits 2 random models at the end of each round and the storm lingers until the end icon is rolled. The exact dice on the card are read from the CH picture.",
+      "flip": true,
+      "persists": true,
+      "effect": {
+        "code": "eventLightningStorm",
+        "args": {
+          "victims": 2,
+          "timing": "roundEnd",
+          "dice": {
+            "blue": 1
+          },
+          "damageType": "energy",
+          "damage": 1,
+          "endIcon": "STAR"
+        }
+      },
+      "source": [
+        "CH p4",
+        "FCL p1",
+        "ERR p.18"
+      ],
+      "deck": "2p-starter",
+      "partial": true
+    },
+    {
+      "id": "diamond-city-radio",
+      "name": "Diamond City Radio",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "distant-gunfire",
+      "name": "Distant Gunfire",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "vertibirds-overhead",
+      "name": "Vertibirds Overhead",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "a-hidden-observer",
+      "name": "A Hidden Observer",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "downpour",
+      "name": "Downpour",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "a-neutral-party",
+      "name": "A Neutral Party",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "quiet",
+      "name": "Quiet",
+      "text": null,
+      "flip": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "forest-fire",
+      "name": "Forest Fire",
+      "text": "Fire sweeps the area: each model may use only one of its two usual Actions.",
+      "flip": null,
+      "effect": {
+        "code": "eventOneActionEach"
+      },
+      "source": [
+        "ERR p.10"
+      ],
+      "partial": true
+    },
+    {
+      "id": "soft-ground",
+      "name": "Soft Ground",
+      "text": "The ground is soft: falls count as one height step lower.",
+      "flip": null,
+      "effect": {
+        "code": "eventFallOneHeightLower"
+      },
+      "source": [
+        "ERR p.18"
+      ],
+      "partial": true
+    },
+    {
+      "id": "gun-for-hire-consequence",
+      "name": "Gun for Hire (Consequence)",
+      "text": "The hired mercenary arrives: make this attack on any one model of your choice.",
+      "flip": false,
+      "consequence": true,
+      "owner": "player",
+      "effect": {
+        "code": "eventAttack",
+        "args": {
+          "skill": "rifle",
+          "value": 6,
+          "damageType": "energy",
+          "damage": 3,
+          "target": "ownerChoice"
+        }
+      },
+      "source": [
+        "CH p5"
+      ]
+    }
+  ],
+  "rulings": [
+    "RULING: Event Flip icon | known for Dust Cloud and Lightning Storm (Flip) and Unbearable Heat (no Flip) from the CH p4 pictures; Gun for Hire's Consequence resolves on top of the deck so its flip is false; every other Event has flip null until the card face is found, and null reads as no Flip | no local source shows the others | Unsourced | CH p4",
+    "RULING: Lightning Storm dice | one blue die per victim, 1 energy damage, ending on a star; the card's dice row is small in the CH picture | the errata changes one of its icons without saying which | Unsourced | CH p4; ERR p.18",
+    "RULING: Forest Fire and Soft Ground | effects come from the errata/FAQ; flip and flavour are unknown | no card face in a local PDF | Unsourced | ERR p.10, p.18",
+    "RULING: Event scope | the 10 starter Events plus Forest Fire and Soft Ground (errata-named) and the Gun for Hire Consequence; Settlement Events (Homestead) and the other wave decks are not entered | the starter slice is the playable one | Confirmed | FCL p1; ERR p.18, p.21"
+  ]
+}

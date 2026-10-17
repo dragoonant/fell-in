@@ -1,0 +1,682 @@
+{
+  "kind": "boosts",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}"
+  },
+  "hooks": {
+    "todo": "Placeholder: the card's text is in no local source, the campaign layer treats it as having no effect.",
+    "boostSwapDie": "Before a combat roll, swap one die of the listed colours for a die of the target colour.",
+    "boostRerollX": "Re-roll an X result on a skill die, X+AP included; any AP on it is lost.",
+    "boostRerollEffectDice": "Re-roll every remaining effect die of any colour.",
+    "boostCancelDamageIcon": "Cancel one damage icon, whatever its source (not one point of damage)."
+  },
+  "records": [
+    {
+      "id": "use-your-body",
+      "name": "Use Your Body",
+      "type": "cunning",
+      "cost": 0,
+      "text": "Before a combat roll, trade one yellow, green or blue bonus die for a black one.",
+      "timing": "combat",
+      "effect": {
+        "code": "boostSwapDie",
+        "args": {
+          "from": [
+            "yellow",
+            "green",
+            "blue"
+          ],
+          "to": "black",
+          "n": 1
+        }
+      },
+      "source": [
+        "CH p5",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "powerful-attack",
+      "name": "Powerful Attack",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "defensive-positioning",
+      "name": "Defensive Positioning",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "carefully-does-it",
+      "name": "Carefully Does It",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "spurred-into-action",
+      "name": "Spurred into Action",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "take-two",
+      "name": "Take Two",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "saw-it-coming",
+      "name": "Saw It Coming",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "behind-you",
+      "name": "Behind You!",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "get-ready",
+      "name": "Get Ready",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "first-team-go",
+      "name": "First Team, Go",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "lucky-bounce",
+      "name": "Lucky Bounce",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "tougher-than-it-looks",
+      "name": "Tougher Than It Looks",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "in-synch",
+      "name": "In Synch",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "typeUnknown": true,
+      "deck": "2p-starter"
+    },
+    {
+      "id": "piercing-attack",
+      "name": "Piercing Attack",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "accurate-attack",
+      "name": "Accurate Attack",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "called-shot",
+      "name": "Called Shot",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "very-special",
+      "name": "Very Special",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "more-damaging",
+      "name": "More Damaging",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "a-bit-special",
+      "name": "A Bit Special",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "that-was-lucky",
+      "name": "That Was Lucky",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "indomitable",
+      "name": "Indomitable",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "delayed-event",
+      "name": "Delayed Event",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "tread-lightly",
+      "name": "Tread Lightly",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "battle-aware",
+      "name": "Battle Aware",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "go-now",
+      "name": "Go Now",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "anticipated",
+      "name": "Anticipated",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "gifted-climber",
+      "name": "Gifted Climber",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "courage",
+      "name": "Courage",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "slip-free",
+      "name": "Slip Free",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "dig-deep",
+      "name": "Dig Deep",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "patch-repair",
+      "name": "Patch Repair",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "extra-use",
+      "name": "Extra Use",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "knew-i-would-need-it",
+      "name": "Knew I Would Need it",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "rousing-words",
+      "name": "Rousing Words",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "jury-rig",
+      "name": "Jury Rig",
+      "type": null,
+      "cost": 0,
+      "text": null,
+      "timing": null,
+      "effect": {
+        "code": "todo"
+      },
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "typeUnknown": true,
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "second-chance",
+      "name": "Second Chance",
+      "type": null,
+      "cost": 0,
+      "text": "Re-roll an X result on a skill die, an X with an AP included; the AP is not kept.",
+      "timing": "skillTest",
+      "effect": {
+        "code": "boostRerollX",
+        "args": {
+          "keepAP": false
+        }
+      },
+      "source": [
+        "ERR p.13"
+      ],
+      "typeUnknown": true,
+      "partial": true
+    },
+    {
+      "id": "try-that-again",
+      "name": "Try That Again",
+      "type": null,
+      "cost": 0,
+      "text": "Re-roll all remaining effect dice, of any colours.",
+      "timing": "effectDice",
+      "effect": {
+        "code": "boostRerollEffectDice"
+      },
+      "source": [
+        "ERR p.18"
+      ],
+      "typeUnknown": true,
+      "partial": true
+    },
+    {
+      "id": "fortunate-deflection",
+      "name": "Fortunate Deflection",
+      "type": null,
+      "cost": 0,
+      "text": "Cancel one damage icon, from any source.",
+      "timing": "damage",
+      "effect": {
+        "code": "boostCancelDamageIcon",
+        "args": {
+          "n": 1
+        }
+      },
+      "source": [
+        "ERR p.15",
+        "FCL p3"
+      ],
+      "typeUnknown": true,
+      "partial": true
+    }
+  ],
+  "rulings": [
+    "RULING: Boost caps cost | 0 for every Boost | the Wave 9 cost sheet lists no Boost | Unsourced | COST",
+    "RULING: Boost types | only Use Your Body (Cunning) is sourced; every other Boost has type null and typeUnknown true until its card face is found, and a typed rack (Grognak, Survival Guide, Covert Ops, Astounding Tales) may draw a typeUnknown Boost as a match | the Full Card List gives names only, and an empty typed rack would stall the settlement phase | Unsourced | CH p5; FCL p1-3",
+    "RULING: Placeholder Boosts | 34 Boost records carry a real name and no text and have effect {code: todo} (no effect in battle); 4 Boost records are sourced | no local source prints the others | Unsourced | FCL p1-3",
+    "RULING: Boost scope | the 13 starter Boosts, the 24 Settlement Deck 1 Boosts (Powerful Attack and Defensive Positioning are in both) and the three the errata names; later decks (Aim for the Gap and following) are not entered | the starter and first settlement deck are the playable slice | Confirmed | FCL p1-3"
+  ]
+}

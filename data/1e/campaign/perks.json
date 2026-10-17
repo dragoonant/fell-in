@@ -1,0 +1,1290 @@
+{
+  "kind": "perks",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "PERKS": "perk_cards_w9.pdf (PDF page of the card sheet)",
+    "COST": "wave9_costs.pdf PDF p6-7, PERKS column (name, then caps cost)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "SHEET": "settlement_sheet_v4.pdf (PDF page)",
+    "ERR": "errata_faq_v10.pdf (PDF page)"
+  },
+  "hooks": {
+    "perkRerollDie": "Once per attack with the named skill, re-roll up to n dice of one colour (blank results only when blankOnly).",
+    "perkSkillGrantIfMissing": "If the model has no such skill, it gains the skill at the given value.",
+    "perkHealthBonus": "Adds n to the model's Health.",
+    "perkConcentratedFire": "Bonus to the listed skills when shooting the same target as the previous Action; once per activation.",
+    "perkRadiationHeals": "Radiation damage heals this model instead of hurting it.",
+    "perkMedic": "Stimpak removes 1 extra damage and RadAway removes 1 extra radiation.",
+    "perkChemist": "The last (right-most) column of a Chem's effect lasts one more activation.",
+    "perkSneak": "Movement and Melee attacks by this model are Reaction triggers only inside one range ruler.",
+    "perkActionBoy": "At activation roll a blue die; on the stated icon gain 1 AP. Not usable together with V.A.T.S.",
+    "perkBlitz": "One Melee attack per activation may be made at the stated ruler colour.",
+    "perkRerollAddiction": "Re-roll an addiction roll once per battle.",
+    "perkIgnoreFoodRadiation": "Ignore the radiation that food and drink would give.",
+    "perkMovingTarget": "After spending both Actions on movement, ranged attacks against the model take a penalty until a stated trigger ends it.",
+    "perkHuntsman": "Before a rifle shot, replace the weapon's damage with a fixed 1 damage plus an extra special.",
+    "perkPackLeader": "Grants the Dog Handler ability, or one more controlled dog; may be stacked.",
+    "perkBloodyMess": "On removing an enemy, flip Luck; on a hit, up to 2 nearby enemies take a penalty until after their next action.",
+    "perkEntangle": "When engaged, force a disengaging enemy into an opposed AGI test (once per activation).",
+    "perkResistCondition": "Resistant to the listed conditions: flip Luck each time one would be gained, ignore on a hit.",
+    "perkImpatient": "Once per activation take 1 damage to gain 1 AP.",
+    "perkIgnoreCover": "When shooting ignore n items of cover.",
+    "perkLightStep": "When a mine would trigger from this model's movement, flip Luck; on a hit it does not trigger.",
+    "perkStartReaction": "Start the battle with n Reaction markers.",
+    "perkFinesse": "Start with Critical tokens on the card; flip one when gaining a Critical Point and add it to the weapon on a hit.",
+    "perkHackRobot": "Expertise: opposed Computers test against a Robot's INT while engaged; success hacks it.",
+    "perkIrresponsible": "May take 1 damage instead of gaining the Stun condition.",
+    "perkCollaborative": "A friendly shot into Close Combat hits the intended target, not a random one.",
+    "perkPyromaniac": "If an attack could have set a target on fire but did not, roll a blue die; on the stated icon apply Fire.",
+    "perkCompanion": "Pick a Companion at set-up; activating either while the other is in range and LoS gives a free effect die.",
+    "perkTravelLight": "Move ruler one colour longer unless the model wears armor or clothing cards or has any armor rating of 3+.",
+    "perkShotgunDevotee": "No Quick Action penalty for shots with weapons that have Shotgun in the name.",
+    "perkWeaponHandling": "Weapon STR requirements are n lower for this model.",
+    "perkChosenDisciple": "On removing an enemy with an attack the model gains 1 Quick Action Point.",
+    "perkNerdRage": "At Health 1-2, once per battle gain AP, strong armor and extra Melee dice.",
+    "perkMysteriousStranger": "On a V.A.T.S. icon, summon the Stranger to make an automatic attack (tier I-III changes range, dice and delay).",
+    "perkPainTrain": "While wearing Power Armor, a Charge may swap its bonus tokens for an immediate physical-damage roll.",
+    "perkBasher": "A ranged weapon used in Close Combat does not give the target extra armor.",
+    "noOtherLos": "Condition: no enemy other than the target has Line of Sight to the model.",
+    "noFriendlyWithinPresence": "Condition: no friendly model (dogs excluded) is inside the model's Presence ruler.",
+    "perkHitTheDeckArea": "Condition: the damage comes from an area effect.",
+    "silencedWeapon": "Condition: the weapon is silenced.",
+    "dogAttack": "Condition: the attacker is a dog.",
+    "perkResistInjury": "Resistant to injured-arm and injured-leg conditions: flip Luck each time one would be gained, ignore on a hit."
+  },
+  "rulings": [
+    "RULING: Perk icon readings | icon-only text read by comparing cards: cog = AP, burst = 1 damage, bandage cone = arm, sock = leg, clover = Luck flip, blast icon on the V.A.T.S. die (Mysterious Stranger), Quick Thinking's rings = a Reaction marker | the cards print icons without captions | Unsourced | PERKS p21, p27, p28",
+    "RULING: Robotics Expert and Creature Trainer | settlement-wide, 4 caps each, enabling the Robot and Creature Workbench/Pen and Mods; no card face is in a local PDF | cost from the cost sheet, effect from the Settlement Sheet requirement | Unsourced | SHEET p1; COST PERKS",
+    "RULING: Shotgun Devotee name | the card says Shotgun Devotee, the cost sheet lists Shotgun Surgeon at 6 caps | the same Wave 5 card under two names | Unsourced | PERKS p15; COST PERKS",
+    "RULING: Pack Leader exclusions | the three type icons read as Dog, Creature and Robot | icons uncaptioned | Unsourced | PERKS p24",
+    "RULING: Faction-locked Perks | Chosen Disciple, Pack Alpha and Ace Operator carry requires.faction as a plain id ('disciples', 'pack', 'operators') until the M7 factions exist | their factions are not in data/1e/factions yet | Unsourced | PERKS p3",
+    "RULING: Perk scope | every Perk on the Wave 1-9 card sheets plus the two settlement-wide Perks named by the Settlement Sheet; Perks that belong to Leader, Command or Program card sets in the cost sheet (Brawler, Bodyguard, Command: *, Program: *, Animal Friend, ...) are not Perk cards and are not entered | the perk_cards_w9 PDF is the Perk card list | Confirmed | PERKS; COST PERKS"
+  ],
+  "records": [
+    {
+      "id": "gun-nut-rifle",
+      "name": "Gun Nut (Rifle)",
+      "cost": 3,
+      "text": "The settlement may fit Rifle Mods, one per weapon card, once it holds them. Brings one free Weapons Workbench.",
+      "effects": [],
+      "settlementWide": true,
+      "grants": [
+        {
+          "structure": "weapons-workbench"
+        }
+      ],
+      "allowsMods": [
+        "mod"
+      ],
+      "modFits": [
+        "rifle"
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "gun-nut-pistol",
+      "name": "Gun Nut (Pistol)",
+      "cost": 3,
+      "text": "The settlement may fit Pistol Mods, one per weapon card, once it holds them. Brings one free Weapons Workbench.",
+      "effects": [],
+      "settlementWide": true,
+      "grants": [
+        {
+          "structure": "weapons-workbench"
+        }
+      ],
+      "allowsMods": [
+        "mod"
+      ],
+      "modFits": [
+        "pistol"
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "blacksmith",
+      "name": "Blacksmith",
+      "cost": 3,
+      "text": "The settlement may fit Melee Mods, one per weapon card, once it holds them. Brings one free Weapons Workbench.",
+      "effects": [],
+      "settlementWide": true,
+      "grants": [
+        {
+          "structure": "weapons-workbench"
+        }
+      ],
+      "allowsMods": [
+        "mod"
+      ],
+      "modFits": [
+        "melee"
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "armorer",
+      "name": "Armorer",
+      "cost": 3,
+      "text": "The settlement may fit armor Mods (and Power Armor Mods), one per card, once it holds them. Brings one free Armor Workbench, never a Power Armor Station.",
+      "effects": [],
+      "settlementWide": true,
+      "grants": [
+        {
+          "structure": "armor-workbench"
+        }
+      ],
+      "allowsMods": [
+        "armorMod",
+        "powerArmorMod"
+      ],
+      "modFits": [
+        "armor",
+        "powerArmor"
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "local-leader",
+      "name": "Local Leader",
+      "cost": 5,
+      "text": "Unlocks the advanced settlement Structures that ask for a Local Leader.",
+      "effects": [],
+      "settlementWide": true,
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "nerd-rage",
+      "name": "Nerd Rage",
+      "cost": 6,
+      "text": "When the model is down to 1 or 2 Health it may, once per battle, gain 1 AP, 1 strong armor and an extra black die on Melee attacks.",
+      "effects": [
+        {
+          "code": "perkNerdRage",
+          "args": {
+            "maxHealth": 2,
+            "ap": 1,
+            "strongArmor": 1,
+            "dice": {
+              "black": 1
+            },
+            "skill": "melee",
+            "oncePerBattle": true
+          }
+        }
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "mysterious-stranger",
+      "name": "Mysterious Stranger",
+      "cost": 4,
+      "text": "When the V.A.T.S. roll shows the blast icon, a ghostly Stranger hits your nearest unengaged enemy in line of sight for 2 physical damage plus a black die; your choice on a tie. Optional.",
+      "effects": [
+        {
+          "code": "perkMysteriousStranger",
+          "args": {
+            "tier": 1,
+            "icons": [
+              "BLAST"
+            ],
+            "damageType": "physical",
+            "damage": 2,
+            "dice": {
+              "black": 1
+            },
+            "target": "nearestUnengagedEnemyInLos",
+            "optional": true,
+            "maxPerActivation": 1
+          }
+        }
+      ],
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "gun-nut-heavy",
+      "name": "Gun Nut (Heavy)",
+      "cost": 3,
+      "text": "The settlement may fit Heavy weapon Mods, one per weapon card, once it holds them. Brings one free Weapons Workbench.",
+      "effects": [],
+      "settlementWide": true,
+      "grants": [
+        {
+          "structure": "weapons-workbench"
+        }
+      ],
+      "allowsMods": [
+        "mod"
+      ],
+      "modFits": [
+        "heavy"
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "hacker",
+      "name": "Hacker",
+      "cost": 4,
+      "text": "+2 to Computers; a model with no Computers skill gets it at 2.",
+      "effects": [
+        {
+          "op": "skillMod",
+          "skill": "computers",
+          "n": 2
+        },
+        {
+          "code": "perkSkillGrantIfMissing",
+          "args": {
+            "skill": "computers",
+            "n": 2
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "concentrated-fire",
+      "name": "Concentrated Fire",
+      "cost": 5,
+      "text": "Shooting the same target as your previous Action: +2 to the shot, once per activation (Pistol, Rifle or Heavy).",
+      "effects": [
+        {
+          "code": "perkConcentratedFire",
+          "args": {
+            "n": 2,
+            "skills": [
+              "pistol",
+              "rifle",
+              "heavy"
+            ],
+            "perActivation": 1
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "toughness",
+      "name": "Toughness",
+      "cost": 9,
+      "text": "+1 physical armor.",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "physical",
+          "n": 1
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "rad-resistant",
+      "name": "Rad Resistant",
+      "cost": 3,
+      "text": "+1 radiation armor.",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "radiation",
+          "n": 1
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "ghoulish",
+      "name": "Ghoulish",
+      "cost": 10,
+      "text": "Radiation heals this model instead of harming it.",
+      "effects": [
+        {
+          "code": "perkRadiationHeals"
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "medic",
+      "name": "Medic",
+      "cost": 4,
+      "text": "Stimpaks heal 1 extra damage and RadAway removes 1 extra radiation.",
+      "effects": [
+        {
+          "code": "perkMedic",
+          "args": {
+            "stimpak": 1,
+            "radaway": 1
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "chemist",
+      "name": "Chemist",
+      "cost": 6,
+      "text": "The last column of any Chem effect lasts one more activation.",
+      "effects": [
+        {
+          "code": "perkChemist",
+          "args": {
+            "extraActivations": 1
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "sneak",
+      "name": "Sneak",
+      "cost": 5,
+      "text": "Moving and Melee attacks only count as Reaction triggers within one range ruler.",
+      "effects": [
+        {
+          "code": "perkSneak",
+          "args": {
+            "range": "one ruler"
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "action-boy-girl",
+      "name": "Action Boy / Girl",
+      "cost": 5,
+      "text": "At activation roll a blue die and gain 1 AP on a star. Not usable alongside V.A.T.S. in the same activation.",
+      "effects": [
+        {
+          "code": "perkActionBoy",
+          "args": {
+            "die": "blue",
+            "icon": "STAR",
+            "gainAP": 1,
+            "notWithVats": true
+          }
+        }
+      ],
+      "deck": "settlement-deck-1",
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "rifleman",
+      "name": "Rifleman",
+      "cost": 5,
+      "text": "Once per Rifle attack, re-roll 1 blank black die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "black",
+            "blankOnly": true,
+            "n": 1,
+            "skill": "rifle"
+          }
+        }
+      ],
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "life-giver",
+      "name": "Life Giver",
+      "cost": 7,
+      "text": "+1 Health.",
+      "effects": [
+        {
+          "code": "perkHealthBonus",
+          "args": {
+            "n": 1
+          }
+        }
+      ],
+      "source": "PERKS p27; COST PERKS"
+    },
+    {
+      "id": "big-leagues",
+      "name": "Big Leagues",
+      "cost": 5,
+      "text": "Once per Melee attack, re-roll 1 blank black die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "black",
+            "blankOnly": true,
+            "n": 1,
+            "skill": "melee"
+          }
+        }
+      ],
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "steady-aim",
+      "name": "Steady Aim",
+      "cost": 8,
+      "text": "Once per Pistol or Rifle attack, re-roll 1 green die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "green",
+            "blankOnly": false,
+            "n": 1,
+            "skills": [
+              "pistol",
+              "rifle"
+            ]
+          }
+        }
+      ],
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "refractor",
+      "name": "Refractor",
+      "cost": 9,
+      "text": "+1 energy armor.",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "energy",
+          "n": 1
+        }
+      ],
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "basher",
+      "name": "Basher",
+      "cost": 5,
+      "text": "Firing a ranged weapon in Close Combat does not hand the target the usual extra armor (the -2 to the skill still applies).",
+      "effects": [
+        {
+          "code": "perkBasher"
+        }
+      ],
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "pain-train",
+      "name": "Pain Train",
+      "cost": 1,
+      "text": "In Power Armor, a Charge may skip the Charge Bonus tokens and instead roll 1 black die at once; the target resolves damage icons as physical damage with the normal armor roll.",
+      "effects": [
+        {
+          "code": "perkPainTrain",
+          "args": {
+            "requires": "powerArmor",
+            "die": "black",
+            "damageType": "physical"
+          }
+        }
+      ],
+      "source": "PERKS p28; COST PERKS; ERR p.19"
+    },
+    {
+      "id": "locksmith",
+      "name": "Locksmith",
+      "cost": 4,
+      "text": "+2 to Lockpick; a model with no Lockpick skill gets it at 2.",
+      "effects": [
+        {
+          "op": "skillMod",
+          "skill": "lockpick",
+          "n": 2
+        },
+        {
+          "code": "perkSkillGrantIfMissing",
+          "args": {
+            "skill": "lockpick",
+            "n": 2
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "ninja",
+      "name": "Ninja",
+      "cost": 6,
+      "text": "When nobody except the target can see the model, long-range shots add 1 green die.",
+      "effects": [
+        {
+          "op": "addDice",
+          "dice": {
+            "green": 1
+          },
+          "when": {
+            "ranges": [
+              "long"
+            ],
+            "code": "noOtherLos"
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "blitz",
+      "name": "Blitz",
+      "cost": 5,
+      "text": "One Melee attack per activation can be made at Orange range.",
+      "effects": [
+        {
+          "code": "perkBlitz",
+          "args": {
+            "skill": "melee",
+            "ruler": "orange",
+            "perActivation": 1
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "heavy-gunner",
+      "name": "Heavy Gunner",
+      "cost": 3,
+      "text": "Once per Heavy attack, re-roll 1 blank black die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "black",
+            "blankOnly": true,
+            "n": 1,
+            "skill": "heavy"
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "lone-wanderer",
+      "name": "Lone Wanderer",
+      "cost": 22,
+      "text": "With no friendly model (dogs excepted) inside Presence: +1 armor of every type, +1 yellow die on Rifle and Pistol attacks and +2 Health.",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "all",
+          "n": 1,
+          "when": {
+            "code": "noFriendlyWithinPresence"
+          }
+        },
+        {
+          "op": "addDice",
+          "dice": {
+            "yellow": 1
+          },
+          "when": {
+            "skills": [
+              "rifle",
+              "pistol"
+            ],
+            "code": "noFriendlyWithinPresence"
+          }
+        },
+        {
+          "code": "perkHealthBonus",
+          "args": {
+            "n": 2,
+            "when": "noFriendlyWithinPresence"
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "attack-dog",
+      "name": "Attack Dog",
+      "cost": 7,
+      "text": "The dog's attacks gain a bonus special: spend a bottle icon to injure a leg.",
+      "effects": [
+        {
+          "op": "addSpecial",
+          "special": {
+            "cost": [
+              "BOT"
+            ],
+            "outcome": "injuredLeg"
+          },
+          "when": {
+            "code": "dogAttack"
+          }
+        }
+      ],
+      "requires": {
+        "abilities": [
+          "dog-handler"
+        ]
+      },
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "chem-resistant",
+      "name": "Chem Resistant",
+      "cost": 3,
+      "text": "Re-roll an addiction roll, once per battle.",
+      "effects": [
+        {
+          "code": "perkRerollAddiction",
+          "args": {
+            "perBattle": 1
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "gunslinger",
+      "name": "Gunslinger",
+      "cost": 5,
+      "text": "Once per Pistol attack, re-roll 1 blank black die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "black",
+            "blankOnly": true,
+            "n": 1,
+            "skill": "pistol"
+          }
+        }
+      ],
+      "source": "PERKS p29; COST PERKS"
+    },
+    {
+      "id": "mysterious-stranger-ii",
+      "name": "Mysterious Stranger II",
+      "cost": 13,
+      "text": "A V.A.T.S. star or blast icon lets you place the Stranger up to Red away; he auto-hits any model in his line of sight for 2 physical damage plus black and yellow dice, then leaves. One Stranger Perk per activation.",
+      "effects": [
+        {
+          "code": "perkMysteriousStranger",
+          "args": {
+            "tier": 2,
+            "icons": [
+              "STAR",
+              "BLAST"
+            ],
+            "damageType": "physical",
+            "damage": 2,
+            "dice": {
+              "black": 1,
+              "yellow": 1
+            },
+            "placeWithin": "red",
+            "target": "anyModelInStrangerLos",
+            "maxPerActivation": 1
+          }
+        }
+      ],
+      "requires": {
+        "perks": [
+          "mysterious-stranger"
+        ]
+      },
+      "source": "PERKS p24; COST PERKS; ERR p.19"
+    },
+    {
+      "id": "mysterious-stranger-iii",
+      "name": "Mysterious Stranger III",
+      "cost": 3,
+      "text": "As tier II, but when the Stranger appears you choose: attack straight away, or leave a marker beside him and attack later with a Reaction. He goes after the attack or when anything damages him.",
+      "effects": [
+        {
+          "code": "perkMysteriousStranger",
+          "args": {
+            "tier": 3,
+            "icons": [
+              "STAR",
+              "BLAST"
+            ],
+            "damageType": "physical",
+            "damage": 2,
+            "dice": {
+              "black": 1,
+              "yellow": 1
+            },
+            "placeWithin": "red",
+            "target": "anyModelInStrangerLos",
+            "maxPerActivation": 1,
+            "delayedViaReaction": true
+          }
+        }
+      ],
+      "requires": {
+        "perks": [
+          "mysterious-stranger-ii"
+        ]
+      },
+      "source": "PERKS p24; COST PERKS; ERR p.19"
+    },
+    {
+      "id": "lead-belly",
+      "name": "Lead Belly",
+      "cost": 5,
+      "text": "Ignore the radiation from food and drink.",
+      "effects": [
+        {
+          "code": "perkIgnoreFoodRadiation"
+        }
+      ],
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "moving-target",
+      "name": "Moving Target",
+      "cost": 6,
+      "text": "After using both normal Actions on moving or charging, ranged attacks against you take -2 until your next activation, or until you become engaged, react, get pushed back or take damage.",
+      "effects": [
+        {
+          "code": "perkMovingTarget",
+          "args": {
+            "penalty": -2,
+            "actions": 2
+          }
+        }
+      ],
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "huntsman",
+      "name": "Huntsman",
+      "cost": 7,
+      "text": "Before a Rifle shot you may swap its damage for 1 damage of the weapon's usual type (never radiation) with a blue-die star that injures a leg.",
+      "effects": [
+        {
+          "code": "perkHuntsman",
+          "args": {
+            "skill": "rifle",
+            "damage": 1,
+            "special": {
+              "cost": [
+                "STAR"
+              ],
+              "outcome": "injuredLeg",
+              "die": "blue"
+            },
+            "notDamageType": "radiation"
+          }
+        }
+      ],
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "demolition-expert",
+      "name": "Demolition Expert",
+      "cost": 5,
+      "text": "Once per attack with a grenade or explosive, re-roll 1 blank black die.",
+      "effects": [
+        {
+          "code": "perkRerollDie",
+          "args": {
+            "die": "black",
+            "blankOnly": true,
+            "n": 1,
+            "weaponClass": "grenade"
+          }
+        }
+      ],
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "pack-leader",
+      "name": "Pack Leader",
+      "cost": 23,
+      "text": "The model gains the Dog Handler ability (a dog it controls can use Search with the handler's PER, and goes Heroic when the handler is). If it already has it, it controls one more dog. Can be taken more than once.",
+      "effects": [
+        {
+          "code": "perkPackLeader",
+          "args": {
+            "grants": "dog-handler",
+            "stackable": true
+          }
+        }
+      ],
+      "requires": {
+        "notTypes": [
+          "dog",
+          "creature",
+          "robot"
+        ]
+      },
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "bloody-mess",
+      "name": "Bloody Mess",
+      "cost": 3,
+      "text": "When your attack removes an enemy, flip Luck; on a hit up to 2 enemies within Yellow and in line of sight of the casualty take -2 until after their next action.",
+      "effects": [
+        {
+          "code": "perkBloodyMess",
+          "args": {
+            "targets": 2,
+            "within": "yellow",
+            "penalty": -2
+          }
+        }
+      ],
+      "source": "PERKS p24; COST PERKS"
+    },
+    {
+      "id": "entangle",
+      "name": "Entangle",
+      "cost": 8,
+      "text": "When engaged you may force a disengaging enemy into an opposed AGI test: win and it cannot disengage this turn; lose and it leaves without a free attack. Once per activation.",
+      "effects": [
+        {
+          "code": "perkEntangle",
+          "args": {
+            "test": "agi",
+            "oncePerActivation": true
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "stun-resistant",
+      "name": "Stun Resistant",
+      "cost": 13,
+      "text": "Resistant to the Stun condition.",
+      "effects": [
+        {
+          "code": "perkResistCondition",
+          "args": {
+            "conditions": [
+              "stun"
+            ]
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "impatient",
+      "name": "Impatient",
+      "cost": 6,
+      "text": "Once per activation, take 1 damage to gain 1 AP.",
+      "effects": [
+        {
+          "code": "perkImpatient",
+          "args": {
+            "damage": 1,
+            "gainAP": 1,
+            "oncePerActivation": true
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "penetrator",
+      "name": "Penetrator",
+      "cost": 15,
+      "text": "Shooting ignores 1 item of cover.",
+      "effects": [
+        {
+          "code": "perkIgnoreCover",
+          "args": {
+            "n": 1
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "nuclear-physicist",
+      "name": "Nuclear Physicist",
+      "cost": 10,
+      "text": "Add 1 black die to attacks with a weapon that deals radiation damage.",
+      "effects": [
+        {
+          "op": "addDice",
+          "dice": {
+            "black": 1
+          },
+          "when": {
+            "damageTypes": [
+              "radiation"
+            ]
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "light-step",
+      "name": "Light Step",
+      "cost": 5,
+      "text": "When this model's movement would set off a mine, flip Luck; on a hit that move does not trigger it.",
+      "effects": [
+        {
+          "code": "perkLightStep"
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "quick-thinking",
+      "name": "Quick Thinking",
+      "cost": 2,
+      "text": "Start the battle holding a Reaction marker.",
+      "effects": [
+        {
+          "code": "perkStartReaction",
+          "args": {
+            "n": 1
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "finesse",
+      "name": "Finesse",
+      "cost": 10,
+      "text": "Start with 3 Critical tokens on the card. When a dice icon gives a Critical Point you may flip one; on a hit it goes onto the weapon, otherwise it stays on the card.",
+      "effects": [
+        {
+          "code": "perkFinesse",
+          "args": {
+            "tokens": 3
+          }
+        }
+      ],
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "hack-robot",
+      "name": "Hack Robot",
+      "cost": 5,
+      "text": "While engaged with an enemy Robot, use Expertise for an opposed Computers test against its INT. Win: the Robot gains two conditions and cannot be hacked again. Lose: the hacker gains one and the Robot may move Orange.",
+      "effects": [
+        {
+          "code": "perkHackRobot",
+          "args": {
+            "test": "computers-vs-int"
+          }
+        }
+      ],
+      "requires": {
+        "skills": {
+          "computers": 5
+        }
+      },
+      "source": "PERKS p21; COST PERKS"
+    },
+    {
+      "id": "fire-resistant",
+      "name": "Fire Resistant",
+      "cost": 7,
+      "text": "Resistant to the Fire condition.",
+      "effects": [
+        {
+          "code": "perkResistCondition",
+          "args": {
+            "conditions": [
+              "fire"
+            ]
+          }
+        }
+      ],
+      "source": "PERKS p18; COST PERKS"
+    },
+    {
+      "id": "irresponsible",
+      "name": "Irresponsible",
+      "cost": 10,
+      "text": "May take 1 damage instead of gaining the Stun condition.",
+      "effects": [
+        {
+          "code": "perkIrresponsible",
+          "args": {
+            "damage": 1
+          }
+        }
+      ],
+      "source": "PERKS p18; COST PERKS"
+    },
+    {
+      "id": "collaborative",
+      "name": "Collaborative",
+      "cost": 15,
+      "text": "When a friendly shot goes into your Close Combat, it hits the target the shooter meant instead of a random one.",
+      "effects": [
+        {
+          "code": "perkCollaborative"
+        }
+      ],
+      "source": "PERKS p18; COST PERKS"
+    },
+    {
+      "id": "strong-constitution",
+      "name": "Strong Constitution",
+      "cost": 5,
+      "text": "Resistant to the Poison condition.",
+      "effects": [
+        {
+          "code": "perkResistCondition",
+          "args": {
+            "conditions": [
+              "poison"
+            ]
+          }
+        }
+      ],
+      "source": "PERKS p18; COST PERKS"
+    },
+    {
+      "id": "pyromaniac",
+      "name": "Pyromaniac",
+      "cost": 10,
+      "text": "If an attack could have set a target on fire and did not, roll a blue die; a star lights the fire after all.",
+      "effects": [
+        {
+          "code": "perkPyromaniac",
+          "args": {
+            "die": "blue",
+            "icon": "STAR"
+          }
+        }
+      ],
+      "source": "PERKS p18; COST PERKS"
+    },
+    {
+      "id": "companion",
+      "name": "Companion",
+      "cost": 10,
+      "text": "Pick a Companion at set-up. Activating either of you while the other is in range and line of sight gives a free effect die (black, yellow or green) if you hold none. If the Companion is removed, take -2 for the rest of the battle. Unique models only.",
+      "effects": [
+        {
+          "code": "perkCompanion",
+          "args": {
+            "dice": [
+              "black",
+              "yellow",
+              "green"
+            ],
+            "lossPenalty": -2
+          }
+        }
+      ],
+      "requires": {
+        "unique": true
+      },
+      "source": "PERKS p15; COST PERKS"
+    },
+    {
+      "id": "adamantium-skeleton",
+      "name": "Adamantium Skeleton",
+      "cost": 8,
+      "text": "Resistant to injured-arm and injured-leg; each time one would be gained, flip Luck and skip it on a hit.",
+      "effects": [
+        {
+          "code": "perkResistInjury"
+        }
+      ],
+      "source": "PERKS p15; COST PERKS"
+    },
+    {
+      "id": "travel-light",
+      "name": "Travel Light",
+      "cost": 7,
+      "text": "Move one ruler colour longer, unless wearing armor or clothing cards or any armor rating is 3 or more.",
+      "effects": [
+        {
+          "code": "perkTravelLight",
+          "args": {
+            "rulerStat": "move",
+            "n": 1,
+            "maxArmor": 2
+          }
+        }
+      ],
+      "source": "PERKS p15; COST PERKS"
+    },
+    {
+      "id": "hit-the-deck",
+      "name": "Hit the Deck",
+      "cost": 3,
+      "text": "+1 physical and energy armor against area-effect damage only.",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "physical",
+          "n": 1,
+          "when": {
+            "code": "perkHitTheDeckArea"
+          }
+        },
+        {
+          "op": "armorMod",
+          "damageType": "energy",
+          "n": 1,
+          "when": {
+            "code": "perkHitTheDeckArea"
+          }
+        }
+      ],
+      "source": "PERKS p15; COST PERKS"
+    },
+    {
+      "id": "shotgun-devotee",
+      "name": "Shotgun Devotee",
+      "cost": 6,
+      "text": "No penalty on Quick Action shots with a weapon that has Shotgun in its name.",
+      "effects": [
+        {
+          "code": "perkShotgunDevotee"
+        }
+      ],
+      "source": "PERKS p15; COST PERKS (listed as Shotgun Surgeon)"
+    },
+    {
+      "id": "weapon-handling",
+      "name": "Weapon Handling",
+      "cost": 5,
+      "text": "Weapon STR requirements are 2 lower for this model.",
+      "effects": [
+        {
+          "code": "perkWeaponHandling",
+          "args": {
+            "n": 2
+          }
+        }
+      ],
+      "source": "PERKS p15; COST PERKS"
+    },
+    {
+      "id": "chosen-disciple",
+      "name": "Chosen Disciple",
+      "cost": 7,
+      "text": "When this model removes an enemy with an attack, it gains 1 Quick Action Point. Disciples only (or the Sole Survivor in a Disciples force).",
+      "effects": [
+        {
+          "code": "perkChosenDisciple",
+          "args": {
+            "gainQuickAP": 1
+          }
+        }
+      ],
+      "requires": {
+        "faction": "disciples"
+      },
+      "source": "PERKS p3; COST PERKS"
+    },
+    {
+      "id": "pack-alpha",
+      "name": "Pack Alpha",
+      "cost": 28,
+      "text": "+1 on every armor value and +1 black die on every Melee combat action. Pack models only (or the Sole Survivor in a Pack force).",
+      "effects": [
+        {
+          "op": "armorMod",
+          "damageType": "all",
+          "n": 1
+        },
+        {
+          "op": "addDice",
+          "dice": {
+            "black": 1
+          },
+          "when": {
+            "skills": [
+              "melee"
+            ]
+          }
+        }
+      ],
+      "requires": {
+        "faction": "pack"
+      },
+      "source": "PERKS p3; COST PERKS"
+    },
+    {
+      "id": "ace-operator",
+      "name": "Ace Operator",
+      "cost": 9,
+      "text": "+1 black die on every action with a silenced Pistol or Rifle weapon. Operators only (or the Sole Survivor in an Operator force).",
+      "effects": [
+        {
+          "op": "addDice",
+          "dice": {
+            "black": 1
+          },
+          "when": {
+            "skills": [
+              "pistol",
+              "rifle"
+            ],
+            "code": "silencedWeapon"
+          }
+        }
+      ],
+      "requires": {
+        "faction": "operators"
+      },
+      "source": "PERKS p3; COST PERKS"
+    },
+    {
+      "id": "local-leader-ii",
+      "name": "Local Leader II",
+      "cost": 5,
+      "text": "Unlocks the top-tier settlement Structures that ask for Local Leader II. Printed on the same card as Local Leader.",
+      "effects": [],
+      "settlementWide": true,
+      "requires": {
+        "perks": [
+          "local-leader"
+        ]
+      },
+      "deck": "2p-starter",
+      "source": "PERKS p28; COST PERKS"
+    },
+    {
+      "id": "robotics-expert",
+      "name": "Robotics Expert",
+      "cost": 4,
+      "text": "Lets the settlement build a Robot Workbench and fit Robot Mods. Card text not in any local source; read from the Settlement Sheet's requirement.",
+      "effects": [],
+      "settlementWide": true,
+      "allowsMods": [
+        "robotMod"
+      ],
+      "source": "SHEET p1; COST PERKS; FCL p5"
+    },
+    {
+      "id": "creature-trainer",
+      "name": "Creature Trainer",
+      "cost": 4,
+      "text": "Lets the settlement build a Creature Pen and fit Creature Mods. Card text not in any local source; read from the Settlement Sheet's requirement.",
+      "effects": [],
+      "settlementWide": true,
+      "allowsMods": [
+        "creatureMod"
+      ],
+      "source": "SHEET p1; COST PERKS; FCL p8"
+    }
+  ]
+}

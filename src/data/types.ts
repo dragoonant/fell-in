@@ -161,7 +161,12 @@ export interface AiCardDef {
 
 /** Player-facing scenario briefing (M4c). goals: one sentence per side id, addressed to that side's player. */
 export interface ScenarioBriefing { story: string; goals: Record<string, string>; howToWin: string[]; tips: string[] }
-export interface ScenarioForce { unit: string; count: number; items: string[]; heroic?: boolean; leader?: string }
+/** perks (M6, additive): ids of campaign PerkDef records equipped on every model of the entry (spec 19 s7, spec 20 "Campaign records"). */
+export interface ScenarioForce { unit: string; count: number; items: string[]; heroic?: boolean; leader?: string; perks?: string[] }
+export interface ScenarioCampaign {
+  linkedId?: string; order?: number
+  consequences?: { side: string; level: 'major' | 'minor'; applyTo: 'next' | 'final'; effect: Effect[] | Code; text: string }[]
+}
 export interface ScenarioDef {
   id: string; name: string; mode: typeof SCENARIO_MODES[number]
   tableIn: [number, number]; rounds: number | null
@@ -175,6 +180,8 @@ export interface ScenarioDef {
   rules: { id: string; text: string; effects?: Effect[] }[]
   victory: { side: string; level?: 'major' | 'minor'; when: string; caps?: number }[]
   briefing?: ScenarioBriefing
+  /** M6 (additive): the five linked scenarios of the Campaign Handbook and the consequences each result carries forward (CH p35-39). */
+  campaign?: ScenarioCampaign
   source: Source
 }
 

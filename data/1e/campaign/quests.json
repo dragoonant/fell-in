@@ -1,0 +1,290 @@
+{
+  "kind": "quests",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}"
+  },
+  "hooks": {},
+  "records": [
+    {
+      "id": "revenge-part-1",
+      "name": "Revenge: Part 1",
+      "title": "Revenge",
+      "part": "1",
+      "story": null,
+      "task": null,
+      "next": [
+        "revenge-part-2"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "revenge-part-2",
+      "name": "Revenge: Part 2",
+      "title": "Revenge",
+      "part": "2",
+      "story": null,
+      "task": null,
+      "next": [
+        "revenge-part-3"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "revenge-part-3",
+      "name": "Revenge: Part 3",
+      "title": "Revenge",
+      "part": "3",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "bounty",
+      "name": "Bounty",
+      "title": "Bounty",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "lost-watch",
+      "name": "Lost Watch",
+      "title": "Lost Watch",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "the-thiefs-trail-part-1",
+      "name": "The Thief's Trail: Part 1",
+      "title": "The Thief's Trail",
+      "part": "1",
+      "story": null,
+      "task": null,
+      "next": [
+        "the-thiefs-trail-part-2a",
+        "the-thiefs-trail-part-2b"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "the-thiefs-trail-part-2a",
+      "name": "The Thief's Trail: Part 2a",
+      "title": "The Thief's Trail",
+      "part": "2a",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "the-thiefs-trail-part-2b",
+      "name": "The Thief's Trail: Part 2b",
+      "title": "The Thief's Trail",
+      "part": "2b",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "bets-a-bet",
+      "name": "Bet's a Bet",
+      "title": "Bet's a Bet",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "recipes-of-the-wasteland",
+      "name": "Recipes of the Wasteland",
+      "title": "Recipes of the Wasteland",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "handy-delivery-part-1",
+      "name": "Handy Delivery: Part 1",
+      "title": "Handy Delivery",
+      "part": "1",
+      "story": "A trader short of Mr Handy parts wants some fetched from his brother and brought to one of his customers.",
+      "task": null,
+      "next": [
+        "handy-delivery-part-2"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "handy-delivery-part-2",
+      "name": "Handy Delivery: Part 2",
+      "title": "Handy Delivery",
+      "part": "2",
+      "story": "The buyer proves hard to find and turns out to be a Mr Handy itself; the parts you carry may have come from its own kind.",
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "uss-constitution-part-1",
+      "name": "USS Constitution: Part 1",
+      "title": "USS Constitution",
+      "part": "1",
+      "story": null,
+      "task": null,
+      "next": [
+        "uss-constitution-part-2"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "uss-constitution-part-2",
+      "name": "USS Constitution: Part 2",
+      "title": "USS Constitution",
+      "part": "2",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "escort-the-witness-part-1",
+      "name": "Escort the Witness: Part 1",
+      "title": "Escort the Witness",
+      "part": "1",
+      "story": null,
+      "task": null,
+      "next": [
+        "escort-the-witness-part-2a",
+        "escort-the-witness-part-2b"
+      ],
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "escort-the-witness-part-2a",
+      "name": "Escort the Witness: Part 2a",
+      "title": "Escort the Witness",
+      "part": "2a",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "escort-the-witness-part-2b",
+      "name": "Escort the Witness: Part 2b",
+      "title": "Escort the Witness",
+      "part": "2b",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "find-the-cooler",
+      "name": "Find the Cooler",
+      "title": "Find the Cooler",
+      "story": null,
+      "task": null,
+      "reward": [],
+      "source": [
+        "placeholder",
+        "CH p6",
+        "ERR p.19"
+      ]
+    }
+  ],
+  "rulings": [
+    "RULING: Quest tasks and rewards | task null and reward [] on every Quest: no local source prints a task or a reward; CH p6 shows Handy Delivery's story faces and the edge of Recipes and Find the Cooler | no card faces in a local PDF | Unsourced | CH p6; FCL p1-2",
+    "RULING: Quest part links | Part 1 -> Part 2 (Revenge 2 -> 3), and Part 1 -> both 2a and 2b where a card has 2a/2b | CH p6 says a card names its follow-on; the branch shape is read from the 2a/2b numbering | Unsourced | CH p6",
+    "RULING: Quest scope | the 5 starter Quests (12 cards), the 2 Settlement Deck 1 Quests (5 cards) and Find the Cooler (errata-named) | later decks are not entered | Confirmed | FCL p1-2; ERR p.19"
+  ]
+}

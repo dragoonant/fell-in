@@ -1,0 +1,14 @@
+{
+  "kind": "injuries",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}"
+  },
+  "hooks": {},
+  "records": [],
+  "rulings": [
+    "RULING: No injuries or experience | the table is empty: the Campaign Handbook has no injury, casualty or experience rule, so RosterModel.injuries stays [] and xp stays 0; the file exists so the Homestead expansion can fill it | CH p19 says a removed model simply returns | Confirmed | CH p19; ERR p.17"
+  ]
+}

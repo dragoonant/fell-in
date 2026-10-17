@@ -1,0 +1,420 @@
+{
+  "kind": "explore",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}"
+  },
+  "hooks": {},
+  "records": [
+    {
+      "id": "gun-for-hire",
+      "name": "Gun for Hire",
+      "text": "Pay 30 caps and a mercenary backs you up in the next battle, arriving as a Consequence.",
+      "outcomes": [
+        {
+          "when": "pay",
+          "payCaps": 30,
+          "consequence": "gun-for-hire-consequence"
+        }
+      ],
+      "source": [
+        "CH p5",
+        "CH p23",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "whats-that",
+      "name": "What's That?",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "flying-ant-swarm",
+      "name": "Flying Ant Swarm",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "unexpected-presence",
+      "name": "Unexpected Presence",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "swap-mart",
+      "name": "Swap Mart",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "easy-pickings",
+      "name": "Easy Pickings",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "recent-campfire",
+      "name": "Recent Campfire",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "recent-tracks",
+      "name": "Recent Tracks",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p1"
+      ],
+      "deck": "2p-starter"
+    },
+    {
+      "id": "fallons-department-store",
+      "name": "Fallon's Department Store",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "enemy-camp-discovered",
+      "name": "Enemy Camp Discovered",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "pharmacy",
+      "name": "Pharmacy",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "milton-general-hospital",
+      "name": "Milton General Hospital",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "fens-subway-station",
+      "name": "Fens Subway Station",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "beantown-brewery",
+      "name": "Beantown Brewery",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "abandoned-refinery",
+      "name": "Abandoned Refinery",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "quincy-police-station",
+      "name": "Quincy Police Station",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "fire-department",
+      "name": "Fire Department",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "campsite-leftovers",
+      "name": "Campsite Leftovers",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "silent-witnesses",
+      "name": "Silent Witnesses",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "cunninghams-diner",
+      "name": "Cunningham's Diner",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "miners-camp",
+      "name": "Miners' Camp",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "damaged-weaponry",
+      "name": "Damaged Weaponry",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "custom-workbench",
+      "name": "Custom Workbench",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "new-settlement",
+      "name": "New Settlement",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "regent-elementary",
+      "name": "Regent Elementary",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "thicket-excavations",
+      "name": "Thicket Excavations",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "nothing",
+      "name": "Nothing",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "synth-patrol",
+      "name": "Synth Patrol",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "local-patrols",
+      "name": "Local Patrols",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "gunners-plaza",
+      "name": "Gunner's Plaza",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "boxing-gym",
+      "name": "Boxing Gym",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "harbormaster-hotel",
+      "name": "Harbormaster Hotel",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "dock-yard-dealer",
+      "name": "Dock Yard Dealer",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "mass-pike-interchange",
+      "name": "Mass Pike Interchange",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "landowners-offer",
+      "name": "Landowner's Offer",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "FCL p2"
+      ],
+      "deck": "settlement-deck-1"
+    },
+    {
+      "id": "merchant-caravan",
+      "name": "Merchant Caravan",
+      "text": null,
+      "outcomes": [],
+      "source": [
+        "placeholder",
+        "ERR p.18"
+      ],
+      "partial": true
+    }
+  ],
+  "rulings": [
+    "RULING: Explore cards | Gun for Hire is sourced (CH p5, p23); the other 7 starter and 27 Settlement Deck 1 Explore cards are placeholders with no outcomes (nothing happens when drawn); a placeholder draw still costs the Listening Post's 50 caps | no local source prints them | Unsourced | FCL p1-2",
+    "RULING: Merchant Caravan | named by the errata as referring to the Scavenging Stand Structure; no more text is known | card face not local | Unsourced | ERR p.18",
+    "RULING: Hand-Written Note | drawn as an Item during Explore it becomes a Search test worth 2 Items; NOT stored as an Explore card (it would enter the Explore Deck and be drawn as a card of its own); the Item-draw hook resolves it from the item id hand-written-note, which the item data does not hold yet | the FAQ answers it | Confirmed | ERR p.14"
+  ]
+}

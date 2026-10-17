@@ -6,6 +6,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { buildBundles, type RawFile } from '../src/data/bundle'
 import { formatError, validateBundle, validateEditions, type ValidationError } from '../src/data/validate'
 import type { EditionBundle } from '../src/data/types'
+import { isCampaignPath, splitCampaign } from '../src/data/campaign'
+import { campaignStatsOf, validateCampaign, type CampaignStats } from '../src/data/campaign-validate'
 
 export const DATA_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'data')
 
@@ -46,10 +48,29 @@ export function checkBriefings(b: EditionBundle): ValidationError[] {
   return errs
 }
 
+/** Campaign checks (spec 20 "Campaign records", M6): every data/<edition>/campaign/ folder against the campaign validator. */
+export function checkCampaign(raw: RawFile[], bundles: Record<string, EditionBundle>): { errs: ValidationError[]; stats: Record<string, CampaignStats> } {
+  const errs: ValidationError[] = []
+  const stats: Record<string, CampaignStats> = {}
+  const { byEdition, problems } = splitCampaign(raw)
+  for (const p of problems) errs.push({ file: p.file, id: '-', path: '', message: p.message })
+  for (const [edition, files] of Object.entries(byEdition)) {
+    const scenarioIds = new Set((bundles[edition]?.records.scenarios ?? []).map((s) => s.id))
+    errs.push(...validateCampaign(edition, files, scenarioIds))
+    stats[edition] = campaignStatsOf(files)
+  }
+  return { errs, stats }
+}
+
+let lastStats: Record<string, CampaignStats> = {}
+/** Campaign record and placeholder counts from the last validateDataDir() call (printed by the CLI). */
+export const campaignStats = (): Record<string, CampaignStats> => lastStats
+
 /** Validate a data tree on disk. Returns every problem; empty = valid. */
 export function validateDataDir(dir: string = DATA_DIR): ValidationError[] {
   const errs: ValidationError[] = []
   const files: RawFile[] = []
+  const campaignFiles: RawFile[] = []
   let editions: unknown
   for (const abs of walk(dir)) {
     const path = relative(dir, abs).split('\\').join('/')
@@ -58,6 +79,7 @@ export function validateDataDir(dir: string = DATA_DIR): ValidationError[] {
       errs.push({ file: path, id: '-', path: '', message: `invalid JSON: ${(e as Error).message}` }); continue
     }
     if (path === 'editions.json') editions = json
+    else if (isCampaignPath(path)) campaignFiles.push({ path, json })
     else files.push({ path, json })
   }
   if (editions === undefined) errs.push({ file: 'editions.json', id: '-', path: '', message: 'is missing' })
@@ -65,6 +87,9 @@ export function validateDataDir(dir: string = DATA_DIR): ValidationError[] {
   for (const p of problems) errs.push({ file: p.file, id: '-', path: '', message: p.message })
   if (editions !== undefined) errs.push(...validateEditions(editions, Object.keys(bundles)))
   for (const b of Object.values(bundles)) errs.push(...validateBundle(b), ...checkBriefings(b))
+  const camp = checkCampaign(campaignFiles, bundles)
+  errs.push(...camp.errs)
+  lastStats = camp.stats
   return errs
 }
 
@@ -75,6 +100,11 @@ if (isMain) {
     for (const e of errs) console.error(formatError(e))
     console.error(`validate:data: ${errs.length} problem(s)`)
     process.exit(1)
+  }
+  for (const [edition, st] of Object.entries(campaignStats())) {
+    const total = Object.values(st.records).reduce((a, b) => a + b, 0)
+    const ph = Object.entries(st.placeholders).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ')
+    console.log(`validate:data: campaign ${edition}: ${total} records, ${st.hooks} hooks, placeholders: ${ph || 'none'}`)
   }
   console.log('validate:data: ok')
 }

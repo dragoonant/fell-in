@@ -1,0 +1,295 @@
+{
+  "kind": "caps-awards",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "FCL": "wave9_full_card_list.pdf (PDF page; names and set membership only)",
+    "ERR": "errata_faq_v10.pdf (PDF page)",
+    "placeholder": "marker: the card exists (name from FCL) but no local source shows its text; effect is {code: todo}",
+    "BOX": "box_scenarios_1-5.pdf (PDF page)",
+    "RR": "red_rocket_ai_scenario.pdf (PDF page)",
+    "SCEN": "data/1e/scenarios/scenarios.json (victory[].caps)"
+  },
+  "hooks": {
+    "superDuperSweepBanked": "Super Duper Sweep: caps are won as banked prizes during play (200 banked ends the game), not only by the default award."
+  },
+  "records": [
+    {
+      "id": "default",
+      "name": "Default award",
+      "winner": 200,
+      "loser": 120,
+      "draw": "winner",
+      "bigForceBonus": {
+        "from": 1000,
+        "each": 50
+      },
+      "source": [
+        "CH p19",
+        "ERR p.10"
+      ]
+    },
+    {
+      "id": "ga-1",
+      "name": "Navigating the Wastes",
+      "scenarioId": "ga-1",
+      "winner": 0,
+      "loser": 0,
+      "draw": 0,
+      "source": [
+        "CH p49",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "ga-2",
+      "name": "Shooting Range",
+      "scenarioId": "ga-2",
+      "winner": 0,
+      "loser": 0,
+      "draw": 0,
+      "source": [
+        "CH p49",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "ga-3",
+      "name": "Weird Harvest",
+      "scenarioId": "ga-3",
+      "winner": 0,
+      "loser": 0,
+      "draw": 0,
+      "source": [
+        "CH p49",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "ga-4",
+      "name": "Solving the Rat Problem",
+      "scenarioId": "ga-4",
+      "winner": 0,
+      "loser": 0,
+      "draw": 0,
+      "source": [
+        "CH p49",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "box-1",
+      "name": "Ad Victoriam",
+      "scenarioId": "box-1",
+      "winner": 300,
+      "loser": 120,
+      "bySide": {
+        "scavengers": {
+          "win": 300
+        },
+        "brotherhood": {
+          "win": 200
+        }
+      },
+      "notes": "The Brotherhood win pays 200 plus 50 per claimed suit still worn and unbroken.",
+      "source": [
+        "BOX p1-2",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "box-2",
+      "name": "Big John's Salvage Showdown",
+      "scenarioId": "box-2",
+      "winner": 200,
+      "loser": 120,
+      "bySide": {
+        "attacker": {
+          "win": 200
+        },
+        "defender": {
+          "win": 200
+        }
+      },
+      "source": [
+        "BOX p3-4",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "box-3",
+      "name": "Quest for Knowledge",
+      "scenarioId": "box-3",
+      "winner": 200,
+      "loser": 120,
+      "bySide": {
+        "attacker": {
+          "win": 200
+        },
+        "defender": {
+          "win": 200
+        }
+      },
+      "source": [
+        "BOX p5-6",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "box-4",
+      "name": "Radio Tower Takeover",
+      "scenarioId": "box-4",
+      "winner": 250,
+      "loser": 120,
+      "byLevel": {
+        "major": 250,
+        "minor": 150
+      },
+      "bySide": {
+        "attacker": {
+          "major": 250,
+          "minor": 150
+        },
+        "defender": {
+          "major": 250,
+          "minor": 150
+        }
+      },
+      "source": [
+        "BOX p7-8",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "box-5",
+      "name": "Flip's Revenge",
+      "scenarioId": "box-5",
+      "winner": 200,
+      "loser": 120,
+      "bySide": {
+        "flip": {
+          "win": 200
+        },
+        "kidnappers": {
+          "win": 200
+        }
+      },
+      "notes": "Kidnappers get 200 when Flip and Sarah are both dead and 150 when only Sarah is killed.",
+      "source": [
+        "BOX p9-10",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "ai-rr",
+      "name": "The Red Rocket Misunderstanding",
+      "scenarioId": "ai-rr",
+      "winner": 150,
+      "loser": 120,
+      "byLevel": {
+        "major": 150,
+        "minor": 70
+      },
+      "bySide": {
+        "super-mutants": {
+          "win": 150
+        },
+        "survivors": {
+          "major": 150,
+          "minor": 70
+        }
+      },
+      "source": [
+        "RR p1-2",
+        "SCEN"
+      ]
+    },
+    {
+      "id": "police-station-defense",
+      "name": "Police Station Defense",
+      "scenarioId": "police-station-defense",
+      "scenarioPending": true,
+      "winner": 150,
+      "loser": 120,
+      "bySide": {
+        "attacker": {
+          "win": 150
+        },
+        "defender": {
+          "win": 150
+        }
+      },
+      "source": [
+        "CH p29"
+      ]
+    },
+    {
+      "id": "suit-up",
+      "name": "Suit Up",
+      "scenarioId": "suit-up",
+      "scenarioPending": true,
+      "winner": 200,
+      "loser": 120,
+      "byLevel": {
+        "major": 200,
+        "minor": 100
+      },
+      "bySide": {
+        "attacker": {
+          "win": 200
+        },
+        "defender": {
+          "major": 200,
+          "minor": 100
+        }
+      },
+      "source": [
+        "CH p34"
+      ]
+    },
+    {
+      "id": "escort-the-brahmin",
+      "name": "Escort the Brahmin",
+      "scenarioId": "escort-the-brahmin",
+      "scenarioPending": true,
+      "winner": 200,
+      "loser": 120,
+      "byLevel": {
+        "major": 200,
+        "minor": 100
+      },
+      "bySide": {
+        "player": {
+          "major": 200,
+          "minor": 100
+        },
+        "ai": {
+          "win": 150
+        }
+      },
+      "source": [
+        "CH p42"
+      ]
+    },
+    {
+      "id": "super-duper-sweep",
+      "name": "Super Duper Sweep",
+      "scenarioId": "super-duper-sweep",
+      "scenarioPending": true,
+      "winner": 200,
+      "loser": 120,
+      "effect": {
+        "code": "superDuperSweepBanked"
+      },
+      "source": [
+        "CH p32",
+        "CH p33"
+      ]
+    }
+  ],
+  "rulings": [
+    "RULING: Partial award tables | where a scenario names caps for one outcome only the other side takes the default loser's 120 | CH p19 default | Unsourced | CH p19, p29",
+    "RULING: Super Duper Sweep | default 200 / 120 plus the in-play banking hook | CH p32-33 describe banking but not an end-of-game award | Unsourced | CH p32-33",
+    "RULING: Scenario ids not yet entered | police-station-defense, suit-up, escort-the-brahmin and super-duper-sweep carry scenarioPending until M6 enters their layouts; the five linked scenarios and the AI scenarios without printed caps use the default | CH p35-39 name force sizes, not awards | Confirmed | CH p29, p34, p42",
+    "RULING: Tutorial awards | the Getting Acclimated tutorials pay no caps | tutorials carry narrative outcomes only | Confirmed | CH p49"
+  ]
+}

@@ -8,6 +8,8 @@
 //   ?theme=suburbs       themed board for open skirmish tables: suburbs | red-rocket | junkyard (scenarios with their own terrain ignore it)
 //   ?speed=fast          animation speed: instant | fast | normal | slow | <number> (0 = instant)
 //   ?fps                 frame-rate meter;  ?gallery  figure gallery
+//   ?campaign=1          open the settlement (campaign) instead of a game: 1 or new = a fresh campaign (with ?seed=),
+//                        continue = the saved one; with ?test=1 the campaign is on window.__campaign
 // Any of seats/scenario/test also skips the start screen.
 export type SeatController = 'human' | 'bot' | 'official'
 
@@ -25,7 +27,9 @@ export interface Params {
   speed: number | null
   gallery: boolean
   fps: boolean
-  /** Start straight into a game (test=1, seats= or scenario= present). */
+  /** ?campaign: open the settlement ('new' for 1/new/empty, 'continue'), or null. */
+  campaign: 'new' | 'continue' | null
+  /** Start straight into a game (test=1, seats= or scenario= present; never with ?campaign). */
   autostart: boolean
 }
 
@@ -44,6 +48,8 @@ export function readParams(search = typeof location === 'undefined' ? '' : locat
   const seats = (seatsRaw ?? 'human,bot').split(',').map((s) => s.trim().toLowerCase())
     .filter(Boolean).map((s): SeatController => (s === 'official' ? 'official' : s === 'bot' || s === 'ai' ? 'bot' : 'human'))
   const test = q.get('test') === '1'
+  const campaignRaw = (q.get('campaign') ?? '').trim().toLowerCase()
+  const campaign = !q.has('campaign') || campaignRaw === '0' ? null : campaignRaw === 'continue' ? 'continue' : 'new'
   return {
     test,
     seats: seats.length >= 2 ? seats : ['human', 'bot'],
@@ -54,6 +60,7 @@ export function readParams(search = typeof location === 'undefined' ? '' : locat
     speed: parseSpeed(q.get('speed')),
     gallery: q.has('gallery'),
     fps: q.has('fps'),
-    autostart: test || seatsRaw !== null || q.has('scenario') || q.has('theme'),
+    campaign,
+    autostart: campaign === null && (test || seatsRaw !== null || q.has('scenario') || q.has('theme')),
   }
 }

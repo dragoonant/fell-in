@@ -1,0 +1,1020 @@
+{
+  "kind": "structures",
+  "sources": {
+    "CH": "foww-campaign-handbook-digital-final_compress.pdf (book page; PDF page = book page + 2)",
+    "SHEET": "settlement_sheet_v4.pdf (PDF page)",
+    "ERR": "errata_faq_v10.pdf (PDF page)"
+  },
+  "hooks": {},
+  "rulings": [
+    "RULING: Weapons Workbench Perk filter | the bench draws until the first Mod the owned Perks allow (PerkDef.allowsMods + modFits); each bench is one use | CH p21 and the CH p23 example | Confirmed | CH p21, p23",
+    "RULING: Ranger Outpost cost | 100 caps | the errata corrects the Settlement Sheet's printed cost | Corrected | ERR p.5"
+  ],
+  "records": [
+    {
+      "id": "generator-small",
+      "name": "Generator - Small",
+      "group": "infrastructure",
+      "cost": 100,
+      "power": 0,
+      "provides": {
+        "power": 3
+      },
+      "starting": 2,
+      "text": "Feeds 3 Power into the settlement and needs none itself.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "generator-medium",
+      "name": "Generator - Medium",
+      "group": "infrastructure",
+      "cost": 200,
+      "power": 0,
+      "provides": {
+        "power": 7
+      },
+      "text": "Feeds 7 Power into the settlement and needs none itself.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "generator-large",
+      "name": "Generator - Large",
+      "group": "infrastructure",
+      "cost": 300,
+      "power": 0,
+      "provides": {
+        "power": 12
+      },
+      "text": "Feeds 12 Power into the settlement and needs none itself.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "water-pump",
+      "name": "Water Pump",
+      "group": "infrastructure",
+      "cost": 50,
+      "power": 0,
+      "provides": {
+        "water": 3
+      },
+      "text": "Supplies 3 Water and needs no Power.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "water-purifier",
+      "name": "Water Purifier",
+      "group": "infrastructure",
+      "cost": 100,
+      "power": 1,
+      "provides": {
+        "water": 12
+      },
+      "text": "Supplies 12 Water; it runs on 1 Power.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "crop-field",
+      "name": "Crop Field",
+      "group": "infrastructure",
+      "cost": 30,
+      "power": 0,
+      "water": 1,
+      "max": 5,
+      "altName": "Meat Bag",
+      "text": "Lets the Cooking Station draw food and drink. Takes 1 Water and no Power; at most 5 per settlement. Super Mutants build Meat Bags that work the same way.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "weapons-workbench",
+      "name": "Weapons Workbench",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "perks": [
+          "blacksmith",
+          "gun-nut-rifle",
+          "gun-nut-pistol",
+          "gun-nut-heavy"
+        ]
+      },
+      "text": "Each bench draws and keeps 1 weapon Mod of a kind the settlement's Perks let it fit.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "mod",
+        "draw": 1,
+        "keep": 1,
+        "perStructure": true
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "armor-workbench",
+      "name": "Armor Workbench",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "perks": [
+          "armorer"
+        ]
+      },
+      "alternatives": [
+        {
+          "op": "armorBoost",
+          "n": 1
+        }
+      ],
+      "text": "Draws and keeps 1 armor Mod (never a Power Armor Mod), or instead puts 1 Armor Boost token on a unit.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "armorMod",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "power-armor-station",
+      "name": "Power Armor Station",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "perks": [
+          "armorer"
+        ]
+      },
+      "extra": [
+        {
+          "op": "repairPowerArmor",
+          "suits": 1
+        }
+      ],
+      "text": "Each station draws and keeps 1 Power Armor Mod and can repair one degraded suit between battles.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "powerArmorMod",
+        "draw": 1,
+        "keep": 1,
+        "perStructure": true
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "chemistry-station",
+      "name": "Chemistry Station",
+      "group": "crafting",
+      "cost": 100,
+      "text": "Draws and keeps 1 Chem.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "chem",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "cooking-station",
+      "name": "Cooking Station",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "structures": [
+          "crop-field"
+        ]
+      },
+      "text": "Draws one food or drink card per Crop Field (at most 5) and keeps 1.",
+      "effect": {
+        "op": "drawPerCropField",
+        "itemClass": "foodDrink",
+        "maxDraw": 5,
+        "keep": 1
+      },
+      "source": "CH p21; ERR p.3; SHEET p1"
+    },
+    {
+      "id": "robot-workbench",
+      "name": "Robot Workbench",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "perks": [
+          "robotics-expert"
+        ]
+      },
+      "text": "Each bench draws and keeps 1 Robot Mod.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "robotMod",
+        "draw": 1,
+        "keep": 1,
+        "perStructure": true
+      },
+      "source": "ERR p.3; SHEET p1"
+    },
+    {
+      "id": "creature-pen",
+      "name": "Creature Pen",
+      "group": "crafting",
+      "cost": 100,
+      "requires": {
+        "perks": [
+          "creature-trainer"
+        ]
+      },
+      "text": "Each pen draws and keeps 1 Creature Mod.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "creatureMod",
+        "draw": 1,
+        "keep": 1,
+        "perStructure": true
+      },
+      "source": "SHEET p1"
+    },
+    {
+      "id": "scavenging-stand",
+      "name": "Scavenging Stand",
+      "group": "item",
+      "cost": 50,
+      "text": "Draws 1 any item card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "any",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "scavenging-stall",
+      "name": "Scavenging Stall",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 2 any item cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "any",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "scavenging-stores",
+      "name": "Scavenging Stores",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 3 any item cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "any",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "trading-stand",
+      "name": "Trading Stand",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 Junk or Gear card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "junkGear",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "trading-shop",
+      "name": "Trading Shop",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 Junk or Gear cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "junkGear",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "trading-emporium",
+      "name": "Trading Emporium",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 Junk or Gear cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "junkGear",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "weapons-stand",
+      "name": "Weapons Stand",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 Weapon card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "weapon",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "weapons-shop",
+      "name": "Weapons Shop",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 Weapon cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "weapon",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "weapons-emporium",
+      "name": "Weapons Emporium",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 Weapon cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "weapon",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "armor-stand",
+      "name": "Armor Stand",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 Armor card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "armor",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "armor-shop",
+      "name": "Armor Shop",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 Armor cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "armor",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "armor-emporium",
+      "name": "Armor Emporium",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 Armor cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "armor",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "clothing-stand",
+      "name": "Clothing Stand",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 Clothing card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "clothing",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "clothing-shop",
+      "name": "Clothing Shop",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 Clothing cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "clothing",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "clothing-emporium",
+      "name": "Clothing Emporium",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 Clothing cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "clothing",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "drink-stand",
+      "name": "Drink Stand",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 food, drink or alcohol card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "foodDrink",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "bar",
+      "name": "Bar",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 food, drink or alcohol cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "foodDrink",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 food, drink or alcohol cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "foodDrink",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "first-aid-station",
+      "name": "First Aid Station",
+      "group": "item",
+      "cost": 100,
+      "text": "Draws 1 Medical card and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "medical",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "clinic",
+      "name": "Clinic",
+      "group": "item",
+      "cost": 150,
+      "text": "Draws 2 Medical cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "medical",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "surgery-center",
+      "name": "Surgery Center",
+      "group": "item",
+      "cost": 200,
+      "text": "Draws 3 Medical cards and keeps 1.",
+      "effect": {
+        "op": "draw",
+        "deck": "item",
+        "itemClass": "medical",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p21; SHEET p1"
+    },
+    {
+      "id": "boston-bugle-small",
+      "name": "Boston Bugle (small rack)",
+      "group": "boost",
+      "cost": 35,
+      "power": 0,
+      "text": "A small magazine rack: draws 1 Boost card and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 1,
+        "keep": 1
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "boston-bugle-medium",
+      "name": "Boston Bugle (medium rack)",
+      "group": "boost",
+      "cost": 55,
+      "power": 0,
+      "text": "A medium magazine rack: draws 2 Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 2,
+        "keep": 1
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "boston-bugle-large",
+      "name": "Boston Bugle (large rack)",
+      "group": "boost",
+      "cost": 75,
+      "power": 0,
+      "text": "A large magazine rack: draws 3 Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 3,
+        "keep": 1
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "grognak-the-barbarian-small",
+      "name": "Grognak the Barbarian (small rack)",
+      "group": "boost",
+      "cost": 50,
+      "power": 0,
+      "text": "A small magazine rack: draws 1 Practiced Boost card and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 1,
+        "keep": 1,
+        "boostType": "practiced"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "grognak-the-barbarian-medium",
+      "name": "Grognak the Barbarian (medium rack)",
+      "group": "boost",
+      "cost": 75,
+      "power": 0,
+      "text": "A medium magazine rack: draws 2 Practiced Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 2,
+        "keep": 1,
+        "boostType": "practiced"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "grognak-the-barbarian-large",
+      "name": "Grognak the Barbarian (large rack)",
+      "group": "boost",
+      "cost": 100,
+      "power": 0,
+      "text": "A large magazine rack: draws 3 Practiced Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 3,
+        "keep": 1,
+        "boostType": "practiced"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "wasteland-survival-guide-small",
+      "name": "Wasteland Survival Guide (small rack)",
+      "group": "boost",
+      "cost": 50,
+      "power": 0,
+      "text": "A small magazine rack: draws 1 Instinctive Boost card and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 1,
+        "keep": 1,
+        "boostType": "instinctive"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "wasteland-survival-guide-medium",
+      "name": "Wasteland Survival Guide (medium rack)",
+      "group": "boost",
+      "cost": 75,
+      "power": 0,
+      "text": "A medium magazine rack: draws 2 Instinctive Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 2,
+        "keep": 1,
+        "boostType": "instinctive"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "wasteland-survival-guide-large",
+      "name": "Wasteland Survival Guide (large rack)",
+      "group": "boost",
+      "cost": 100,
+      "power": 0,
+      "text": "A large magazine rack: draws 3 Instinctive Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 3,
+        "keep": 1,
+        "boostType": "instinctive"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "us-covert-ops-manual-small",
+      "name": "U.S. Covert Ops Manual (small rack)",
+      "group": "boost",
+      "cost": 50,
+      "power": 0,
+      "text": "A small magazine rack: draws 1 Tactical Boost card and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 1,
+        "keep": 1,
+        "boostType": "tactical"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "us-covert-ops-manual-medium",
+      "name": "U.S. Covert Ops Manual (medium rack)",
+      "group": "boost",
+      "cost": 75,
+      "power": 0,
+      "text": "A medium magazine rack: draws 2 Tactical Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 2,
+        "keep": 1,
+        "boostType": "tactical"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "us-covert-ops-manual-large",
+      "name": "U.S. Covert Ops Manual (large rack)",
+      "group": "boost",
+      "cost": 100,
+      "power": 0,
+      "text": "A large magazine rack: draws 3 Tactical Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 3,
+        "keep": 1,
+        "boostType": "tactical"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "astoundingly-awesome-tales-small",
+      "name": "Astoundingly Awesome Tales (small rack)",
+      "group": "boost",
+      "cost": 50,
+      "power": 0,
+      "text": "A small magazine rack: draws 1 Cunning Boost card and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 1,
+        "keep": 1,
+        "boostType": "cunning"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "astoundingly-awesome-tales-medium",
+      "name": "Astoundingly Awesome Tales (medium rack)",
+      "group": "boost",
+      "cost": 75,
+      "power": 0,
+      "text": "A medium magazine rack: draws 2 Cunning Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 2,
+        "keep": 1,
+        "boostType": "cunning"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "astoundingly-awesome-tales-large",
+      "name": "Astoundingly Awesome Tales (large rack)",
+      "group": "boost",
+      "cost": 100,
+      "power": 0,
+      "text": "A large magazine rack: draws 3 Cunning Boost cards and keeps 1. Needs no Power.",
+      "effect": {
+        "op": "draw",
+        "deck": "boost",
+        "draw": 3,
+        "keep": 1,
+        "boostType": "cunning"
+      },
+      "source": "CH p23; SHEET p2"
+    },
+    {
+      "id": "stores",
+      "name": "Stores",
+      "group": "other",
+      "cost": 150,
+      "starting": 1,
+      "text": "Step 3: take 1 Item, or up to 2 Boosts, from the pool into the next battle.",
+      "effect": {
+        "op": "stores",
+        "items": 1,
+        "boosts": 2
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "maintenance-shed",
+      "name": "Maintenance Shed",
+      "group": "other",
+      "cost": 60,
+      "starting": 1,
+      "text": "After a battle, keep 1 Item, or up to 2 Boosts, as the start of the pool.",
+      "effect": {
+        "op": "retain",
+        "items": 1,
+        "boosts": 2
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "lockers",
+      "name": "Lockers",
+      "group": "other",
+      "cost": 70,
+      "text": "Step 3: park 1 Item per locker instead of selling it; it rejoins the pool after the next battle.",
+      "effect": {
+        "op": "locker",
+        "items": 1
+      },
+      "source": "ERR p.3; SHEET p2"
+    },
+    {
+      "id": "brahmin-pen",
+      "name": "Brahmin Pen",
+      "group": "other",
+      "cost": 300,
+      "requires": {
+        "perks": [
+          "local-leader"
+        ]
+      },
+      "text": "In any one draw-and-keep, throw away every drawn card and draw the whole set again.",
+      "effect": {
+        "op": "modifyDraw",
+        "how": "redrawAll"
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "brahmin-troughs",
+      "name": "Brahmin Troughs",
+      "group": "other",
+      "cost": 200,
+      "requires": {
+        "perks": [
+          "local-leader"
+        ]
+      },
+      "text": "In any one draw-and-keep, draw 1 more card; may be decided after seeing the draw.",
+      "effect": {
+        "op": "modifyDraw",
+        "how": "drawExtra",
+        "n": 1
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "brahmin-ranch",
+      "name": "Brahmin Ranch",
+      "group": "other",
+      "cost": 250,
+      "requires": {
+        "perks": [
+          "local-leader-ii"
+        ]
+      },
+      "max": 1,
+      "text": "In any one draw-and-keep, keep 1 more card; may be decided after seeing the draw.",
+      "effect": {
+        "op": "modifyDraw",
+        "how": "keepExtra",
+        "n": 1
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "operations-room",
+      "name": "Operations Room",
+      "group": "other",
+      "cost": 400,
+      "requires": {
+        "perks": [
+          "local-leader-ii"
+        ]
+      },
+      "max": 1,
+      "text": "Use one Structure that has already been used this phase a second time.",
+      "effect": {
+        "op": "reuse"
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "leaders-office",
+      "name": "Leader's Office",
+      "group": "other",
+      "cost": 500,
+      "requires": {
+        "perks": [
+          "local-leader-ii"
+        ]
+      },
+      "max": 1,
+      "text": "Instead of a draw-and-keep, name 1 specific Item of that type and pay its caps cost.",
+      "effect": {
+        "op": "nameItem"
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "robot-market",
+      "name": "Robot Market",
+      "group": "other",
+      "cost": 250,
+      "max": 1,
+      "text": "Before anything else: draw 4 Robot Mods and buy any of them at their caps cost.",
+      "effect": {
+        "op": "market",
+        "itemClass": "robotMod",
+        "draw": 4
+      },
+      "source": "ERR p.3; SHEET p2"
+    },
+    {
+      "id": "creature-market",
+      "name": "Creature Market",
+      "group": "other",
+      "cost": 250,
+      "max": 1,
+      "text": "Before anything else: draw 4 Creature Mods and buy any of them at their caps cost.",
+      "effect": {
+        "op": "market",
+        "itemClass": "creatureMod",
+        "draw": 4
+      },
+      "source": "SHEET p2"
+    },
+    {
+      "id": "land",
+      "name": "Land",
+      "group": "other",
+      "cost": 500,
+      "power": 0,
+      "provides": {
+        "slots": 10
+      },
+      "questsAlt": 5,
+      "text": "Adds room for 10 more Structures. Not itself a Structure and needs no Power. Costs 500 caps or five completed Quest cards.",
+      "effect": {
+        "op": "none"
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "listening-post",
+      "name": "Listening Post",
+      "group": "exploration",
+      "cost": 0,
+      "max": 1,
+      "starting": 1,
+      "text": "Pay 50 caps to draw and resolve 1 Explore card; may be used again and again, always for 50 caps. Takes 1 Power in total.",
+      "effect": {
+        "op": "explore",
+        "capsPerUse": 50,
+        "repeatable": true
+      },
+      "source": "CH p22; SHEET p2"
+    },
+    {
+      "id": "ranger-outpost",
+      "name": "Ranger Outpost",
+      "group": "exploration",
+      "cost": 100,
+      "text": "Draw and resolve 1 Explore card at no caps cost.",
+      "effect": {
+        "op": "explore"
+      },
+      "source": "CH p22; ERR p.5; SHEET p2"
+    },
+    {
+      "id": "scout-camp",
+      "name": "Scout Camp",
+      "group": "exploration",
+      "cost": 200,
+      "text": "Throw away the Explore card just drawn and draw another, as long as no test on it has been attempted.",
+      "effect": {
+        "op": "exploreRedraw"
+      },
+      "source": "CH p22; SHEET p2"
+    }
+  ]
+}

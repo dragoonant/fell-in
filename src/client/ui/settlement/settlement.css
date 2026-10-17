@@ -1,0 +1,70 @@
+/* Settlement (campaign) screen. Uses the start screen's palette (--sand --rust --teal --ink --bone). */
+.settle { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); color: var(--bone); background-color: #14110d;
+  background-image: linear-gradient(180deg, rgba(14,11,8,.72), rgba(14,11,8,.9)), var(--start-art, none); background-size: cover; background-position: center; }
+.settle h2, .settle h3 { margin: 0; font-weight: 600; }
+.settle button { font: inherit; }
+.settle .st-btn { padding: 7px 12px; border: 1px solid #5a4a36; background: #2a2218; color: var(--bone); border-radius: 4px; cursor: pointer; font-size: 14px; text-align: left; }
+.settle .st-btn:hover:not(:disabled) { border-color: var(--sand); }
+.settle .st-btn[aria-pressed="true"] { border-color: var(--teal); background: #2f5a55; }
+.settle .st-btn:disabled { opacity: .45; cursor: not-allowed; }
+.settle .st-btn.primary { background: var(--rust); border-color: var(--rust); text-align: center; }
+.settle .st-btn.quiet { background: transparent; border-color: #6b665c; }
+.settle .st-btn small { display: block; opacity: .7; font-size: 11px; }
+.settle .st-cost { float: right; margin-left: 10px; color: var(--sand); font-size: 12px; }
+
+.st-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; padding: 10px 18px; background: rgba(29,26,22,.94); border-bottom: 2px solid var(--rust); }
+.st-head h1 { margin: 0; font-size: 20px; color: var(--sand); letter-spacing: .03em; }
+.st-stat { display: flex; flex-direction: column; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); }
+.st-stat b { font-size: 17px; color: var(--bone); letter-spacing: 0; text-transform: none; }
+.st-head .st-spacer { flex: 1 1 auto; }
+.st-head .st-btn.primary { padding: 10px 22px; font-size: 16px; }
+
+.st-main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 320px; gap: 12px; padding: 12px 18px; min-height: 0; }
+.st-col { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.st-panel { background: rgba(29,26,22,.92); border: 1px solid #4f8a8266; border-left: 3px solid var(--rust); border-radius: 4px; padding: 10px 12px; }
+.st-panel h2 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+.st-panel h3 { font-size: 16px; color: var(--sand); }
+.st-note { margin: 4px 0 0; font-size: 12px; opacity: .78; line-height: 1.45; }
+.st-err { color: #e0a080; font-size: 13px; margin: 6px 0 0; }
+.st-empty { opacity: .6; font-size: 13px; margin: 4px 0 0; }
+
+.st-steps { list-style: none; margin: 0; padding: 0; }
+.st-steps .st-part { margin: 10px 0 2px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--teal); }
+.st-steps li.st-step { margin: 0; }
+.st-steps li.st-step button { width: 100%; display: flex; gap: 8px; align-items: baseline; padding: 5px 8px; background: transparent; border: 0; border-left: 3px solid transparent; color: var(--bone); cursor: pointer; text-align: left; font-size: 13px; }
+.st-steps li.st-step button:hover { background: #2a2218; }
+.st-steps li.st-step[data-state="current"] button { border-left-color: var(--rust); background: #2a2218; color: var(--sand); }
+.st-steps li.st-step[data-state="done"] button { opacity: .55; }
+.st-steps li.st-step[data-state="skipped"] button { opacity: .45; }
+.st-steps .st-tick { width: 14px; text-align: center; color: var(--teal); flex: none; }
+
+.st-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; margin-top: 8px; }
+.st-group { margin-top: 10px; }
+.st-group > summary { cursor: pointer; font-size: 13px; color: var(--sand); }
+.st-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+
+.st-list { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.st-list li { padding: 4px 0; border-bottom: 1px solid #ffffff12; display: flex; justify-content: space-between; gap: 8px; }
+.st-list li:last-child { border-bottom: 0; }
+.st-list small { opacity: .65; display: block; }
+.st-tag { display: inline-block; padding: 0 6px; margin: 0 4px 0 0; border-radius: 3px; background: #2f5a55; font-size: 11px; }
+.st-tag.leader { background: var(--rust); }
+
+.st-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.st-pick button { padding: 6px 10px; border: 1px solid #5a4a36; background: #2a2218; color: var(--bone); border-radius: 4px; cursor: pointer; font-size: 13px; text-align: left; }
+.st-pick button[aria-pressed="true"] { border-color: var(--teal); background: #2f5a55; }
+.st-pick button small { display: block; opacity: .7; font-size: 11px; }
+.settle select, .settle input[type=text] { padding: 6px 8px; background: #14110d; color: var(--bone); border: 1px solid #5a4a36; border-radius: 4px; font: inherit; max-width: 100%; }
+
+.st-center { padding: 24px; text-align: center; }
+.st-confirm { max-width: 460px; margin: 10vh auto 0; text-align: left; }
+
+@media (max-width: 1000px) {
+  /* one column: the page scrolls as a whole and each panel keeps its natural height */
+  .st-main { display: flex; flex-direction: column; overflow: auto; padding: 10px 16px; }
+  .st-col { flex: none; overflow: visible; min-height: auto; }
+  .st-head { padding: 10px 16px; }
+  /* the step you are on comes first on a phone; the list of steps follows */
+  .st-col[aria-label="This step"] { order: -1 }
+  .st-choices { grid-template-columns: minmax(0, 1fr); }
+}

@@ -394,3 +394,7 @@ interface CapsAwardDef { id: string; scenarioId?: string;   // absent = the defa
   boosts, events, quests and explore records (the known card-text gaps) and the validator reports their count.
 - Campaign save shape (`fell-in.campaign.v1`, `src/campaign/types.ts`, spec 19 s7) is versioned by the key;
   a save from another edition or an unknown version is refused with a message, never migrated silently.
+  The start screen offers "Continue campaign" only for a save the store would load (`version` 1, the default edition).
+  A second key, `fell-in.campaign.next`, remembers the scenario and opponent picked for the next battle
+  (`{scenarioId, opponent}`); it is a per-player convenience, never read by the campaign layer, and is removed when a
+  new campaign replaces the save.

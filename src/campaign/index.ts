@@ -1,0 +1,12 @@
+// Campaign layer (M6). A pure layer beside the engine; see docs/spec/19-campaign-settlement.md section 7.
+export * from './types'
+export * from './data'
+export { defaultCampaignData } from './defaults'
+export { newCampaign, reduce, tryReduce, replay, actionsFromLog, capsAward, blankPhase, exploreSv, questCardFor, stepAfter, type NewCampaignOpts, type NewPlayer, type ReduceResult } from './reducer'
+export { SEQUENCE, stepDef, hasDecision, autoAdvance, describeStep, type StepDef, type StepOption, type StepView } from './sequence'
+export { toBattle, fromBattle, beginBattle, engineIds, applyLinked, questView, type BattleSetup, type BattleExtras, type ToBattleOpts, type FromBattleOpts } from './battle'
+export * as rules from './rules'
+export * as events from './events'
+export * as boosts from './boosts'
+export { runHook, campaignHooks, secondChance, fortunateDeflection, eventRules } from './hooks'
+export { STORE_KEY, loadCampaign, saveCampaign, clearCampaign, hasSavedCampaign, startNewCampaign, migrate } from './store'

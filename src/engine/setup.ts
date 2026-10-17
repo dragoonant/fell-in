@@ -30,6 +30,19 @@ export const DEFAULT_FORCES: readonly (readonly ScenarioForce[])[] = [
   ],
 ]
 
+/**
+ * Campaign layer hand-off (spec 00 s11, 19 s7; additive, absent in plain games): per-model state a force list cannot carry.
+ * Keys are engine model ids (`<seat lowercase>-<unit>-<n>`), which src/campaign/battle.ts computes the same way.
+ */
+export interface CampaignGameOpts {
+  /** Damage tokens a model starts with (Explore cards, assigned after the force is picked; EXPL-004). */
+  damage?: Record<string, number>
+  /** Carried card ids that start degraded (Power Armor that ended the last battle degraded; CH p24). */
+  degraded?: Record<string, string[]>
+  /** Mods fitted to a carried card: model id -> card id -> mod ids. */
+  mods?: Record<string, Record<string, string[]>>
+}
+
 export interface CreateGameOpts {
   seed: string
   /** Seat ids in order; seat i plays scenario side i. Default ['A', 'B']. */
@@ -41,6 +54,8 @@ export interface CreateGameOpts {
   controllers?: Partial<Record<SeatId, SeatController>>
   /** A themed board (suburbs, red-rocket, junkyard). Applies only to open skirmish tables (themeFits); every other scenario keeps its own terrain. */
   theme?: TerrainTheme | null
+  /** Campaign hand-off: starting damage, degraded suits and fitted mods per model. Perks ride on ScenarioForce.perks. */
+  campaign?: CampaignGameOpts
 }
 
 /** Every M2 rules field of a fresh model (unready, no tokens, nothing carried). */
@@ -178,11 +193,23 @@ export function createGame(bundle: EditionBundle, opts: CreateGameOpts): GameSta
         const heroic = !!f.heroic
         // AI forces also take everything their AI card lists as standard equipment (CH p8 step 2, ERR p.3).
         const std = controllerOf(seat) === 'official' ? bundle.records.ai.find((c) => c.unitId === f.unit)?.standardEquipment ?? [] : []
+        const carried = carriedFor(bundle, id, [...unit.equipped, ...f.items, ...std])
+        // Campaign extras: degraded suits and fitted mods (a campaign force bundle, spec 19 s7).
+        const cx = opts.campaign
+        for (const c of carried) {
+          if (cx?.degraded?.[id]?.includes(c.defId)) c.degraded = true
+          const fit = cx?.mods?.[id]?.[c.defId]
+          if (fit?.length) c.mods = [...fit]
+        }
+        // Equipped Perks bought in the campaign are carried as `perk:<id>` tokens until the engine models their effects.
+        const perks = (f as ScenarioForce & { perks?: string[] }).perks ?? []
         list.push({
           ...modelDefaults(),
           id, profileId: unit.id, owner: seat, unitId: id, pos: { x: 0, z: 0 }, elev: 0, base: unit.baseMm, life: 'active', conditions: [],
           heroic, luck: unit.luck || heroic ? unit.attrs.luc : 0,
-          carried: carriedFor(bundle, id, [...unit.equipped, ...f.items, ...std]),
+          damage: opts.campaign?.damage?.[id] ?? 0,
+          carried,
+          tokens: Object.fromEntries(perks.map((k) => [`perk:${k}`, 1])),
           ...(f.leader ? { leaderId: f.leader } : {}),
         })
       }
