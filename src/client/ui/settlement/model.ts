@@ -38,6 +38,8 @@ export interface StepView {
   /** The player may leave the step without choosing (most steps). */
   optional: boolean
   state: StepState
+  /** One extra plain-words line under the question (what happens if the player leaves the step alone). */
+  hint?: string
   /** What the layer wants dispatched to close the step; null = just move on in the screen. */
   finish: unknown | null
   /** Pick-several steps: the choices become toggles and `confirm` builds the one action from the picked choice ids. */
@@ -97,6 +99,6 @@ export const OPPONENTS: OpponentChoice[] = [
   { id: 'human', label: 'A friend', blurb: 'Two players, one screen, taking turns.' },
 ]
 
-export interface NextBattle { scenarioId: string; opponent: OpponentChoice['id']; seed: string }
+export interface NextBattle { scenarioId: string; opponent: OpponentChoice['id']; seed: string; /** Table theme for an open skirmish table; none or null = the scenario's own layout. */ theme?: string | null }
 
 export type { CampaignForce, NewGameOptions, SeatController }

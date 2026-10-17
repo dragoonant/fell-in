@@ -74,9 +74,11 @@ export function SettlementScreen({ onLeave, host: h }: { onLeave: () => void; ho
           <StepList steps={steps} cursor={cursor} />
         </div>
         <div className="st-col" aria-label="This step">
+          {/* On the last step the choice of battle is the whole point, so it comes first; before that it waits under the step. */}
+          {step?.id === 'toBattle' && <NextBattlePanel />}
           {step ? <StepPanel step={step} last={cursor >= steps.length - 1} /> : <p className="st-empty">Nothing to do right now.</p>}
           {error && <p className="st-err" role="alert" data-testid="settlement-error">{error}</p>}
-          <NextBattlePanel />
+          {step?.id !== 'toBattle' && <NextBattlePanel />}
         </div>
         <div className="st-col" aria-label="What you have">
           <RosterPanel />
@@ -168,6 +170,7 @@ function StepPanel({ step, last }: { step: StepView; last: boolean }) {
       <h3 data-testid="settlement-step-title">{copy.title}</h3>
       <p className="st-note">{copy.blurb || step.blurb}</p>
       <p className="st-note"><b>{copy.decision || step.decision}</b></p>
+      {step.hint && <p className="st-note" data-testid="step-hint">{step.hint}</p>}
       {step.auto && step.choices.length === 0 && <p className="st-empty" data-testid="step-auto">Nothing to decide here.</p>}
       {step.choices.length === 0 && !step.auto && <p className="st-empty" data-testid="step-nothing">Nothing on offer right now.</p>}
       {multi && <p className="st-note" data-testid="step-picked">Picked {picked.length} of up to {multi.max}.</p>}
@@ -183,7 +186,7 @@ function StepPanel({ step, last }: { step: StepView; last: boolean }) {
           <button className="st-btn primary" data-testid="step-confirm" disabled={picked.length < multi.min} onClick={() => { if (act(multi.confirm!(picked))) setPicked([]) }}>{multi.confirmLabel ?? 'Confirm'}</button>
         )}
         {step.id === 'toBattle'
-          ? <p className="st-note" data-testid="step-battle-note">Pick the scenario and opponent below, then press To battle.</p>
+          ? <p className="st-note" data-testid="step-battle-note">Pick the scenario and opponent in the panel above, then press To battle.</p>
           : <button className={multi ? 'st-btn' : 'st-btn primary'} data-testid="step-next" onClick={finishStep}>{last ? 'Done' : step.optional || step.auto ? 'Next step' : 'Done with this step'}</button>}
       </div>
     </section>
@@ -215,13 +218,15 @@ const pickListeners = new Set<() => void>()
 function readPick(): NextBattle {
   if (!sharedPick) {
     const saved = host().readJson<Partial<NextBattle>>(NEXT_KEY) ?? {}
-    sharedPick = { scenarioId: saved.scenarioId ?? 'box-1', opponent: saved.opponent ?? 'bot', seed: '' }
+    // The table theme starts as the one picked on the start screen, so a campaign table looks like a normal launch.
+    const theme = saved.theme !== undefined ? saved.theme : host().startTheme()
+    sharedPick = { scenarioId: saved.scenarioId ?? 'box-1', opponent: saved.opponent ?? 'bot', seed: '', theme: theme && host().themes.some((t) => t.id === theme) ? theme : null }
   }
   return sharedPick
 }
 function setPick(p: Partial<NextBattle>): void {
   sharedPick = { ...readPick(), ...p }
-  host().writeJson(NEXT_KEY, { scenarioId: sharedPick.scenarioId, opponent: sharedPick.opponent })
+  host().writeJson(NEXT_KEY, { scenarioId: sharedPick.scenarioId, opponent: sharedPick.opponent, theme: sharedPick.theme })
   pickListeners.forEach((f) => f())
 }
 
@@ -247,7 +252,8 @@ function useNextBattle(): NextBattleState {
   const problem = scenarios.length ? opponentProblem(pick.opponent, chosen) : null
   const go = () => {
     const r = prepareBattle(pick)
-    if (r) host().launchGame(r.options)
+    // A themed table only dresses an open skirmish table against a bot or a friend; any other scenario keeps its own terrain.
+    if (r) host().launchGame({ ...r.options, ...(pick.theme && pick.opponent !== 'official' && host().themeable(r.options.scenarioId ?? pick.scenarioId) ? { theme: pick.theme } : {}) })
   }
   return { pick, set: setPick, scenarios, problem, ready: problem === null, go }
 }
@@ -255,6 +261,7 @@ function useNextBattle(): NextBattleState {
 function NextBattlePanel() {
   const nb = useNextBattle()
   const { pick } = nb
+  const themeable = pick.opponent !== 'official' && host().themeable(pick.scenarioId)
   return (
     <section className="st-panel" data-testid="next-battle">
       <h2>Next battle</h2>
@@ -273,6 +280,15 @@ function NextBattlePanel() {
           </button>
         ))}
       </div>
+      {themeable && (
+        <>
+          <p className="st-note">Table theme</p>
+          <div className="st-pick" data-testid="next-theme">
+            <button aria-pressed={!pick.theme} data-testid="next-theme-none" onClick={() => nb.set({ theme: null })}>Scenario layout</button>
+            {host().themes.map((t) => <button key={t.id} aria-pressed={pick.theme === t.id} data-testid={`next-theme-${t.id}`} onClick={() => nb.set({ theme: t.id })}>{t.label}</button>)}
+          </div>
+        </>
+      )}
       <p className="st-note"><label htmlFor="nb-seed">Dice seed (optional)</label></p>
       <input id="nb-seed" type="text" data-testid="next-seed" placeholder="random" maxLength={40} value={pick.seed} onChange={(e) => nb.set({ seed: e.target.value })} />
       {nb.problem && <p className="st-err" data-testid="next-problem">{nb.problem}</p>}

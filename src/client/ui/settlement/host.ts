@@ -13,6 +13,10 @@ export interface SettlementHost {
   openRequest(): { mode: 'new' | 'continue' | null; seed: string | null; faction: string | null }
   /** ?test=1 (window.__campaign, no replace prompt). */
   testMode(): boolean
+  /** Table themes for open skirmish tables (the start screen's picker), the scenarios they can dress, and the theme last picked there. */
+  themes: readonly { id: string; label: string }[]
+  themeable(scenarioId: string): boolean
+  startTheme(): string | null
   readJson<T>(key: string): T | null
   writeJson(key: string, value: unknown): boolean
   removeKey(key: string): void

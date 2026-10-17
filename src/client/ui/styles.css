@@ -21,11 +21,11 @@ body { margin: 0; overflow: hidden; }
 .hud .title { color: var(--sand); font-weight: 600; margin-right: 8px; }
 
 /* camera presets live bottom-right (the top bar used to cover them); the title is already on the start screen and in the tab */
-.game > .hud { top: auto; left: auto; right: 12px; bottom: 72px; flex-direction: column; align-items: stretch; gap: 4px; }
+.game > .hud { top: auto; left: auto; right: 12px; bottom: 67px; flex-direction: column; align-items: stretch; gap: 4px; }
 .game > .hud .title { display: none; }
 .game > .hud button { padding: 3px 9px; font-size: 12px; }
 @media (max-width: 900px) { .game > .hud { bottom: auto; top: 104px; right: 6px; } }
 
-/* bottom-right corner, bottom to top: key hints (Interaction, bottom 12) / sound buttons (AudioHost, bottom 34, the volume panel opens to their left) / camera presets (bottom 72) */
+/* bottom-right corner, bottom to top: key hints (Interaction, bottom 12) / sound buttons (AudioHost, bottom 35, the volume panel opens to their left) / camera presets (bottom 67), each 8 px apart */
 [data-testid="audio-toggle"], [data-testid="audio-volume"] { font: inherit; font-size: 12px; background: rgba(29,26,22,.9); color: var(--bone); border: 1px solid var(--teal); border-radius: 4px; padding: 3px 9px; cursor: pointer; }
 [data-testid="audio-toggle"][aria-pressed="true"] { background: var(--teal); color: var(--ink); }

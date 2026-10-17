@@ -4,6 +4,9 @@
 .sc-sec { margin: 16px 0 0; }
 .sc-h { margin: 0 0 6px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
 .sc-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.sc-factions { align-items: center; margin-top: 8px; }
+.sc-factions .sc-note { margin: 0; min-height: 0; }
+.sc-factions .sc-chip { padding: 5px 10px; }
 .sc-chip { padding: 8px 12px; border: 1px solid #5a4a36; background: #2a2218; color: var(--bone); border-radius: 4px; cursor: pointer; font: inherit; font-size: 14px; text-align: left; }
 .sc-chip:hover { border-color: var(--sand); }
 .sc-chip[aria-pressed="true"] { border-color: var(--teal); background: #2f5a55; }

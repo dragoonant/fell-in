@@ -2,7 +2,7 @@
 // Rendered by AudioHost; values persist through the audio manager.
 import { audio, type AudioSettings } from '../audio/manager'
 
-const panel: React.CSSProperties = { background: 'rgba(29,26,22,.94)', border: '1px solid #8a7a5c', borderRadius: 4, padding: '8px 10px', fontSize: 12, color: '#e8dfc8', display: 'grid', gridTemplateColumns: 'auto 110px', gap: '6px 8px', alignItems: 'center' }
+const panel: React.CSSProperties = { background: 'rgba(29,26,22,.94)', border: '1px solid #8a7a5c', borderRadius: 4, padding: '8px 10px', fontSize: 12, color: '#e8dfc8', display: 'grid', gridTemplateColumns: 'auto 84px', gap: '6px 8px', alignItems: 'center' }
 
 type VolumeKey = 'master' | 'sfx' | 'music' | 'voice'
 const SLIDERS: [string, VolumeKey][] = [['Master', 'master'], ['Effects', 'sfx'], ['Music', 'music'], ['Voice', 'voice']]

@@ -216,3 +216,14 @@ describe('settlement panels', () => {
     expect(v.log.every((t) => t !== 'step.next')).toBe(true)
   })
 })
+
+describe('settlement force hint', () => {
+  it('SETTLE-009 with no force picked, the force step and To battle both say a regular force goes along; a picked force drops the hint', () => {
+    const fx = fresh()
+    const c = at(fx.c, 'force.create')
+    expect(current(stepsFor(c, fx.d)).hint).toMatch(/regular force \(750 caps\)/)
+    expect(current(stepsFor(at(fx.c, 'toBattle'), fx.d)).hint).toMatch(/regular force \(750 caps\)/)
+    const picked = reduce(c, { type: 'force.create', seat: SEAT, plan: autoForce(P(c), fx.d, 500) }, fx.d)
+    expect(current(stepsFor(picked, fx.d)).hint).toBeUndefined()
+  })
+})

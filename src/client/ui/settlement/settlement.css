@@ -20,7 +20,8 @@
 .st-head .st-btn.primary { padding: 10px 22px; font-size: 16px; }
 
 .st-main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 320px; gap: 12px; padding: 12px 18px; min-height: 0; }
-.st-col { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.st-col { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: #6b5a42 transparent; padding-right: 4px; }
+.st-col > * { flex: none; }
 .st-panel { background: rgba(29,26,22,.92); border: 1px solid #4f8a8266; border-left: 3px solid var(--rust); border-radius: 4px; padding: 10px 12px; }
 .st-panel h2 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
 .st-panel h3 { font-size: 16px; color: var(--sand); }

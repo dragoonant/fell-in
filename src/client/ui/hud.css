@@ -186,7 +186,9 @@
 
 /* decision prompt: a compact single-row bar anchored at the bottom (title, one line, buttons), expanding upward on hover or focus.
    Collapsed it is ~40 px tall, so at 1280x800 it covers well under 90 px of the table above the bottom edge. */
-.dock:has(.prompt.compact) { width: min(660px, calc(100vw - 24px)); }
+/* Bottom edge: the selected-model chip sits bottom-left (up to 238 px), the sound, hint and camera stack bottom-right (up to ~200 px), so
+   the centred prompt bar keeps 252 px free on each side and never reaches either. */
+.dock:has(.prompt.compact) { width: min(640px, calc(100vw - 2 * 252px)); }
 .prompt.compact { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; padding: 5px 10px; }
 .prompt.compact h3 { margin: 0; white-space: nowrap; }
 .prompt.compact .hint { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -198,3 +200,4 @@
 .prompt.compact:hover .tip, .prompt.compact:focus-within .tip { display: block; margin: 0; }
 .prompt.compact:hover .options, .prompt.compact:focus-within .options { flex-wrap: wrap; justify-content: flex-start; margin-top: 2px; }
 @media (max-width: 600px) { .dock:has(.prompt.compact) { width: calc(100vw - 16px); } }
+@media (max-width: 900px) { .dock:has(.prompt.compact) { width: min(640px, calc(100vw - 24px)); } }

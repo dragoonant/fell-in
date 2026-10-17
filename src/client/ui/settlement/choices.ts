@@ -74,7 +74,7 @@ function buildStep(c: Campaign, id: StepId, i: number, p: CampaignPlayer, d: Cam
     case 'afterBattle.sell':
     case 'select.sell':
     case 'toBattle':
-      return { ...s, auto: true }
+      return { ...s, auto: true, ...(p.force ? {} : { hint: noForceHint(true) }) }
 
     case 'afterBattle.retain': {
       const normal = p.phase.gathered.filter((x) => !x.unique)
@@ -345,6 +345,11 @@ export function autoForce(p: CampaignPlayer, d: CampaignData, limit: number): Fo
   return plan
 }
 
+/** What happens when nobody was picked: the layer's startBattle takes the regular force (adapter.ts), so the screen says so. */
+function noForceHint(onBattleStep: boolean): string {
+  return `${onBattleStep ? 'No force picked yet: ' : 'Leave this empty and '}To battle fields a regular force (${DEFAULT_FORCE_LIMIT} caps) for you, the leader first and then your roster in order.`
+}
+
 function forceStep(s: StepView, p: CampaignPlayer, d: CampaignData): StepView {
   const seat = p.seat
   // Every unit is on offer (CH p24); its price counts inside the force value, nothing is paid here.
@@ -368,7 +373,7 @@ function forceStep(s: StepView, p: CampaignPlayer, d: CampaignData): StepView {
   const limit = p.force?.capsLimit ?? DEFAULT_FORCE_LIMIT
   const toggles = [...members, ...perks, ...heroic]
   return {
-    ...s, optional: false,
+    ...s, optional: false, ...(p.force ? {} : { hint: noForceHint(false) }),
     decision: p.force ? `Your force is set: ${p.force.members.length} model${p.force.members.length === 1 ? '' : 's'}, ${p.force.value} of ${p.force.capsLimit} caps. Change it, or head to battle.` : 'Pick who fights, or take a quick pick.',
     choices: [...auto, ...toggles, ...hire, ...dismiss],
     multi: {

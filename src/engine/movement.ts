@@ -278,7 +278,12 @@ function moveTo(state: GameState, bundle: EditionBundle, action: Action): StepRe
     s = detonate(updateModel(s, id, { pos: c.point }), bundle, c.mine)
     if (!alive(s, id)) return { state: s, done }
   }
-  if (exits) return { state: removeModel(s, bundle, id, 'left the table'), done } // MOVE-011
+  if (exits) {
+    // MOVE-011. A scenario object the model carries leaves with it: flag it off the table, with the carrying seat, before removeModel drops it.
+    const seat = s.models[id]?.owner ?? ''
+    s = { ...s, markers: s.markers.map((k) => (k.carriedBy === id ? { ...k, props: { ...k.props, offTable: true, offTableBy: seat } } : k)) }
+    return { state: removeModel(s, bundle, id, 'left the table'), done }
+  }
   // Climbing (MOVE-007): an Agility test; failing falls from where the climb began and ends the Action.
   if (climbing) {
     const t = agiTest(s, bundle, id, 'climb')

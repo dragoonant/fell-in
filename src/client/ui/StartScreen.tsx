@@ -48,6 +48,9 @@ const SETTLEMENT_HOST: SettlementHost = {
   launchGame, loadScenarioChoices, loadCampaignFactions, hasCampaignSave, readJson, writeJson, removeKey,
   openRequest: () => { const s = useLaunchStore.getState(); return { mode: s.campaignMode, seed: s.campaignSeed, faction: s.campaignFaction } },
   testMode: () => readParams().test,
+  themes: THEMES.map((t) => ({ id: t.id, label: t.label })),
+  themeable: (scenarioId) => THEMEABLE.has(scenarioId),
+  startTheme: () => asTheme(readJson<Partial<Prefs>>(PREF_KEY)?.theme),
 }
 
 function StartMenu() {
@@ -119,6 +122,28 @@ function StartMenu() {
         <h1>Fell-in: Wasteland Warfair</h1>
         <p className="tag">A 3D tabletop skirmish on a dusty 3 by 3 foot table.</p>
         <p className="sc-note">New to the game? <HowToPlayButton link testId="start-how-to-play" label="Read how to play" /></p>
+
+        <section className="sc-sec" aria-label="Campaign">
+          <h2 className="sc-h">Campaign</h2>
+          <div className="sc-row" data-testid="campaign-modes">
+            <button className="sc-chip" data-testid="campaign-new" onClick={() => openCampaign('new', null, campaignFaction)}>
+              New campaign<small>Build a settlement between battles: spend caps, store gear, pick the next fight.</small>
+            </button>
+            {campaignSave && (
+              <button className="sc-chip" data-testid="campaign-continue" onClick={() => openCampaign('continue')}>
+                Continue campaign<small>{campaignSave.name}, round {campaignSave.round}, {campaignSave.caps} caps</small>
+              </button>
+            )}
+          </div>
+          {factions.length > 1 && (
+            <div className="sc-row sc-factions" data-testid="campaign-faction">
+              <span className="sc-note">Start as</span>
+              {factions.map((f) => (
+                <button key={f.id} className="sc-chip" aria-pressed={campaignFaction === f.id} data-testid={`campaign-faction-${f.id}`} onClick={() => { setFaction(f.id); writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme, faction: f.id }) }}>{f.name}</button>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="sc-sec" aria-label="Scenario">
           <h2 className="sc-h">Scenario</h2>
@@ -217,26 +242,6 @@ function StartMenu() {
             </button>
           )}
         </div>
-
-        <section className="sc-sec" aria-label="Campaign">
-          <h2 className="sc-h">Campaign</h2>
-          <p className="sc-note">Build a settlement between battles: spend caps, store gear, pick the next fight.</p>
-          {factions.length > 1 && (
-            <div className="sc-row" data-testid="campaign-faction" style={{ marginTop: 6 }}>
-              {factions.map((f) => (
-                <button key={f.id} className="sc-chip" aria-pressed={campaignFaction === f.id} data-testid={`campaign-faction-${f.id}`} onClick={() => { setFaction(f.id); writeJson(PREF_KEY, { scenarioId, mode, tier, team, theme, faction: f.id }) }}>{f.name}</button>
-              ))}
-            </div>
-          )}
-          <div className="sc-actions" style={{ marginTop: 8, justifyContent: 'flex-start' }}>
-            <button className="go alt" data-testid="campaign-new" onClick={() => openCampaign('new', null, campaignFaction)}>New campaign</button>
-            {campaignSave && (
-              <button className="go alt" data-testid="campaign-continue" onClick={() => openCampaign('continue')}>
-                Continue campaign ({campaignSave.name}, round {campaignSave.round}, {campaignSave.caps} caps)
-              </button>
-            )}
-          </div>
-        </section>
 
         <p className="fine" data-testid="disclaimer">
           Unofficial fan project, not affiliated with Modiphius Entertainment, Bethesda Softworks or ZeniMax. By evilgouki.

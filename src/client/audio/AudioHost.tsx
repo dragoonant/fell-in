@@ -10,7 +10,9 @@ import { audio, type AudioSettings } from './manager'
 import { roundVoiceId } from './manifest'
 import { yourTurnRound } from './triggers'
 
-const box: React.CSSProperties = { position: 'fixed', right: 12, bottom: 34, zIndex: 6, display: 'flex', flexDirection: 'row-reverse', alignItems: 'flex-end', gap: 6 }
+// Bottom-right stack, bottom to top, 8 px apart: key hints (Interaction, bottom 12, about 15 px tall) / these buttons (bottom 35, 24 px tall) /
+// camera presets (styles.css, bottom 67). The volume panel opens to the left of the buttons (they stay put), clear of the centred prompt bar (hud.css).
+const box: React.CSSProperties = { position: 'fixed', right: 12, bottom: 35, zIndex: 6, display: 'flex', alignItems: 'flex-end', gap: 6 }
 
 /** `death-<kind>` for a model, read from its unit record. */
 function deathSoundFor(modelId: string): string {
@@ -65,7 +67,7 @@ export function AudioHost() {
 
   return (
     <div style={box}>
-      {open && <SoundSettings settings={s} />}
+      {open && <div style={{ marginBottom: 28 }}><SoundSettings settings={s} /></div>}
       <div style={{ display: 'flex', gap: 6 }}>
         <button data-testid="audio-toggle" aria-pressed={!s.muted} aria-label={s.muted ? 'Unmute sound' : 'Mute sound'} title={s.muted ? 'Sound off' : 'Sound on'} onClick={() => audio.set({ muted: !s.muted })}>
           {s.muted ? 'Sound off' : 'Sound on'}

@@ -22,7 +22,7 @@ export const STEP_COPY: Record<string, StepCopy> = {
   'select.sell': { part: PARTS[3], title: 'Sell what is left', blurb: 'Anything still in the pool is sold for caps.', decision: 'Nothing to decide unless you change your mind.' },
   'force.create': { part: PARTS[4], title: 'Pick your force', blurb: 'Choose units up to the caps limit, hand out your chosen gear and equip the perks you want to use.', decision: 'Which units fight, with what?' },
   'force.quest': { part: PARTS[4], title: 'Pick a quest', blurb: 'A quest gives the next fight a side goal and a prize.', decision: 'Which quest do you chase?' },
-  toBattle: { part: PARTS[4], title: 'To battle', blurb: 'Choose the scenario and who you face, then head out.', decision: 'Where and against whom?' },
+  toBattle: { part: PARTS[4], title: 'To battle', blurb: 'Choose the scenario and who you face, then head out. With no force picked, a regular one goes with you.', decision: 'Where and against whom?' },
 }
 
 /** Friendly title and text for a step id; uses the layer's own text when the id is not in the table. */

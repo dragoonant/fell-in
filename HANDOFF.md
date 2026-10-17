@@ -4,28 +4,43 @@ Start here in a new session opened on this folder. Read `CLAUDE.md`, then this f
 Cross-project lessons (stack, reusable code, pipelines, token traps) are in `docs/KNOWLEDGE-BASE.md`;
 read only the section a task needs. The source map is `docs/spec/sources/WW-SOURCES.md`.
 
-## Current state (2026-10-17)
-- M0-M4 shipped, plus M4b (official AI from the Campaign Handbook), M4c (briefings), M4d (every scenario re-entered
-  from its PDF, Brotherhood of Steel) and M4f (two-handed pose pilot). See STATUS.md.
-- **Owner decision 2026-10-17: skip the M4 playtest gate; the owner will play the fully developed game instead.
-  Keep moving through M5 (look and sound), the M4 gaps, M6 (campaign/settlement from the Campaign Handbook) and
-  M7 (factions).** Each stage still ends in a Pages deploy and screenshots.
-- **Owner decision 2026-10-17: the look and sound come from the local AI suite on this PC** (the ask-first rule for
-  GPU work is satisfied for this run; a new session still announces GPU work before starting it):
-  - Flux Studio, http://localhost:7880 (`POST /api/jobs`; FLUX.2 klein text-to-image and image edit, FLUX.1 dev/schnell).
-  - Audio Studio, http://localhost:7890 (`POST /api/jobs`, modes music / sfx / foley / voice; ACE-Step 1.5 music,
-    Stable Audio Open SFX, Qwen3-TTS and Chatterbox voice). Built in a sibling worktree of the `3D Model Generation`
-    project and not yet committed there; if it is down, start it from that project's `audio-studio/` folder.
-  - Hunyuan Studio, http://localhost:7860 (`node server.js` in `..D Model Generation`; image or text to 3D, Flux
-    concepts, one GPU job at a time). The raw pipeline scripts in `%USERPROFILE%\Hunyuan3D-2` still work
-    (docs/KNOWLEDGE-BASE.md section 3.2); `fellin_units.json`, `fellin_pose/` and `fellin_m4d/` hold the earlier runs.
-  - Notes on each studio's job parameters: `docs/spec/sources/LOCAL-STUDIOS.md` (written by the M5 probe stage).
-  - ElevenLabs stays as a fallback only; local generation costs no credits.
-- M5 runs from `tools/workflows/m5-look-sound.js`, one stage per run (`args.stage`): probe, sound, terrain, poses,
-  ui, check. Commit and push after each stage.
-- Next after M5: `tools/workflows/m6-campaign.js` (spec 19 rewritten from the Campaign Handbook p4-6, p18-24, then
-  engine, data, client), and the M4 gaps listed in STATUS.md (four placeholder AI cards, ai-tech Presence/peek,
-  Luck "Tough", BC-006, DMG-005, Walked Fire, mines, the "activate, move by drag" e2e).
+## Current state (2026-10-17, end of the M5/M4g/M6 run)
+- Shipped today, all on `main` and deployed to Pages (https://dragoonant.github.io/fell-in/):
+  - **M5 look and sound** from the local AI studios: 64 local audio clips (34 sfx, 5 music moods, 25 narrator lines,
+    Qwen3-TTS "Ryan"), file-backed audio client with a voice bus, audition page `/fell-in/sounds.html`; 15 new terrain
+    pieces and three themed skirmish boards (suburbs, red-rocket, junkyard; `?theme=`); nine hold-pose figure variants;
+    original key art, scenario previews, unit portraits and faction marks. Tools: `tools/local-gen/*` (studio client,
+    gen-audio-local, gen-terrain, gen-poses, gen-art), notes in `docs/spec/sources/LOCAL-STUDIOS.md`.
+  - **M4g rules gaps**: BC-006, DMG-005, Walked Fire, mines, object targets in the shoot form (e2e 13/13), official AI
+    no re-contact after a declined follow. **M4h bot**: objective play, normal beats random 29-1-0 (30 games).
+  - **M6 campaign and settlement**: spec 19 from the Campaign Handbook, 250 campaign records, `src/campaign/` layer,
+    settlement screen (start screen "Campaign" card) through To battle and back. Carry-off victories now fire.
+- **Owner decisions 2026-10-17:** the M4 playtest gate is waived (the owner plays the fully developed game instead);
+  the look and sound come from the local AI suite on this PC (see the studio list below).
+- **Needs the owner:**
+  - Photos of the four starter AI cards (Settler, Enslaved Tech, Dogmeat, Mutant Hound) and of the starter Boost,
+    Event, Quest and Explore cards: none exist in any free source (routes tried in `docs/spec/sources/R2-photos.md`,
+    `docs/spec/sources/CH-CAMPAIGN.md`). Until then those records are named placeholders.
+  - A ruling for box-1 (Ad Victoriam): elimination-only victory draws often after six rounds; points-at-timeout or as
+    printed (`docs/needs-rules-check.md`, Unsourced).
+  - Listen through `/fell-in/sounds.html` and name ids to redo (`node tools/gen-audio-local.mjs --only <id>` after
+    deleting the mp3); nothing was auditioned by ear.
+  - The main checkout folder was fast-forwarded to `main`; if the dev server on 5191 was running there, reload it.
+  - Delete the stray empty folder `C:iews` (a debug render created it; the safety check would not let an agent).
+- **Open after this run (next session):** engine offers for `expertise.use` (Presence), `ap.spend` card effects and
+  the Luck "Tough" ask (spec 18 s8.9); events, boosts and quests as engine modules during a battle (today they are pure
+  campaign functions, `BattleExtras`); the settlement Next-battle panel sits below the fold on early steps; the
+  "watch bots" e2e flaked once in a parallel run; Hunyuan textures are faceted on the big figures (super mutants,
+  Brute, Goddard) and could be regenerated at a higher texture setting; M7 factions (Raiders, Institute, Robots,
+  creatures) are next on PLAN.md.
+- Local studios (another session may be using the GPU at the same time; announce GPU work at the start of a session):
+  - Flux Studio http://localhost:7880 (`POST /api/jobs`; FLUX.2 klein text-to-image and image edit, FLUX.1 dev/schnell).
+  - Audio Studio http://localhost:7890 (modes music / sfx / foley / voice). Built in a sibling worktree of the
+    `3D Model Generation` project; if it is down, start it from that project's `audio-studio/` folder.
+  - Hunyuan Studio http://localhost:7860 (`node server.js` in `..D Model Generation`; it does NOT queue: one job at
+    a time). The raw pipeline scripts in `%USERPROFILE%\Hunyuan3D-2` still work (docs/KNOWLEDGE-BASE.md section 3.2).
+  - Workflow scripts: `tools/workflows/m5-look-sound.js` (stages probe, sound, terrain, poses, ui, check, fix),
+    `m4g-gaps.js`, `m4h-bot-objectives.js`, `m6-campaign.js` (design, build, check), `m6b-polish.js`.
 
 ## History (2026-10-12): M4b from the Campaign Handbook
 - Owner supplied the official Campaign Handbook PDF in the main checkout's gitignored `docs/sources/`
