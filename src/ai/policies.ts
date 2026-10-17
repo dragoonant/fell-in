@@ -7,6 +7,7 @@ import * as query from '../engine/query'
 import * as odds from './odds'
 import type { Action, ModelId, ModelState, Vec2 } from '../engine/types'
 import { activationValue, attackValue, bestAttackFrom, combine, positionValue, ZERO } from './eval'
+import { nukePickupValue, suitValue } from './objectives'
 import { bestMove, bestSlide, contactPoint, hpLeft, moveGain, worth } from './moves'
 import { buildThreatMap, reachOf, threatAt } from './threat'
 import { timeUp, type AiContext, type Policy, type PolicyTable, type Score, type Scored, type ThreatMap } from './types'
@@ -18,14 +19,19 @@ import { contextModel, dist, enemiesOf, modelsOf, withModelAt } from './world'
  */
 export function pickBest<T>(ctx: AiContext, scored: readonly Scored<T>[]): Scored<T> | null {
   if (!scored.length) return null
-  const vals = scored.map((s) => s.score.value)
-  const spread = Math.max(...vals) - Math.min(...vals)
+  // A non-finite score (a bad input upstream) is worth -Infinity: one bad row must not poison the spread or the menu.
+  const val = (s: Scored<T>): number => (Number.isFinite(s.score.value) ? s.score.value : -Infinity)
+  const vals = scored.map(val).filter(Number.isFinite)
+  const spread = vals.length ? Math.max(...vals) - Math.min(...vals) : 0
   let best: Scored<T> | null = null, bestV = -Infinity
   for (const s of scored) {
-    const v = s.score.value + (ctx.tier.noise > 0 ? (ctx.rng() - 0.5) * 2 * ctx.tier.noise * spread : 0) + ctx.rng() * 1e-9
+    const base = val(s)
+    if (base === -Infinity) { ctx.rng(); if (ctx.tier.noise > 0) ctx.rng(); continue }
+    const v = base + (ctx.tier.noise > 0 ? (ctx.rng() - 0.5) * 2 * ctx.tier.noise * spread : 0) + ctx.rng() * 1e-9
     if (v > bestV) { bestV = v; best = s }
   }
-  return best
+  // Every row bad: still answer with the first rather than send the decider to the random fallback.
+  return best ?? scored[0]!
 }
 
 // ---------- helpers ----------
@@ -211,8 +217,17 @@ function menuOption(ctx: AiContext, id: ModelId, me: ModelState, a: Action, thre
     case 'item.pickup': return scored(a, 0.2 * w * wObj + 0.02)
     // Carrying a scenario object (box nuke, books) is how those scenarios are won or denied; the carrier never
     // walks it off the table (moves stay on the table), so holding it is never worse than leaving it.
-    case 'scenario.pickup': return scored(a, 0.5 * w * wObj + 0.05, { objective: 1 })
+    case 'scenario.pickup': {
+      const mk = (ctx.view.markers ?? []).find((x) => x.id === a.markerId)
+      const nuke = nukePickupValue(ctx, id, mk)
+      return scored(a, nuke ?? 0.5 * w * wObj + 0.05, { objective: 1 })
+    }
     case 'scenario.drop': return scored(a, -1)
+    case 'scenario.claim': {
+      // Box-1: putting on a power armor suit protects the model for the rest of the game.
+      const mk = (ctx.view.markers ?? []).find((x) => x.id === a.markerId)
+      return scored(a, (mk ? suitValue(ctx, mk) : 0.5 * w) * wObj, { objective: 1 })
+    }
     case 'search.peek': return scored(a, 0.15 * w * wObj + 0.02)
     case 'search.interact': case 'expertise.use': return scored(a, 0.3 * w * wObj + 0.02, { objective: 1 })
     default: return scored(a, 0.05 * qf)
@@ -323,6 +338,67 @@ export const battleCryPush: Policy = (ctx) => {
 /** battleCry.follow: stay in contact with the pushed enemy. */
 export const pushFollowPolicy: Policy = (ctx) => ctx.legal.find((a) => a.follow === true) ?? null
 
+/**
+ * battleCry.escape (BC-006): the defender won the Battle Cry and may back away with a free Reaction. Leave only when the
+ * fight is lopsided against it: the charger is likely to kill it and it is not the likelier killer. A shooter engaged by
+ * a melee model also leaves when its gun beats its fists.
+ */
+export const battleCryEscape: Policy = (ctx) => {
+  const go = ctx.legal.find((a) => a.go === true), stay = ctx.legal.find((a) => a.go === false)
+  if (!go || !stay) return null
+  const c = ctx.pending.context as { modelId?: string; chargerId?: string }
+  const me = c.modelId ? ctx.view.models[c.modelId] : undefined, foe = c.chargerId ? ctx.view.models[c.chargerId] : undefined
+  if (!me || !foe) return stay
+  try {
+    const mv = worth(ctx, me.id)
+    const inKill = odds.killOdds(ctx.q, ctx.bundle, foe.id, me.id, { band: 'melee' })
+    const outKill = odds.killOdds(ctx.q, ctx.bundle, me.id, foe.id, { band: 'melee' })
+    const inDmg = odds.hitOdds(ctx.q, ctx.bundle, foe.id, me.id, { band: 'melee' }).pHit * odds.expectedDamage(ctx.q, ctx.bundle, foe.id, me.id, { band: 'melee' }).expected / hpLeft(ctx, me.id)
+    const outDmg = odds.hitOdds(ctx.q, ctx.bundle, me.id, foe.id, { band: 'melee' }).pHit * odds.expectedDamage(ctx.q, ctx.bundle, me.id, foe.id, { band: 'melee' }).expected / hpLeft(ctx, foe.id)
+    const stayValue = (outDmg + ctx.tier.wKill * outKill) * worth(ctx, foe.id) - (inDmg + ctx.tier.wKill * inKill) * mv
+    // A gun at range 1 is worth more than a fist fight, but only if the shooter is not simply followed and killed.
+    const gunner = bestRanged(ctx, me.id, '', {}).value
+    const away = gunner * 0.5 - inKill * mv * 0.25
+    return inKill >= 0.3 && stayValue < -0.1 * mv && away > stayValue - 0.5 * mv ? go : stay
+  } catch {
+    return stay
+  }
+}
+
+/**
+ * damage.dying (DMG-005): a model that was just eliminated may take one free Quick Action before it goes. The model is
+ * lost either way, so any attack it can still make is free value; a move or a drop is not worth the call.
+ */
+export const dyingAction: Policy = (ctx) => {
+  const pass = ctx.legal.find((a) => a.take === false)
+  const takes = ctx.legal.filter((a) => a.take === true)
+  if (!pass || !takes.length) return null
+  const c = ctx.pending.context as { modelId?: string }
+  const me = c.modelId ? ctx.view.models[c.modelId] : undefined
+  if (!me) return pass
+  // The dying model is dead in the view; score as if it stood up where it fell.
+  const q2: typeof ctx.q = { ...ctx.q, models: { ...ctx.q.models, [me.id]: { ...me, life: 'active', offTable: false } } }
+  const ctx2: AiContext = { ...ctx, q: q2 }
+  const rows: Scored<Action>[] = []
+  for (const a of takes) {
+    const inner = (a.inner ?? {}) as { type?: string; weaponUid?: string; targetId?: string; band?: string }
+    const t = str(inner.type)
+    if (!ATTACK_TYPE.test(t) && !/^shoot\.|^throw\./.test(t)) continue
+    let v = 0
+    try {
+      if (/^melee\.|^charge\./.test(t) && inner.targetId) {
+        v = t.startsWith('charge') ? atk(ctx2, me.id, inner.targetId, { band: 'melee', quick: true }, contactPoint(ctx2, me.id, inner.targetId) ?? undefined).value * 0.8
+          : atk(ctx2, me.id, inner.targetId, { weaponUid: str(inner.weaponUid), band: 'melee', quick: true }).value
+      } else {
+        v = bestRanged(ctx2, me.id, str(inner.weaponUid), { quick: true, ...(inner.band === 'short' || inner.band === 'long' ? { band: inner.band } : {}) }).value
+      }
+    } catch { v = 0 }
+    rows.push({ action: a, score: { value: v, parts: {} } })
+  }
+  const best = pickBest(ctx, rows)
+  return best && best.score.value > 1e-9 ? best.action : pass
+}
+
 /** melee.slide: moves.bestSlide. */
 export const slide: Policy = (ctx) => bestSlide(ctx, threatsFor(ctx))
 
@@ -391,6 +467,8 @@ export const POLICIES: PolicyTable = {
   'charge.marker': chargeDie,
   'battleCry.push': battleCryPush,
   'battleCry.follow': pushFollowPolicy,
+  'battleCry.escape': battleCryEscape,
+  'damage.dying': dyingAction,
   'melee.slide': slide,
   'react.offer': reaction,
   'item.choose': itemBranch,

@@ -200,7 +200,8 @@ export function routeDown(f: NavField, from: Vec2, maxLen: number): Vec2[] | nul
         if (jx < 0 || jz < 0 || jx >= g.nx || jz >= g.nz) continue
         const j = jz * g.nx + jx
         if (g.cell[j] === 2 || f.dist[j]! >= nd - 1e-9) continue
-        if (dx && dz && (g.cell[iz * g.nx + jx] === 2 || g.cell[jz * g.nx + ix] === 2)) continue
+        // A model standing in a cell the grid marks blocked (a pocket beside a wall the engine lets it into) may step out diagonally.
+        if (dx && dz && Number.isFinite(f.dist[i]!) && (g.cell[iz * g.nx + jx] === 2 || g.cell[jz * g.nx + ix] === 2)) continue
         nd = f.dist[j]!; next = j
       }
     }

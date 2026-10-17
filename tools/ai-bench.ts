@@ -1,8 +1,8 @@
 // AI bench (docs/spec/30-ai-bot.md s12): tier A vs tier B over the box scenarios with alternating seats.
 // Run: npm run bench:ai -- --games 100 --seed s --a normal --b random --scenarios box-1,box-2,box-3,box-4,box-5 [--cap 4000]
-// Game g plays scenarios[g % k]; tier A sits in seat A on even games and seat B on odd games. Deciders see only
+// Game g plays scenarios[g % k]; tier A swaps seats after every pass over the k scenarios (--seatmix legacy: seat A on even games, which aliases for even k). Deciders see only
 // view(state, seat); the host dry-run (apply(...).ok on the real state) is their accepts check, as in the client.
-// Prints one JSON line: {games, winsA, winsB, draws, winRateA, msPerDecision, maxMs, errors, fallbacks, unfinished, ...}.
+// Prints one JSON line: {games, winsA, winsB, draws, winRateA, msPerDecision, maxMs, errors, fallbacks, hardStops, unfinished, ...}. fallbacks (null or rejected policy answers) is deterministic; hardStops (wall-clock stops) is the only count that depends on machine speed.
 // box-5 is not in the default list: its seat B (a lone Super Mutant) cannot win until the engine has a rescue Action and ViewExtras.markers
 // (RULING in docs/needs-rules-check.md); name it with --scenarios to run it. --accepts shim drops the host dry run (worker-path check).
 // AI_MS sets the per-decision budget; AI_TUNE tunes tier weights (src/ai/types.ts applyTuning).
@@ -52,6 +52,8 @@ const CHILD = process.argv.includes('--child')
 const ONLY = arg('only', '')
 /** --seat A|B pins tier A to that seat in every game (tuning one side of an asymmetric scenario). */
 const SEAT = arg('seat', '')
+/** --seatmix cycle (default): tier A swaps seats after each pass over the scenario list, so every scenario is played from both seats. legacy: seat A on even games (aliases with an even scenario count). */
+const SEATMIX = arg('seatmix', 'cycle')
 const DEFAULT_JOBS = Math.min(12, Math.max(1, Math.floor(cpus().length / 2)))
 const JOBS = CHILD ? 1 : Math.max(1, Math.min(GAMES, Number(arg('jobs', String(DEFAULT_JOBS)))))
 
@@ -77,8 +79,8 @@ function loadBundle(edition = '1e'): EditionBundle {
 interface GameOut {
   g: number; seconds: number
   scenario: string; seatA: SeatId; winner: 'A' | 'B' | 'draw' | 'unfinished'; reason: string; rounds: number
-  decisions: number; rejected: number; errors: string[]; ms: number[]; fallbacks: number
-  byKind: Record<string, { n: number; ms: number; max: number; fallbacks: number }>
+  decisions: number; rejected: number; errors: string[]; ms: number[]; fallbacks: number; hardStops: number
+  byKind: Record<string, { n: number; ms: number; max: number; fallbacks: number; hard: number }>
 }
 
 function playOne(bundle: EditionBundle, g: number): GameOut {
@@ -86,7 +88,7 @@ function playOne(bundle: EditionBundle, g: number): GameOut {
   const scenario = SCENARIOS[g % SCENARIOS.length]!
   const gameSeed = `${SEED}:g${g}`
   let state: GameState = createGame(bundle, { seed: gameSeed, scenarioId: scenario })
-  const seatA = SEAT && state.seatOrder.includes(SEAT) ? SEAT : state.seatOrder[g % 2]!
+  const seatA = SEAT && state.seatOrder.includes(SEAT) ? SEAT : state.seatOrder[(SEATMIX === 'legacy' ? g : Math.floor(g / SCENARIOS.length)) % 2]!
   const tierOf = (seat: SeatId): Tier => (seat === seatA ? TIER_A : TIER_B)
   // The host dry run reads the live state: deciders still only receive the view.
   const accepts = SHIM ? undefined : (a: Action) => apply(state, bundle, a).ok
@@ -133,6 +135,7 @@ function playOne(bundle: EditionBundle, g: number): GameOut {
   const res = state.result
   const winner: GameOut['winner'] = state.phase !== 'over' || !res ? 'unfinished' : res.winner === null ? 'draw' : res.winner === seatA ? 'A' : 'B'
   const fallbacks = Object.values(deciders).reduce((n, d) => n + (d.tier === 'random' ? 0 : d.memory.stats.fallbacks), 0)
+  const hardStops = Object.values(deciders).reduce((n, d) => n + (d.tier === 'random' ? 0 : d.memory.stats.hardStops), 0)
   const byKind: GameOut['byKind'] = {}
   for (const seat of state.seatOrder) {
     if (seat !== seatA) continue
@@ -140,7 +143,7 @@ function playOne(bundle: EditionBundle, g: number): GameOut {
   }
   return {
     g, seconds: Number(((performance.now() - tg) / 1000).toFixed(1)),
-    scenario, seatA, winner, reason: res?.reason ?? 'unfinished', rounds: state.round, decisions, rejected, errors, ms, fallbacks, byKind,
+    scenario, seatA, winner, reason: res?.reason ?? 'unfinished', rounds: state.round, decisions, rejected, errors, ms, fallbacks, hardStops, byKind,
   }
 }
 
@@ -172,11 +175,11 @@ function report(outs: GameOut[], t0: number): void {
     e.games++; if (o.winner === 'A') e.winsA++; if (o.winner === 'B') e.winsB++
   }
   const errors = outs.flatMap((o) => o.errors)
-  const kinds: Record<string, { n: number; avgMs: number; maxMs: number; fallbacks: number }> = {}
+  const kinds: Record<string, { n: number; avgMs: number; maxMs: number; fallbacks: number; hard: number }> = {}
   for (const o of outs) {
     for (const [k, v] of Object.entries(o.byKind)) {
-      const e = (kinds[k] ??= { n: 0, avgMs: 0, maxMs: 0, fallbacks: 0 })
-      e.avgMs = (e.avgMs * e.n + v.ms) / (e.n + v.n); e.n += v.n; e.maxMs = Math.max(e.maxMs, v.max); e.fallbacks += v.fallbacks
+      const e = (kinds[k] ??= { n: 0, avgMs: 0, maxMs: 0, fallbacks: 0, hard: 0 })
+      e.avgMs = (e.avgMs * e.n + v.ms) / (e.n + v.n); e.n += v.n; e.maxMs = Math.max(e.maxMs, v.max); e.fallbacks += v.fallbacks; e.hard += v.hard
     }
   }
   for (const e of Object.values(kinds)) { e.avgMs = Number(e.avgMs.toFixed(1)); e.maxMs = Number(e.maxMs.toFixed(1)) }
@@ -191,6 +194,7 @@ function report(outs: GameOut[], t0: number): void {
     errors: errors.length,
     rejected: outs.reduce((n, o) => n + o.rejected, 0),
     fallbacks: outs.reduce((n, o) => n + o.fallbacks, 0),
+    hardStops: outs.reduce((n, o) => n + o.hardStops, 0),
     byScenario,
     ...(process.argv.includes('--kinds') ? { kinds } : {}),
     seconds: Number(((performance.now() - t0) / 1000).toFixed(1)),

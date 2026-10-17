@@ -1,6 +1,7 @@
 // AI contracts (FROZEN at M4a; docs/spec/30-ai-bot.md). Pure types plus the tier table and the time budget.
 // The AI only ever sees view(state, seat), the open PendingDecision and legalActions; numbers come from engine query.
 import type { EditionBundle } from '../data/types'
+import { oddsStats } from './budget'
 import type { Action, GameState, MarkerState, ModelId, PendingDecision, PlayerView, SeatId, Vec2 } from '../engine/types'
 
 export type Tier = 'random' | 'easy' | 'normal'
@@ -10,7 +11,8 @@ export const TIER_IDS: readonly Tier[] = ['random', 'easy', 'normal']
 export type DecisionKind =
   | 'turn.start' | 'turn.first' | 'turn.ready' | 'turn.choose' | 'turn.pick' | 'turn.activation'
   | 'move.path' | 'shoot.target' | 'throw.target' | 'shoot.luck' | 'throw.luck' | 'melee.luck'
-  | 'charge.marker' | 'battleCry.push' | 'battleCry.follow' | 'melee.slide' | 'react.offer' | 'item.choose' | 'search.found'
+  | 'charge.marker' | 'battleCry.push' | 'battleCry.follow' | 'battleCry.escape' | 'melee.slide' | 'react.offer' | 'item.choose' | 'search.found'
+  | 'damage.dying'
 
 export interface TierParams {
   id: Exclude<Tier, 'random'>
@@ -95,9 +97,12 @@ export interface AiStats {
   decisions: number
   ms: number
   maxMs: number
+  /** Null or rejected policy answers replaced by the random policy: deterministic for a seed. */
   fallbacks: number
+  /** Decisions stopped by the wall-clock safety limit (ctx.work.hard): the only count that depends on machine speed. */
+  hardStops: number
   errors: number
-  byKind: Record<string, { n: number; ms: number; max: number; fallbacks: number }>
+  byKind: Record<string, { n: number; ms: number; max: number; fallbacks: number; hard: number }>
 }
 
 /** Host options for createAiDecider. */
@@ -136,7 +141,7 @@ export interface AiContext {
    * Deterministic anytime cutoff (spec 30 s10): timeUp counts calls against `cap` (derived once from the budget), so
    * answers do not depend on machine speed. The wall clock is only a hard safety stop at `hardDeadline` (4x budget).
    */
-  work?: { n: number; cap: number; hardDeadline: number; hard: boolean }
+  work?: { n: number; cap: number; hardDeadline: number; hard: boolean; /** Odds cache misses at decision start and the most one decision may add (see budget.ts). */ miss0?: number; missCap?: number }
   memory: AiMemory
 }
 
@@ -169,16 +174,19 @@ export function aiBudgetMs(): number {
 
 export const newMemory = (): AiMemory => ({
   plan: null, stuck: new Set(),
-  stats: { decisions: 0, ms: 0, maxMs: 0, fallbacks: 0, errors: 0, byKind: {} },
+  stats: { decisions: 0, ms: 0, maxMs: 0, fallbacks: 0, hardStops: 0, errors: 0, byKind: {} },
 })
 
 /** Work units (timeUp calls) allowed per millisecond of budget: the search cap is a pure function of the budget. */
 export const WORK_PER_MS = 2
+/** Odds cache misses allowed per millisecond of budget (budget.ts): bounds the decisions whose terrain makes every query dear. */
+export const MISS_PER_MS = 7
 /** True once the decision's work cap is spent (or, as a safety stop only, the hard wall-clock limit); searches return their best so far. */
 export const timeUp = (ctx: Pick<AiContext, 'now' | 'deadline'> & { work?: AiContext['work'] }): boolean => {
   const w = ctx.work
   if (!w) return ctx.now() >= ctx.deadline
   if (++w.n > w.cap) return true
+  if (w.missCap !== undefined && oddsStats.misses - (w.miss0 ?? 0) > w.missCap) return true
   if (ctx.now() >= w.hardDeadline) { w.hard = true; return true }
   return false
 }

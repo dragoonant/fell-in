@@ -48,21 +48,11 @@ export function queryState(view: AiView, bundle: EditionBundle): GameState {
 }
 
 /**
- * The view plus the extras the AI reads (round, scenario, markers with hidden faces redacted for `seat`). Hosts that
- * hold the real state (client driver, bench) should pass this instead of a bare view(state, seat).
+ * The view the AI reads. The engine's view() already carries round, maxRounds, scenarioId and the markers with hidden
+ * faces redacted (objects and shootable targets stay open information, SRCH-001); this stays the host entry point.
  */
 export function aiViewOf(state: GameState, seat: SeatId): AiView {
-  return {
-    ...playerView(state, seat),
-    round: state.round,
-    maxRounds: state.maxRounds,
-    scenarioId: state.scenarioId,
-    markers: state.markers.map((m) => {
-      if (m.revealed || m.seenBy.includes(seat)) return m
-      const { face: _hidden, ...rest } = m
-      return rest
-    }),
-  }
+  return playerView(state, seat)
 }
 
 const BASES = new WeakMap<GameState, GameState>()

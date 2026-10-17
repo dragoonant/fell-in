@@ -4,8 +4,11 @@
 import type { EditionBundle } from '../data/types'
 import * as query from '../engine/query'
 import type { GameState, ModelId } from '../engine/types'
+import { oddsStats } from './budget'
 import { baseOf } from './world'
 
+/** Terrain pieces that add one unit to the cost of a query miss (line of sight is walked against every piece). */
+const TERRAIN_PER_UNIT = 6
 const memo = new WeakMap<GameState, Map<string, unknown>>()
 
 function cached<T>(q: GameState, key: string, f: () => T): T {
@@ -13,6 +16,7 @@ function cached<T>(q: GameState, key: string, f: () => T): T {
   let m = memo.get(base)
   if (!m) memo.set(base, (m = new Map()))
   if (m.has(key)) return m.get(key) as T
+  oddsStats.misses += 1 + q.terrain.length / TERRAIN_PER_UNIT
   const v = f()
   m.set(key, v)
   return v

@@ -9,6 +9,7 @@ import type { AttackOpts } from '../engine/query'
 import { victimSlots } from '../engine/attack'
 import { modelDistance } from '../engine/measure'
 import type { GameState, ModelId, Vec2 } from '../engine/types'
+import { attackFactor, goalFaces, goalsFor, goalValue, nukeAt, nukeExposure, nukeRisk, stall, urgency } from './objectives'
 import { attackChoices, threatAt, threatsInReach } from './threat'
 import { timeUp, type AiContext, type Score, type ScorePart, type ThreatMap } from './types'
 import { dist, enemiesOf, live, roundOf, withModelAt } from './world'
@@ -41,6 +42,9 @@ export function healthLeft(ctx: AiContext, modelId: ModelId): number {
   return memo(ctx, `hl:${modelId}`, () => Math.max(0, healthOf(ctx.q, ctx.bundle, modelId) - tokensOn(ctx.bundle, m)))
 }
 
+/** An enemy that is a unique (named hero) counts this many times its cost as a target: its fire and its armor decide the fight, and it outlasts the rest. Our own heroes are not inflated (that made them hang back). */
+const HERO = 3
+
 /** Worth of a model in model-cost units: unit cost scaled by Health left and by how dangerous it is (ranged-armed). */
 export function modelValue(ctx: AiContext, modelId: ModelId): number {
   const m = ctx.view.models[modelId]
@@ -51,7 +55,7 @@ export function modelValue(ctx: AiContext, modelId: ModelId): number {
     const max = Math.max(1, healthOf(ctx.q, ctx.bundle, modelId))
     const frac = Math.min(1, healthLeft(ctx, modelId) / max)
     const armed = m.carried.some((c) => c.kind === 'weapon' && !c.spent && (recordOf(ctx.bundle, 'weapons', c.defId)?.skill ?? 'melee') !== 'melee')
-    return cost * (armed ? 1.2 : 1) * (0.5 + 0.5 * frac)
+    return cost * (armed ? 1.2 : 1) * (0.5 + 0.5 * frac) * (unit?.unique && m.owner !== ctx.seat ? HERO : 1)
   })
 }
 
@@ -70,9 +74,26 @@ export function attackValue(ctx: AiContext, attackerId: ModelId, targetId: Model
   const pKill = odds.killOdds(q, ctx.bundle, attackerId, targetId, opts)
   const max = Math.max(1, healthOf(ctx.q, ctx.bundle, targetId))
   const focus = 1 + 0.5 * (1 - Math.min(1, left / max))
-  const parts = { damage: ((pHit * exp) / left) * mv * focus, kill: pKill * mv }
-  if (opts.band !== 'melee') scrum(ctx, q, attackerId, targetId, opts, pHit, parts)
+  const af = attackFactor(ctx, targetId)
+  const parts: { damage: number; kill: number; objective?: number } = { damage: ((pHit * exp) / left) * mv * focus * af, kill: pKill * mv * af }
+  if (opts.band !== 'melee') {
+    scrum(ctx, q, attackerId, targetId, opts, pHit, parts)
+    // Box-2: a hit near the nuke can set it off, which is a draw for both sides.
+    if (nukeAt(ctx)) {
+      const t = q.models[targetId]
+      if (t) parts.objective = -nukeRisk(ctx, t.pos, targetId, pHit, sideWorth(ctx, ctx.seat))
+    }
+  }
   return combine(parts, { kill: ctx.tier.wKill })
+}
+
+/** Surviving worth of a seat's models (memoised per decision). */
+export function sideWorth(ctx: AiContext, seat: string): number {
+  return memo(ctx, `sw:${seat}`, () => {
+    let n = 0
+    for (const m of Object.values(ctx.view.models)) if (m.owner === seat && live(m)) n += modelValue(ctx, m.id)
+    return n
+  })
 }
 
 /**
@@ -149,15 +170,22 @@ export function objectiveValue(ctx: AiContext, modelId: ModelId, at: Vec2): numb
   const markers = ctx.view.markers
   const me = ctx.view.models[modelId]
   if (!live(me)) return 0
+  // Scenarios with their own goals (suits to claim, the tower to hold) score those instead of the generic pull on the markers
+  // they cover; box-2's nuke has none of its own because the generic pull would draw the defenders into its blast.
+  const handled = goalFaces(ctx)
+  let v = 0
+  for (const g of goalsFor(ctx, modelId)) v += goalValue(ctx, modelId, g, at)
+  v *= modelValue(ctx, modelId)
   if (markers === undefined) {
+    if (handled) return v
     if (roundOf(ctx.memory, ctx.view) < LATE_ROUND) return 0
     const d = Math.max(0, Math.hypot(at.x, at.z) - baseRadius(me.base))
     return CENTRE_SHARE * modelValue(ctx, modelId) * (d <= 0.5 ? 1 : Math.max(0, 1 - (d - 0.5) / 8))
   }
-  if (!markers.length) return 0
-  let v = 0
+  if (!markers.length) return v
   const unit = OBJECTIVE_SHARE * modelValue(ctx, modelId)
   for (const mk of markers) {
+    if (handled?.has(mk.face ?? '')) continue
     if (mk.carriedBy === modelId) { v += unit; continue }
     if (mk.carriedBy) continue // someone else holds it; killing the holder is attackValue's job
     if (mk.kind !== 'object' && (mk.revealed || mk.seenBy.includes(ctx.seat))) continue // nothing left to learn
@@ -214,13 +242,15 @@ export function positionValue(ctx: AiContext, modelId: ModelId, at: Vec2, threat
     const left = Math.max(1e-6, healthLeft(ctx, modelId))
     const th = threatAt(ctx, threats, modelId, at)
     exposed = th.attackers.length > 0
-    parts.threat = 0 - t.wThreat * leadFactor(ctx) * (Math.min(1, th.exp / left) * mv * 0.5 + th.pKill * mv)
+    parts.threat = 0 - t.wThreat * leadFactor(ctx) * (1 - 0.5 * urgency(ctx) - 0.45 * stall(ctx)) * (Math.min(1, th.exp / left) * mv * 0.5 + th.pKill * mv)
+    // Box-2: standing within Orange of the nuke where an enemy can hit the model risks setting it off.
+    if (th.attackers.length && nukeAt(ctx)) parts.threat -= nukeExposure(ctx, modelId, at, 0.3 * th.attackers.length, sideWorth(ctx, ctx.seat))
   }
   if (t.wCover > 0) parts.cover = t.wCover * coverValue(ctx, modelId, at, threats) * mv * 0.25
   if (t.wObjective > 0) parts.objective = t.wObjective * objectiveValue(ctx, modelId, at)
   const max = Math.max(1, healthOf(ctx.q, ctx.bundle, modelId))
   const hurt = 1 - Math.min(1, healthLeft(ctx, modelId) / max)
-  if (hurt > 0 && !exposed) parts.survival = t.wSurvival * hurt * mv
+  if (hurt > 0 && !exposed) parts.survival = t.wSurvival * hurt * mv * (1 - stall(ctx))
   return combine(parts)
 }
 

@@ -52,6 +52,8 @@ Tier parameters can be tuned from the bench without code changes: `AI_TUNE="norm
 | `shoot.luck`, `throw.luck`, `melee.luck` | `useLuck` | Spend a luck token on a reroll or keep it (section 7.4). |
 | `charge.marker` | `chargeDie` | Black (damage) or green (accuracy) charge die: green when pHit is below 0.6, else black. |
 | `battleCry.push` | `battleCryPush` | Shove and follow when the end spot scores better than staying (cover, objective, out of other threats). |
+| `battleCry.escape` | `battleCryEscape` | Back away from a winning charger only when it probably kills the defender (section 13.2). |
+| `damage.dying` | `dyingAction` | Take a free attack from an eliminated model, never a free move (section 13.2). |
 | `melee.slide` | `slide` | Slide path after close combat, or stay (an empty slide). |
 | `react.offer` | `reaction` | Take a reaction or pass (section 7.3). |
 | `item.choose` | `itemBranch` | Which branch of a choose-one item. Prefer healing when damaged, else the first. |
@@ -146,10 +148,116 @@ installs it with `setBotBrain` (botDriver.ts), with a main-thread fallback when 
 ## 12. Benchmark (`npm run bench:ai`)
 `tsx tools/ai-bench.ts --games N --seed s --a normal --b random --scenarios box-1,box-2,box-3,box-4,box-5`.
 Game g plays scenario `scenarios[g % k]`, with A on seat `A` for even g and seat `B` for odd g. Prints one JSON line
-`{games, winsA, winsB, draws, winRateA, msPerDecision, maxMs, errors, fallbacks, unfinished}`.
+`{games, winsA, winsB, draws, winRateA, msPerDecision, maxMs, errors, fallbacks, hardStops, unfinished}`.
+`fallbacks` counts null or rejected policy answers replaced by the random policy and is deterministic for a seed (and for
+`--kinds`, which only adds timing). `hardStops` counts decisions stopped by the wall-clock safety limit (`ctx.work.hard`) and is the
+only count that depends on machine speed; read the determinism gate from `fallbacks`, never from `hardStops`.
 Gates (M4):
 - normal beats random in at least 95% of 100 games across box-1..5 with alternating seats;
 - easy beats random in at least 75%;
 - errors (rejections that the fallback could not recover, throws, stalls) are 0;
 - mean ms per decision under the default budget; max under 4 x the budget.
 Win rate counts draws as non-wins.
+
+## 13. Objective play (M4h)
+`src/ai/objectives.ts` turns what a scenario rewards into numbers the eval already understands. It reads the scenario
+record, the view's markers (objects are open information, `view()` keeps their faces) and the round. The bot infers its
+scenario side from the record and its own models; nothing hidden is read and no rules number is computed here.
+
+### 13.1 Goals and the eval
+- `objectiveValue(model, spot)` sums `goalValue` over `goalsFor(model)` for box-1, box-2 and box-4 (other scenarios keep the
+  generic marker pull). A goal is a spot with a share of the model's worth: full contact value when the engine counts base contact (`touchingMarker`, half an inch of the base edge),
+  fading linearly to nothing at 24 in. `tier.wObjective` still scales it in `positionValue` and `activationValue`.
+- **box-1 suits**: a Brotherhood model without power armor is pulled to every unclaimed, unbroken suit it may claim
+  (`claimableSuits`); `scenario.claim` scores 1.5 x the suit's cost (`suitValue`) in the activation menu.
+- **box-4 tower**: every model is pulled to the tower (the count of models touching it decides at the end of round 6). The pull
+  grows with the round; the defenders start high because three held turns call their reserve. On the last round the share
+  doubles and `attackFactor` scales an attack by its target: 1.6 at the tower, 0.15 away from it (1.3 and 0.5 one round earlier),
+  because only shots that thin the models at the tower still matter.
+- **box-2 nuke**: a hit on the carrier, or on a model within Orange of the nuke, rolls the red die and a 1 sets it off (a draw). P(1) is read from the edition's armor die faces (4 of 12 in `data/1e/dice.json`), and "near" is the `nuke-blast` rule's `near` ruler read through the engine's `inchesOf`.
+  `attackValue` charges `nukeRisk` = pHit x P(1 on the armor die) x 0.9 x the bot's surviving cost x `nukeCaution`, and `positionValue` charges
+  `nukeExposure` for ending within Orange of it where an enemy can hit. Caution fades for the attackers as round 9 nears (a draw
+  beats the loss their timer brings). From four rounds out the attackers also pull toward a loose nuke and value picking it up
+  (`nukePickupValue`); the defenders value it negatively (they win by leaving it alone).
+- **Closing rounds**: `urgency` (box-1, 0 until 30 percent of the rounds are gone, 1 on the last) halves the threat weight and
+  raises the approach weights by up to 2.5 times, so the bot hunts the last model standing.
+- **Heroes**: an enemy that is a unique model (the Sole Survivor, Dogmeat) counts 3 x its cost as a target in `modelValue`, so fire
+  is focused on it. Our own heroes are not inflated (that made them hang back: box-2 attackers dropped from 90 to 82 percent).
+  Box-1 seat A, 384 games: 58.6 percent wins without, 64.8 with.
+
+### 13.2 Late decision kinds
+- `battleCry.escape` (BC-006): back away only when the charger probably kills the defender (kill odds >= 0.3), the defender is
+  the worse melee fighter, and a gun beats staying; otherwise stand.
+- `damage.dying` (DMG-005): the model is lost either way, so any free attack (shoot, throw, melee, charge) it can make is taken,
+  scored on the shim with the model stood back up; a free move or drop is declined.
+
+### 13.3 Cost budget
+The wall clock is only a safety stop. `src/ai/budget.ts` counts deterministic cost: each `odds.ts` cache miss costs
+`1 + terrain pieces / 6` (line of sight walks every piece) and each dry run of an answer costs 15. `timeUp` also reports true
+once a decision has spent `MISS_PER_MS x budget` (7 x 150 = 1050) units. This replaced 600 ms outliers in the school (box-3)
+with a worst case near 120 ms in a single process.
+
+### 13.4 Known limits
+- The engine does not credit a model that walks off the table with the nuke or a book: `removeModel` marks it dead and drops
+  the carried marker at its start, so `markerGone` never sees it. The bot therefore never plans to carry anything off; box-2 and
+  box-3 are won by elimination, or in box-2 by outlasting the defenders' round-9 timer.
+- Box-1 is won only by wiping the other side out in six rounds (the timeout-points ruling is withdrawn). Against the Sole Survivor
+  (7 Health, 3 armor) the Brotherhood need about 20 attacks at a 55 percent hit rate and land about 20, so roughly a third of
+  games end as draws with the Sole Survivor still standing.
+
+### 13.5 Bench numbers (normal vs random, 2026-10-17)
+- Easy vs random, 30 games seed s (2026-10-17, after the s13.7 fixes): 27 wins, 3 losses, 0 draws, 0 unfinished (90 percent), 0 fallbacks.
+  Before them it was 27 / 2 / 0 with 1 unfinished (box-3 game 26 ran to the round cap, a Super Mutant stuck in a nav pocket, see 13.7).
+  Normal vs random, same 30 games: 29 wins, 0 losses, 1 draw (96.7 percent), 0 fallbacks, 0 hard stops.
+- Default bench (box-1 Brotherhood, box-2 attackers, box-3 defenders, box-4 attackers; see below), 288 games: 87.8 percent wins,
+  3.5 percent losses, 8.7 percent draws, 0 fallbacks, mean 28 ms per decision with 12 jobs on a busy machine (about 9 ms in one
+  process). 30-game runs: seed s 25 wins / 2 losses / 3 draws, seed t2 24 / 1 / 5.
+- Both seats of each scenario, 192 games each: box-1 A 65 percent (draws), B 99; box-2 A 92, B 89; box-3 A 89, B 98; box-4 A 92, B 95.
+- That default bench aliased seats (scenario g mod 4 with seat A on even games, so box-1 was always the Brotherhood). It now swaps seats after
+  each pass over the scenario list (`--seatmix cycle`, the default), so every scenario is played from both seats; `--seatmix legacy` restores the
+  old pairing and `--seat` still pins one side.
+
+### 13.6 Balanced bench, stall breaker, what did not help (M4h round 3)
+- Balanced bench (all eight scenario-and-seat pairs, normal vs random, 0 fallbacks, 0 errors): 480 games seed F 88.7 percent wins, 4.4 percent
+  losses, 6.5 percent draws, 2 unfinished, mean 31 ms per decision with 12 jobs (8.5 ms in one process). Seeds Q and R: 91.0 and 88.1.
+  30-game runs: seed s 29 / 0 / 1 (wins / losses / draws), seed t2 27 / 0 / 3. Non-wins by cause over 480 games: box-1 Brotherhood draws
+  (a few enemies survive six rounds, 19 of 60 games as the Brotherhood), box-4 defenders losing the tower count (7 of 60), box-2 attackers
+  (9 of 60: the round-9 timer, a hit setting the nuke off, wipe-outs), box-2 defenders (6 of 60 draws: a hit near the nuke, mostly the
+  random attackers' fire), box-3 defenders (6 of 60 including 2 stalls).
+- `stall` (box-3 only): the game has no round limit, so a lone wounded bot model used to sit out of a stalemate for ever (up to 3 unfinished games
+  in 480). From round 8 the stall term ramps to 1 over six rounds and feeds `urgency` (approach weights up); on top of that the threat term loses
+  up to 45 percent of its weight and the survival bonus fades out. Win rate is unchanged within noise (287 vs 285 of 300); the
+  stalemates now end, some as losses (BOT-011).
+- Tried and dropped (300-game seeds on box-1 seat A, 71 percent baseline, +-3 points of noise): wThreat 0.1 and 0.6, wKill 4, wSurvival 0.2, noise
+  0.1, wObjective 0 and 8, wApproach 0.02 and 0.3, wCover 0.8, moveSamples 80, urgency start 0 and 0.1, threat cut 0.9, approach boost 3,
+  discounting the suit claim by the rounds left. Box-2 attackers with urgency tied to the round-9 deadline: 257 of 300 either way. The
+  weights sit on a flat optimum; further gains need new behaviour, not new numbers.
+- Carry-off bot play was built and measured on a scratch copy of the engine with the fix below applied (pick up the nuke or a book, walk it over the
+  nearest edge, 100 x worth for an exit within reach, pull toward the edge for the carrier, only unguarded markers). It never won a game:
+  the defenders sit on the nuke, carriers died or set it off, box-2 attackers fell from 86 to 74 percent with 16 draws, and box-3 books were
+  never taken out because elimination ends the game first. The code was removed. With the fix the attackers' own win becomes possible but
+  the bot needs a plan that thins the guards first; do not simply raise the pull.
+- Engine fix that unblocks carry-off wins (not applied, engine is outside the AI's files): in movement.ts moveTo, before
+  `removeModel(s, bundle, id, 'left the table')`, set `props.offTable: true` on every marker whose `carriedBy` is the exiting model.
+  scenario.ts `markerGone` then fires for box-2 and box-3.
+- Box-1 stays capped near 65 to 70 percent against random (elimination in six rounds, no points rule). Hero fire and a wider hunt do not move it.
+
+### 13.7 Facts, not ids; hard stops; the stall pull (review fixes)
+- Nothing in `objectives.ts` is keyed on `box-1..4` any more. `sceneOf` reads the record: suit goals are markers whose props carry a
+  drawn `suit` (or a `suitPool`) and a `claimBy` side; the hold goal is the object a `tower-control` or `control` rule counts contact
+  with (or a victory entry `{kind: 'hold', marker}`); the blast rule is `nuke-blast` on a scenario with a `props.carry` marker; the
+  side that wins by waiting is the victory entry that carries its own round (`victory[].round`) or, for a scenario with no round limit,
+  names one in its text; `urgency` applies to a round-limited scenario with no hold marker (an elimination game); `stall` applies to any
+  scenario with neither a round limit nor a deadline. Optional structured victory fields (`kind`: elimination | carryOff | hold,
+  `marker`, `round`) are read when the record has them; the data schema does not carry them yet, so the facts above are the fallback.
+- Rules numbers come from the engine: contact is `touchingMarker` and the marker radius `markerRadius` (default 40 mm) from
+  `src/engine/scenarios/rules.ts`, the blast range is `inchesOf(near)`, the detonation chance is the share of 1s on `dice.armor`, and a
+  suit's worth is its armor record's cost (no fallback).
+- `AiStats.hardStops` (and `byKind[k].hard`) count wall-clock stops; `fallbacks` no longer includes them. The bench prints both.
+- `pickBest` treats a non-finite score as -Infinity, and `spotScore` adds the walk pull only when both walks are finite. With no live
+  enemy on the table (box-4 once the on-table defenders are down and the reserve is still off table) every spot score was NaN: easy
+  fell back to random (36 fallbacks in 8 games) and normal could not choose `move.go`.
+- Stall: past round 8 a scenario with no clock adds `W_STALL_PULL` x stall to the pull toward the nearest enemy, for every tier (easy's
+  `wThreat` is 0, so fading the threat terms alone gave it no push). The stuck easy game was in fact a nav pocket: a model standing in a
+  grid cell marked blocked beside a wall could not take the diagonal out, so `routeDown` returned null; the first step out of a blocked cell
+  may now cut the corner.

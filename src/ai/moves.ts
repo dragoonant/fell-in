@@ -9,6 +9,7 @@ import { hasLos } from '../engine/los'
 import { modelDistance } from '../engine/measure'
 import type { Action, ModelId, Vec2 } from '../engine/types'
 import { healthLeft, modelValue, positionValue } from './eval'
+import { stall, urgency } from './objectives'
 import { clearLine, fieldAt, navField, navGrid, pathLength, routeDown, truncatePath, withBlockers, type NavField } from './nav'
 import { reachOf } from './threat'
 import { timeUp, type AiContext, type MoveCandidate, type Reach, type Score, type ThreatMap } from './types'
@@ -160,6 +161,8 @@ export const W_APPROACH = 0.1
 /** The same for melee-only models, which have to close to do anything at all. */
 export const W_APPROACH_MELEE = 0.3
 export const W_PULL = 0.03
+/** Extra pull toward the nearest enemy at full stall (per full move, in model worth), on top of W_PULL. */
+export const W_STALL_PULL = 0.15
 
 const reachMemo = new WeakMap<AiContext, Map<ModelId, Reach>>()
 function ownReach(ctx: AiContext, id: ModelId): Reach {
@@ -252,9 +255,14 @@ export function spotScore(ctx: AiContext, modelId: ModelId, at: Vec2, threats: T
   const per = Math.max(1, reach)
   const clamp = (x: number) => Math.max(-1, Math.min(1, x))
   const wApp = ownReach(ctx, modelId).range <= 0 ? (ctx.tier.wApproachMelee ?? W_APPROACH_MELEE) : (ctx.tier.wApproach ?? W_APPROACH)
-  let adv = wApp * w * clamp((engageGap(ctx, modelId, me.pos) - engageGap(ctx, modelId, at)) / per)
+  let adv = wApp * (1 + 1.5 * urgency(ctx)) * w * clamp((engageGap(ctx, modelId, me.pos) - engageGap(ctx, modelId, at)) / per)
   const attacks = (base.parts.damage ?? 0) + (base.parts.kill ?? 0)
-  if (attacks <= 1e-9) adv += (ctx.tier.wPull ?? W_PULL) * w * clamp((walkToFoe(ctx, modelId, me.pos) - walkToFoe(ctx, modelId, at)) / per)
+  if (attacks <= 1e-9) {
+    // No live enemy on the table (reserves still off it) makes both walks Infinity: no pull then, never NaN.
+    const gain = walkToFoe(ctx, modelId, me.pos) - walkToFoe(ctx, modelId, at)
+    // A stalled game (no clock, past STALL_FROM) adds W_STALL_PULL for every tier, whatever its threat weights: hunt the stragglers.
+    if (Number.isFinite(gain)) adv += ((ctx.tier.wPull ?? W_PULL) + W_STALL_PULL * stall(ctx)) * w * clamp(gain / per)
+  }
   return { value: base.value + adv, parts: { ...base.parts, tempo: (base.parts.tempo ?? 0) + adv } }
 }
 
@@ -271,7 +279,7 @@ export function shortlist(ctx: AiContext, modelId: ModelId, pts: readonly Vec2[]
   if (pts.length <= n) return [...pts]
   const r = ownReach(ctx, modelId)
   const want = r.range > 0 ? r.range * 0.8 : Math.max(0, r.charge * 0.9)
-  const ranked = pts.map((pt) => ({ pt, v: -Math.max(0, walkToFoe(ctx, modelId, pt) - want) })).sort((a, b) => b.v - a.v)
+  const ranked = pts.map((pt) => { const w = walkToFoe(ctx, modelId, pt); return { pt, v: Number.isFinite(w) ? -Math.max(0, w - want) : 0 } }).sort((a, b) => b.v - a.v)
   const head = Math.ceil(n * 0.6)
   const out = ranked.slice(0, head).map((x) => x.pt)
   const rest = ranked.slice(head)
