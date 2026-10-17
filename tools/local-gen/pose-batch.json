@@ -1,0 +1,207 @@
+{
+  "note": "M5 two-handed pose figures. For each pair a Flux klein image edit of the unit's concept (cropped 3:4) draws the stance with empty fists, Hunyuan Studio makes the 3D figure, finalize matches the default figure (height in inches without the 0.12 in base, base mm). Original designs only. 'base' and 'height' feed finalize like the default figure of the unit; 'gameBase' is the unit's baseMm in data/1e/units, which sets the client fit height (figureHeight) the sockets are measured in.",
+  "common": "same character, same outfit and colours, full body, standing on a round black base, plain white background",
+  "stances": {
+    "long": "standing in a bladed stance turned 45 degrees to the right as seen from the front-left: the right fist raised beside the right cheek with the elbow lifted out to the side, the left arm extended straight forward to the right ending in a closed fist, the two fists far apart and both clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking along the extended arm",
+    "heavy": "standing in a bladed stance turned 45 degrees to the right as seen from the front-left: the right fist resting on the right shoulder with the elbow lifted out to the side, the left arm extended forward to the right and raised, ending in a closed fist, the two fists far apart and both clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking along the extended arm",
+    "melee2": "standing in a bladed stance turned 45 degrees to the right as seen from the front-left: the right fist raised high beside the right ear with the elbow out to the side, the left fist held in front of the chest, a forearm's length apart one above the other, both clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking forward to the right"
+  },
+  "reword": {
+    "long": "standing in a bladed stance turned 45 degrees to the right as seen from the front-left, holding an invisible rifle at low ready with both hands, nothing in the hands, left arm extended forward, right fist at the chest",
+    "heavy": "standing in a bladed stance turned 45 degrees to the right, holding an invisible launcher on the shoulder with both hands, nothing in the hands, left hand forward and up",
+    "melee2": "standing in a bladed stance turned 45 degrees to the right, holding an invisible long haft with both hands raised beside the shoulder, nothing in the hands"
+  },
+  "pairs": [
+    {
+      "unit": "sole-survivor-day-one",
+      "cls": "long",
+      "src": "art/unit-concepts/sole-survivor-day-one.png",
+      "height": 1.35,
+      "base": 32,
+      "weapon": "hunting-rifle",
+      "gameBase": 32,
+      "yaw": 0.517,
+      "hand": [
+        0.022,
+        1.415,
+        -0.268
+      ],
+      "support": [
+        0.022,
+        1.572,
+        0.472
+      ]
+    },
+    {
+      "unit": "settler",
+      "cls": "long",
+      "src": "art/unit-concepts/settler.png",
+      "height": 1.35,
+      "base": 32,
+      "weapon": "laser-rifle",
+      "gameBase": 32,
+      "yaw": 0.919,
+      "hand": [
+        0.2,
+        1.387,
+        -0.177
+      ],
+      "support": [
+        0.2,
+        1.458,
+        0.282
+      ]
+    },
+    {
+      "unit": "enslaved-tech",
+      "cls": "long",
+      "src": "art/unit-concepts/enslaved-tech.png",
+      "height": 1.35,
+      "base": 32,
+      "weapon": "combat-shotgun",
+      "gameBase": 32,
+      "yaw": 0.459,
+      "hand": [
+        0.014,
+        1.609,
+        -0.069
+      ],
+      "support": [
+        0.014,
+        1.495,
+        0.464
+      ]
+    },
+    {
+      "unit": "initiate",
+      "cls": "long",
+      "src": "~/Hunyuan3D-2/fellin_m4d/initiate.png",
+      "height": 1.35,
+      "base": 32,
+      "weapon": "assault-rifle",
+      "gameBase": 32,
+      "yaw": 0.797,
+      "hand": [
+        0.148,
+        1.382,
+        -0.304
+      ],
+      "support": [
+        0.148,
+        1.548,
+        0.496
+      ]
+    },
+    {
+      "unit": "knight",
+      "cls": "long",
+      "src": "~/Hunyuan3D-2/fellin_m4d/knight.png",
+      "height": 1.35,
+      "base": 32,
+      "weapon": "laser-rifle",
+      "yaw": 0.414,
+      "hand": [
+        0.142,
+        1.561,
+        -0.139
+      ],
+      "support": [
+        0.142,
+        1.734,
+        0.538
+      ],
+      "gameBase": 40
+    },
+    {
+      "unit": "aspirant-goddard",
+      "cls": "long",
+      "src": "art/unit-concepts/aspirant-goddard.png",
+      "height": 1.75,
+      "base": 40,
+      "weapon": "plasma-rifle",
+      "gameBase": 40,
+      "yaw": 0.946,
+      "hand": [
+        0.25,
+        1.677,
+        -0.491
+      ],
+      "support": [
+        0.25,
+        1.688,
+        0.737
+      ]
+    },
+    {
+      "unit": "brute",
+      "cls": "melee2",
+      "src": "art/unit-concepts/brute.png",
+      "height": 2.1,
+      "base": 32,
+      "weapon": "sledgehammer",
+      "gameBase": 40,
+      "yaw": 0.0,
+      "hand": [
+        0.585,
+        1.4,
+        -0.091
+      ],
+      "support": [
+        -0.45,
+        1.962,
+        0.104
+      ]
+    },
+    {
+      "unit": "super-mutant",
+      "cls": "melee2",
+      "src": "art/unit-concepts/super-mutant.png",
+      "height": 1.9,
+      "base": 32,
+      "weapon": "board",
+      "gameBase": 40,
+      "yaw": -1.571,
+      "hand": [
+        0.523,
+        1.288,
+        0.399
+      ],
+      "support": [
+        -0.505,
+        2.042,
+        -0.322
+      ]
+    },
+    {
+      "unit": "super-mutant",
+      "cls": "heavy",
+      "src": "art/unit-concepts/super-mutant.png",
+      "height": 1.9,
+      "base": 32,
+      "regenerate": true,
+      "weapon": "missile-launcher",
+      "gameBase": 40,
+      "yaw": 0.867,
+      "hand": [
+        0.282,
+        1.611,
+        -0.692
+      ],
+      "support": [
+        0.282,
+        1.796,
+        0.697
+      ]
+    }
+  ],
+  "variants": {
+    "facing": "standing square to the camera in a firm stance, front view, the whole body facing the camera: the left arm extended straight toward the camera ending in a closed fist held out in front of the chest, the right fist raised beside the right cheek with the elbow lifted out to the side, both fists clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking straight at the camera",
+    "facing34": "standing in a firm stance turned only slightly to the right (about 20 degrees) as seen from the front: the left arm extended forward ending in a closed fist held in front of the chest, the right fist raised beside the right cheek with the elbow lifted out to the side, both fists clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking forward",
+    "melee2close": "standing facing the camera in a wide firm stance, front view: both arms raised to the right shoulder, the two closed fists stacked one directly above the other on a vertical line beside the right shoulder at head height, about a fist-width apart, elbows bent, both hands are tight closed empty fists with nothing in them, fingers curled around nothing, nothing held in either hand, face looking at the camera",
+    "heavyclose": "standing in a firm stance turned about 30 degrees to the right as seen from the front: the right fist resting at the right shoulder, the left fist held just in front of it and slightly higher, about one forearm length ahead of the right fist and level with it, both elbows bent, both fists clearly visible, both hands are tight closed empty fists with nothing in them, fingers curled around nothing, nothing held in either hand, face looking forward",
+    "longclose": "standing in a firm stance turned about 30 degrees to the right as seen from the front: the right fist held at the chest, the left fist held out in front at chest height about one forearm length ahead of the right fist on a straight line pointing forward, both elbows bent, both fists clearly visible, both hands are tight closed empty fists with nothing in them, fingers curled around nothing, nothing held in either hand, face looking forward along that line",
+    "heavy34": "standing in a firm stance turned only slightly to the right (about 20 degrees) as seen from the front: the right fist resting on the right shoulder with the elbow out to the side, the left arm bent with the left fist held forward and raised to shoulder height in front of the chest, both fists clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking forward",
+    "facingreach": "standing in a firm stance turned only slightly to the right (about 20 degrees) as seen from the front: the left arm fully extended forward toward the camera side with the left fist far out in front of the body, the right fist drawn back at the right cheek with the elbow out to the side, the two fists very far apart, both clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking forward",
+    "heavyreach": "standing in a firm stance turned only slightly to the right (about 20 degrees) as seen from the front: the left arm fully extended forward toward the camera side with the left fist far out in front of the body at shoulder height, the right fist resting on the right shoulder with the elbow out to the side, the two fists very far apart, both clearly visible, both hands are tight closed empty fists with nothing in them (no pointing finger), fingers curled around nothing, nothing held in either hand, face looking forward"
+  }
+}
