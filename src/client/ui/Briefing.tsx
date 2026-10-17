@@ -2,6 +2,7 @@
 import { useEffect, useMemo } from 'react'
 import { seatLabel, useBundle, useGame, usePresented } from '../contract'
 import { useGameStore } from '../store/gameStore'
+import { audio } from '../audio/manager'
 import { readParams } from '../params'
 import { buildBriefing } from './briefingView'
 import { useUiStore } from './uiStore'
@@ -29,6 +30,14 @@ export function Briefing() {
     return buildBriefing({ name: scn.name, rounds: scn.rounds, sideIds: scn.sides.map((x) => x.id), briefing, rules: scn.rules },
       g.seatOrder, g.controllers, seatLabel, Object.fromEntries(Object.entries(state?.seats ?? {}).map(([k, v]) => [k, v.side])))
   }, [scn, g.seatOrder, g.controllers, state?.seats])
+  // Narrate the briefing when it opens (a no-op without a voice file); closing it cuts the line off.
+  const scnId = scn?.id
+  useEffect(() => {
+    if (!open || !scnId) return
+    const line = `briefing-${scnId}`
+    audio.say(line)
+    return () => audio.cancelVoice(line)
+  }, [open, scnId])
   if (!open || !model) return null
   return (
     <div className="briefing-back" data-testid="briefing" role="dialog" aria-modal="true" aria-label={`${model.title} briefing`}>

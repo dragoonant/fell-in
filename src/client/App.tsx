@@ -21,7 +21,7 @@ export function App() {
   const screen = useLaunchStore((s) => s.screen)
   useEffect(() => {
     audio.attachAutoUnlock()
-    audio.setMood('calm')
+    audio.setMood('menu')
     if (readParams().autostart && !useLaunchStore.getState().launch) launchGame(paramsLaunch())
   }, [])
   if (readParams().gallery) return <Suspense fallback={null}><Gallery /></Suspense>

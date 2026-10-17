@@ -1,8 +1,603 @@
 {
-  "_comment": "Starter manifest. All prompts and lines are original wording. Run `npx tsx tools/gen-audio.ts` to generate missing files into public/audio/<id>.mp3 (music into public/audio/music/<id>.mp3). Add items as the sound design lands (M5).",
-  "voice": { "voiceId": "SOYHLrjzK2X1ezoPC6cr", "voiceName": "Harry - Fierce Warrior", "modelId": "eleven_flash_v2_5" },
-  "music": { "endpoint": "/v1/music", "modelId": "music_v1", "forceInstrumental": true, "outputFormat": "mp3_44100_128" },
-  "items": [
-    { "id": "dice-d20", "kind": "sfx", "group": "dice", "prompt": "A single twenty-sided die tumbling and settling on a wooden table, short, dry, no music, no voices", "durationSeconds": 1.2, "promptInfluence": 0.6 }
-  ]
+ "_comment": "Local-studio audio manifest. All prompts and lines are original wording. Run `node tools/gen-audio-local.mjs --dry` to list, `node tools/gen-audio-local.mjs` to generate missing mp3s into public/audio and rewrite public/audio/manifest.json. sfx: Stable Audio Open (prompt, avoid, seconds, seed, optional rms target). music: ACE-Step (prompt tags, bpm, key, seconds, loop). voice: Qwen3-TTS (model, speaker, instruct, text).",
+ "version": 2,
+ "targets": {
+  "sfxRms": 0.16,
+  "sfxPeak": 0.88,
+  "musicRms": 0.14,
+  "voiceRms": 0.12
+ },
+ "items": [
+  {
+   "id": "shot-pistol",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "A single 9mm pistol gunshot outdoors in an open desert, one sharp dry crack with a short slapback echo, close microphone",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, machine gun, multiple shots, reloading, laser, synth",
+   "seed": 11,
+   "rms": 0.12,
+   "trimDb": -40
+  },
+  {
+   "id": "shot-rifle",
+   "kind": "sfx",
+   "seconds": 1.5,
+   "prompt": "One heavy hunting rifle gunshot outdoors, a deep punchy boom with a hard crack on top and a long echo rolling off distant hills, a single shot",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, machine gun, multiple shots, reloading, laser, synth",
+   "seed": 11,
+   "rms": 0.12,
+   "trimDb": -40
+  },
+  {
+   "id": "shot-shotgun",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "One pump shotgun blast, a wide thunderous boom with a metallic crack and a short echo, a single shot",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, machine gun, multiple shots, reloading, pump action racking, laser",
+   "seed": 11,
+   "rms": 0.12,
+   "trimDb": -40
+  },
+  {
+   "id": "laser",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "A short retro ray gun zap, a bright electronic pew sweeping quickly downward with a crackling tail, one shot",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, explosion, drums",
+   "seed": 11
+  },
+  {
+   "id": "plasma",
+   "kind": "sfx",
+   "seconds": 1.6,
+   "prompt": "A heavy plasma bolt firing: a wobbling rising hum that releases into a thick fizzing blast with a wet sizzling tail",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, explosion, drums",
+   "seed": 11
+  },
+  {
+   "id": "explosion",
+   "kind": "sfx",
+   "seconds": 3,
+   "prompt": "A large explosion outdoors, a deep concussive boom, a rolling rumble, and debris pattering down afterwards",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, laser, drums",
+   "seed": 11
+  },
+  {
+   "id": "melee-bat",
+   "kind": "sfx",
+   "seconds": 0.9,
+   "prompt": "A wooden baseball bat swung with a short whoosh and hitting a heavy body with a dull solid thud",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, breaking glass",
+   "seed": 11
+  },
+  {
+   "id": "melee-blade",
+   "kind": "sfx",
+   "seconds": 0.9,
+   "prompt": "A machete slash, a quick metallic whoosh and a slicing cut ending in a short bright ring",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, sword fight, multiple hits",
+   "seed": 11
+  },
+  {
+   "id": "melee-bite",
+   "kind": "sfx",
+   "seconds": 0.9,
+   "prompt": "A large animal biting down, a quick wet chomp with a short low snarl underneath",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, frog, gargle, human voice",
+   "seed": 11
+  },
+  {
+   "id": "melee-claw",
+   "kind": "sfx",
+   "seconds": 0.9,
+   "prompt": "Heavy claws raking across leather and flesh, three quick scratchy swipes with a low swoosh",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, bird, human voice",
+   "seed": 11
+  },
+  {
+   "id": "armor-clink",
+   "kind": "sfx",
+   "seconds": 0.7,
+   "prompt": "A small steel plate tapped by metal, one short bright clink with a brief ring",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, bell, chime, multiple hits",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "hit",
+   "kind": "sfx",
+   "seconds": 0.6,
+   "prompt": "A dull body impact, a short heavy thump of a bullet or fist hitting flesh and padded clothing",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, gunshot, grunt, scream",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "death",
+   "kind": "sfx",
+   "seconds": 1.8,
+   "prompt": "A heavy body collapsing onto dry dirt, gear rattling, a dull thud and dust settling, then stillness",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, scream, gunshot, human voice",
+   "seed": 11
+  },
+  {
+   "id": "death-human",
+   "kind": "sfx",
+   "seconds": 2,
+   "prompt": "A person crumpling onto gravel, a low thud, canvas straps and a belt buckle rattling, one short breath of air leaving, then stillness",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, scream, gunshot, shouting",
+   "seed": 11
+  },
+  {
+   "id": "death-mutant",
+   "kind": "sfx",
+   "seconds": 2.6,
+   "prompt": "A huge heavy creature toppling over, a very deep ground shaking thud, a low guttural groan fading out and gravel scattering",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, scream, gunshot, music",
+   "seed": 11
+  },
+  {
+   "id": "death-dog",
+   "kind": "sfx",
+   "seconds": 1.6,
+   "prompt": "A dog giving one short pained yelp then a small whimper fading away, a light body dropping onto dirt",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, barking, growling loop, human voice",
+   "seed": 11
+  },
+  {
+   "id": "death-deathclaw",
+   "kind": "sfx",
+   "seconds": 3,
+   "prompt": "A giant reptilian beast letting out a low raspy dying screech that collapses into a ground shaking thud and a rattling exhale",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, human voice, music, gunshot",
+   "seed": 11
+  },
+  {
+   "id": "death-robot",
+   "kind": "sfx",
+   "seconds": 2.6,
+   "prompt": "A robot powering down: servo motors winding down in pitch, sparks crackling, a metal body clanking to the ground and a last electrical buzz fading out",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voice, speech, music, explosion",
+   "seed": 11
+  },
+  {
+   "id": "radiation",
+   "kind": "sfx",
+   "seconds": 2.2,
+   "prompt": "An eerie radiation warning: a low ominous electrical hum swelling slowly with rapid sparse Geiger counter ticks over a dull throb",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, siren, music",
+   "seed": 11
+  },
+  {
+   "id": "objective",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "A short positive two note chime from an old vintage radio device, warm and dry, objective secured",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, drums, long reverb",
+   "seed": 11
+  },
+  {
+   "id": "search",
+   "kind": "sfx",
+   "seconds": 1.6,
+   "prompt": "Rummaging through a metal crate and cardboard boxes, rustling junk, a few clanks and a lid creaking, hands digging",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, footsteps, music",
+   "seed": 11
+  },
+  {
+   "id": "heal",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "A medical injector: a quick pressurised syringe hiss followed by a soft warm rising shimmer",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, explosion, drums",
+   "seed": 11
+  },
+  {
+   "id": "climb",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "Boots scraping and clambering up a rusty metal ladder, hand grips clanking on rungs, brief effort",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, music, gunshot",
+   "seed": 11
+  },
+  {
+   "id": "fall",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "A person dropping from a height onto dirt: a short rush of air, then a heavy thud and gravel scattering, gear rattling",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, scream, voices, music",
+   "seed": 11
+  },
+  {
+   "id": "step",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "A single boot footstep on dry gravel and dust, one crunchy step only, close microphone",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, multiple steps, running, voices",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "dice-d20",
+   "kind": "sfx",
+   "seconds": 1.6,
+   "prompt": "A real twenty sided plastic die rolled onto a wooden table, bouncing and rattling with hard dry clicks before settling",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, coins, glass, voices, many dice",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "dice-d12",
+   "kind": "sfx",
+   "seconds": 1.4,
+   "prompt": "A real twelve sided plastic die rolled onto a wooden table, a few bounces with hard dry clicks before settling",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, coins, glass, voices, many dice",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "ui-click",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "A short dry mechanical button click, a single tick of a vintage metal switch, close microphone",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, beep, chime, voices, echo",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "ui-confirm",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "Two quick crisp switch clicks in a row, a firm dry confirming latch, close microphone",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, beep, chime, voices, echo",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "ui-cancel",
+   "kind": "sfx",
+   "seconds": 1,
+   "prompt": "A single low dull thunk of a heavy switch flipped back, dry and short, close microphone",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, beep, chime, voices, echo",
+   "seed": 11,
+   "trimDb": -22
+  },
+  {
+   "id": "round-start",
+   "kind": "sfx",
+   "seconds": 3.2,
+   "prompt": "A deep brass horn note rising and holding, then a distant bell ringing once, dusty open air, announcing the start of a round",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, drums, melody, gunshot",
+   "seed": 11
+  },
+  {
+   "id": "victory",
+   "kind": "sfx",
+   "seconds": 4,
+   "prompt": "A short triumphant sting: warm baritone guitar twang and slide guitar chords resolving upward into a major chord and ringing out, ends cleanly",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, vocals, drums, crowd, speech",
+   "seed": 11
+  },
+  {
+   "id": "defeat",
+   "kind": "sfx",
+   "seconds": 4,
+   "prompt": "A short mournful sting: slow descending minor baritone guitar notes with a low bowed bass sinking and dying away, ends cleanly",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, vocals, drums, crowd, speech",
+   "seed": 11
+  },
+  {
+   "id": "geiger",
+   "kind": "sfx",
+   "seconds": 2.2,
+   "prompt": "A Geiger counter, irregular rapid dry ticks and clicks with faint static, steady level",
+   "avoid": "music, melody, voices, speech, singing, reverb wash, ambience, noise floor, voices, music, beeping",
+   "seed": 11
+  },
+  {
+   "id": "menu",
+   "kind": "music",
+   "seconds": 80,
+   "bpm": 72,
+   "key": "D minor",
+   "prompt": "instrumental, dusty post-war Americana, baritone guitar, bowed upright bass, distant lap steel guitar, sparse percussion, tape hiss, lo-fi, desolate, cinematic western, slow, lonely, melancholic, wide open, gentle brushed snare, a slow arpeggiated baritone guitar motif",
+   "instrumental": true,
+   "loop": true,
+   "seed": 21
+  },
+  {
+   "id": "calm",
+   "kind": "music",
+   "seconds": 78,
+   "bpm": 64,
+   "key": "D minor",
+   "prompt": "instrumental, dusty post-war Americana, baritone guitar, bowed upright bass, distant lap steel guitar, sparse percussion, tape hiss, lo-fi, desolate, cinematic western, sparse, quiet, patient, the same slow baritone guitar motif played softly, long lap steel notes, almost no percussion",
+   "instrumental": true,
+   "loop": true,
+   "seed": 22
+  },
+  {
+   "id": "battle",
+   "kind": "music",
+   "seconds": 76,
+   "bpm": 108,
+   "key": "D minor",
+   "prompt": "instrumental, dusty post-war Americana, baritone guitar, bowed upright bass, distant lap steel guitar, sparse percussion, tape hiss, lo-fi, desolate, cinematic western, tense, driving, low toms and floor drums, brooding brass stabs, a gritty baritone guitar riff built on the same motif, building intensity",
+   "instrumental": true,
+   "loop": true,
+   "seed": 23
+  },
+  {
+   "id": "victory",
+   "kind": "music",
+   "seconds": 18,
+   "bpm": 90,
+   "key": "D major",
+   "prompt": "instrumental, dusty post-war Americana, baritone guitar, bowed upright bass, distant lap steel guitar, sparse percussion, tape hiss, lo-fi, desolate, cinematic western, triumphant, resolved, the motif rising to a warm major ending that rings out",
+   "instrumental": true,
+   "loop": false,
+   "seed": 24
+  },
+  {
+   "id": "defeat",
+   "kind": "music",
+   "seconds": 20,
+   "bpm": 60,
+   "key": "D minor",
+   "prompt": "instrumental, dusty post-war Americana, baritone guitar, bowed upright bass, distant lap steel guitar, sparse percussion, tape hiss, lo-fi, desolate, cinematic western, mournful, the motif slowing and collapsing downward, low bowed bass, a last lap steel note fading to silence",
+   "instrumental": true,
+   "loop": false,
+   "seed": 25
+  },
+  {
+   "id": "briefing-ga-1",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "You have just stepped out into the wasteland with nothing but a jumpsuit and your wits. The ground here glows green in patches, and it will burn anyone who wades through. Grab the supply crate, find the exit, and keep your boots out of the glow.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ga-2",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "An old scrapyard makes a decent firing range. Someone has lined up five tin cans along the fence. Put at least one round into every can, and learn how a shot works before it counts. Take your time, because out here nobody is keeping score yet, and the cans are not shooting back.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ga-3",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Something strange is sprouting in the old allotments, and nobody would call it food. Five swollen plants need cutting down before they spread. Get close, swing hard, and get your hands dirty.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ga-4",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "The giant rats have dug in all around the settlement, and every burrow is packed with hard earth. Put a rifle round through the armour of each mound to drive the vermin out. Watch the damage numbers, because a weak hit gets stopped cold. Patience pays here, so line up each shot like it is your last round.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-box-1",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "A crew of scavengers dug up a stash of power armour in the ruins, and the Brotherhood of Steel wants it back. Three suits stand in a row across the middle of the table. Claim them for your own fighters, or smash them before the other side can climb in.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-box-2",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "In the middle of Big John's salvage yard, between towers of stacked containers, sits a live nuke. Super Mutants guard it, and raiders are itching to steal it. Carry it off the table if you can, but one unlucky shot and the whole yard goes up.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-box-3",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "The old school still holds a few unspoiled books, and out here knowledge is worth more than caps. The defenders have barricaded themselves inside with five of them. The attackers need to break in and haul at least three off the table.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-box-4",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Whoever holds the radio tower controls the airwaves for miles around. The defenders are dug in at its base and expect reinforcements. The attackers are closing in from the edges, and only the end of round six settles who owns it. Dig in, count your friends at the base, and do not trust any of them to stay put.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-box-5",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "A gang has taken Sarah and is holding her in the middle of a ring of ruined buildings. Flip, a Super Mutant she once helped, has come to bring her home. He is badly outnumbered, but he is not leaving without her. Every bullet counts, and so does every step toward the middle of that ring.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ai-rr",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Your survivors parked a gigantic scrap rocket in their corner of the truck stop. The Super Mutants camped at the diner are convinced it is a real weapon aimed at them, and they are coming to wreck it. Keep it standing for four rounds, or shove it past the diner and off the table.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ai-missile",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "The Super Mutants are dragging a missile across the table on a sled, and nobody wants to learn where it is headed. Stop it before it rolls off the far edge. Just try not to set off the warhead while you do.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ai-breakin",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "The settlement's water valve sits inside a walled compound, and Super Mutants now patrol it with captive settlers. Slip in quietly, get the water running, and bring half your team back out. Stay unseen and the patrols just keep walking their rounds.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-ai-tech",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "A tech has escaped the Super Mutants and is hiding somewhere among the scattered wreckage. Both sides are turning over face down markers to find them first. Whoever finds the tech gets to lead them home. The wreckage is thick, the markers all look alike, and the mutants will not wait politely for you to guess.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-coop-sewer",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "A Brotherhood patrol is hunting the Sole Survivor, and the only way out is a locked sewer hatch in the middle of the ground. The keys are stashed in emergency boxes scattered around. Find them, open the hatch, and keep an ear out for something much bigger.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-coop-cage",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Two prisoners wake up chained together in a raider fighting pit, with junk heaped around their feet. The crowd wants blood, and fresh fighters arrive from round two. Scavenge a weapon, stick with your partner, and outlast every one of them.",
+   "seed": 31
+  },
+  {
+   "id": "briefing-coop-munitions",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "A stack of unstable munitions sits in the corner of your base, and a Super Mutant band is marching straight toward it. Two long walls divide the ground between you. Wipe them out or hold until round eight ends, because if they get there, everything goes up.",
+   "seed": 31
+  },
+  {
+   "id": "welcome",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Welcome back to the wasteland. Pull up a crate, pick a side, and let the dice decide who walks away.",
+   "seed": 41
+  },
+  {
+   "id": "round-1",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Round one. The dust settles, and the shooting starts.",
+   "seed": 42
+  },
+  {
+   "id": "round-2",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Round two. Everyone is a little more tired, and a little more dangerous.",
+   "seed": 43
+  },
+  {
+   "id": "round-3",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Round three. The easy shots are gone.",
+   "seed": 44
+  },
+  {
+   "id": "round-4",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Round four. Somebody is running out of luck.",
+   "seed": 45
+  },
+  {
+   "id": "last-round",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Last round. Whatever you meant to do, do it now.",
+   "seed": 46
+  },
+  {
+   "id": "your-turn",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "Your move.",
+   "seed": 47
+  },
+  {
+   "id": "victory",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "That is a win. Take your caps and walk tall.",
+   "seed": 48
+  },
+  {
+   "id": "defeat",
+   "kind": "voice",
+   "model": "qwen-custom",
+   "speaker": "Ryan",
+   "language": "English",
+   "instruct": "Gravelly, weary, dry baritone narrator with a low pitch and a slow, measured, deadpan pace, like an old wasteland drifter telling a story by a fire.",
+   "text": "That is the end of that. The wasteland keeps what it takes.",
+   "seed": 49
+  }
+ ]
 }

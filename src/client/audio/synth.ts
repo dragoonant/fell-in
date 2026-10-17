@@ -118,7 +118,10 @@ export const RECIPES: Record<string, Recipe> = {
 export const SOUND_IDS = Object.keys(RECIPES)
 
 // ---------- music ----------
-export type Mood = 'calm' | 'battle'
+/** The two moods the synth can generate. Every other mood plays a file when one exists and falls back to one of these. */
+export type ProceduralMood = 'calm' | 'battle'
+export type Mood = 'menu' | 'calm' | 'battle' | 'victory' | 'defeat'
+export const proceduralMood = (m: Mood): ProceduralMood => (m === 'battle' ? 'battle' : 'calm')
 
 function rng(seed: number): () => number {
   let a = seed >>> 0
@@ -138,8 +141,8 @@ export class MoodPlayer {
   private stopped = false
   private readonly bpm: number
   private ctx: BaseAudioContext
-  readonly mood: Mood
-  constructor(ctx: BaseAudioContext, dest: AudioNode, mood: Mood, fadeIn: number, seed = 7) {
+  readonly mood: ProceduralMood
+  constructor(ctx: BaseAudioContext, dest: AudioNode, mood: ProceduralMood, fadeIn: number, seed = 7) {
     this.ctx = ctx
     this.mood = mood
     this.bpm = mood === 'calm' ? 60 : 88

@@ -1,13 +1,24 @@
 // Mount once inside GameScreen: unlocks audio on first click, plays sounds from presentation cues, sets the music mood,
-// and shows the sound toggle + volume popover (data-testid audio-toggle).
+// speaks the round, turn and game-over voice lines, and shows the sound toggle + settings popover (data-testid audio-toggle).
 import { useEffect, useState } from 'react'
 import { onCue } from '../presentation/director'
-import { useGameStore } from '../store/gameStore'
+import { usePresentedStore } from '../presentation/presentedStore'
+import { useGameStore, ownerSeat } from '../store/gameStore'
+import { SoundSettings } from '../ui/SoundSettings'
+import { deathKindOf, soundsForCue } from './cueSounds'
 import { audio, type AudioSettings } from './manager'
-import { soundsForCue } from './cueSounds'
+import { roundVoiceId } from './manifest'
+import { yourTurnRound } from './triggers'
 
 const box: React.CSSProperties = { position: 'fixed', right: 12, bottom: 12, zIndex: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }
-const panel: React.CSSProperties = { background: 'rgba(29,26,22,.94)', border: '1px solid #8a7a5c', borderRadius: 4, padding: '8px 10px', fontSize: 12, color: '#e8dfc8', display: 'grid', gridTemplateColumns: 'auto 110px', gap: '6px 8px', alignItems: 'center' }
+
+/** `death-<kind>` for a model, read from its unit record. */
+function deathSoundFor(modelId: string): string {
+  const { state, bundle } = useGameStore.getState()
+  const m = state?.models[modelId]
+  const unit = m && bundle ? bundle.records.units.find((u) => u.id === m.profileId) : null
+  return `death-${deathKindOf(unit)}`
+}
 
 export function AudioHost() {
   const [s, setS] = useState<AudioSettings>(() => audio.getSettings())
@@ -16,32 +27,45 @@ export function AudioHost() {
   useEffect(() => {
     audio.attachAutoUnlock()
     audio.setMood('battle')
+    let lastTurnRound = 0
+    let wasOver = false
     const offSettings = audio.subscribe(setS)
     const offCue = onCue((cue, beat) => {
-      if (cue.kind === 'banner' && cue.tone === 'gameOver') audio.setMood('calm')
-      let humanWon = false
-      if (cue.kind === 'banner' && cue.tone === 'gameOver' && cue.winner) humanWon = useGameStore.getState().controllers[cue.winner] === 'human'
-      for (const c of soundsForCue(cue, beat.durationMs, humanWon)) audio.play(c.id, { volume: c.volume, delayMs: c.delayMs })
+      let outcome: 'victory' | 'defeat' | null = null
+      if (cue.kind === 'banner') {
+        if (cue.tone === 'round') {
+          const line = roundVoiceId(cue.round, useGameStore.getState().state?.maxRounds)
+          if (line) audio.say(line)
+        } else if (cue.tone === 'gameOver') {
+          const humanWon = !!cue.winner && useGameStore.getState().controllers[cue.winner] === 'human'
+          outcome = humanWon ? 'victory' : 'defeat'
+          audio.setMood(outcome)
+          audio.say(outcome)
+        }
+      }
+      for (const c of soundsForCue(cue, beat.durationMs, outcome === 'victory', { deathSound: deathSoundFor })) {
+        // A music file for the outcome is the sting; the synthesised sting only covers for a missing file.
+        if (outcome && c.id === outcome && audio.hasMusicFile(outcome)) continue
+        audio.play(c.id, { volume: c.volume, delayMs: c.delayMs })
+      }
     })
-    return () => { offCue(); offSettings(); audio.setMood('calm') }
+    // The first decision of each round that belongs to the human seat, once the presentation has caught up.
+    const offPresented = usePresentedStore.subscribe((p) => {
+      const st = p.state
+      if (!st) return
+      if (st.phase === 'over') { wasOver = true; return }
+      if (wasOver) { wasOver = false; lastTurnRound = 0; audio.setMood('battle') } // Play again
+      if (st.round < lastTurnRound) lastTurnRound = 0
+      const g = useGameStore.getState()
+      const r = yourTurnRound({ round: st.round, phase: st.phase, seat: ownerSeat(st.pending, g) }, g.controllers, lastTurnRound)
+      if (r !== null) { lastTurnRound = r; audio.say('your-turn') }
+    })
+    return () => { offCue(); offSettings(); offPresented(); audio.voice.clear(); audio.setMood('menu') }
   }, [])
-
-  const slider = (label: string, key: 'master' | 'sfx' | 'music') => (
-    <>
-      <label htmlFor={`aud-${key}`}>{label}</label>
-      <input id={`aud-${key}`} data-testid={`audio-${key}`} type="range" min={0} max={1} step={0.05} value={s[key]} onChange={(e) => audio.set({ [key]: Number(e.target.value) })} />
-    </>
-  )
 
   return (
     <div style={box}>
-      {open && (
-        <div style={panel} data-testid="audio-panel">
-          {slider('Master', 'master')}
-          {slider('Effects', 'sfx')}
-          {slider('Music', 'music')}
-        </div>
-      )}
+      {open && <SoundSettings settings={s} />}
       <div style={{ display: 'flex', gap: 6 }}>
         <button data-testid="audio-toggle" aria-pressed={!s.muted} aria-label={s.muted ? 'Unmute sound' : 'Mute sound'} title={s.muted ? 'Sound off' : 'Sound on'} onClick={() => audio.set({ muted: !s.muted })}>
           {s.muted ? 'Sound off' : 'Sound on'}

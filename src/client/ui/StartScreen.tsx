@@ -4,6 +4,7 @@ import { continueGame, hasAutosave, launchGame, loadScenarioChoices, readAutosav
 import { SPEED_PRESETS, useSettingsStore } from '../store/settingsStore'
 import { readJson, writeJson } from '../store/storage'
 import { PALETTE } from '../theme'
+import { audio } from '../audio/manager'
 import { HowToPlay, HowToPlayButton } from './HowToPlay'
 import './start/start.css'
 import {
@@ -26,6 +27,12 @@ export function StartScreen() {
   const speed = useSettingsStore((s) => s.speed)
   const setSettings = useSettingsStore((s) => s.set)
   const autosave = hasAutosave() ? readAutosaveSummary() : null
+
+  // The welcome line speaks once, on the first click (which also unlocks Web Audio).
+  useEffect(() => {
+    audio.requestWelcome()
+    return () => audio.cancelWelcome()
+  }, [])
 
   useEffect(() => {
     let alive = true
