@@ -343,6 +343,27 @@ actions, alternating Ready/Use turns, no facing, an AI card system (Objective + 
 - A stale Vite server from another worktree on the same port served old code during a debug session; give each
   worktree its own port or check `preview_list` first.
 
+### 3.5 Local studios (FELL M5, 2026-10-17)
+- Three local studios replace Gemini and ElevenLabs on the GPU PC: Flux (7880), Audio (7890), Hunyuan (7860). Scripted
+  access is `tools/local-gen/studio.mjs` (`submit`, `wait`, `download`); job fields are in
+  `docs/spec/sources/LOCAL-STUDIOS.md`. Local generation costs no credits.
+- One shared GPU: another session's job can hold a queue for 5 to 7 minutes, so `queued` is normal; give waits a long
+  timeout and never kill a process you did not start.
+- Flux and Audio serialise their own jobs: submit up to 8 and collect. Hunyuan does NOT queue; parallel jobs run at once
+  and fail out of memory, so submit one at a time (about 3 minutes each) and retry failures.
+- Routes and words differ: Flux and Audio serve `/files/<id>/<name>` and finish with `done`; Hunyuan serves
+  `/api/jobs/<id>/files/<name>` and finishes with `completed`. Hunyuan `image` is raw base64 (no `data:` prefix);
+  text-to-3D pauses at `awaiting_pick`.
+- Flux takes an `aspect` bucket (about 1 MP), not free width and height. Image edit copies reference 1's shape (crop a
+  portrait source first) and ignores negations: say what is wanted, not what is absent.
+- Timings (RTX 5080): Flux 1024 px 9 s warm, edit 59 s; SFX 2 s in 6 s; voice 18 s on first load; music takes minutes;
+  Hunyuan textured image-to-3D 172 s.
+- Audio comes out as stereo FLAC (SFX) and 24 kHz mono WAV (voice): encode to mp3 before committing.
+- Never name the franchise or a studio in a prompt (IP rule).
+- Check pass lessons: the root `sounds.html` (a Vite input) shadows `public/sounds.html`, so keep one audition page; serve
+  a static copy of `public/` to look at the real one. In the SwiftShader Playwright run, themed boards and gallery
+  close-ups render with textures at about 12 s of wait.
+
 ## 4. Rules and data research
 
 ### 4.1 Routes that worked (ranked by value found)

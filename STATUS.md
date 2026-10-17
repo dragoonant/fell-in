@@ -101,3 +101,20 @@ Milestone reached: **M4f** (versus bot, official AI card system, scenarios from 
 
 ## Not yet
 M5 look and sound (figures in hold poses, themed terrain, local SFX/music/voice), M6 campaign/settlement, M7 factions.
+
+## Look and sound (M5)
+- Checked 2026-10-17 at 1280x800 (Playwright, SwiftShader): typecheck, 442 unit tests, `validate:data` and build pass; e2e 8 of 9
+  (the known "activate, move by drag" odds-panel failure). Screenshots: `screenshots/m5-*.png` (start, three themes, gallery
+  poses, ai-rr briefing, audition page).
+- Sound (local Audio Studio): 34 SFX, 5 music moods and 25 narrator lines (Qwen3-TTS "Ryan") in `public/audio/` as mp3, listed
+  in `public/audio/manifest.json`; `public/audio/` is 7.4 MB.
+- Art (Flux): start-screen key art, 16 scenario previews, 16 unit portraits and 4 faction marks under `public/assets/art/`,
+  shown on the start screen, briefing, unit card, HUD chip and game over. All original designs.
+- Terrain: 15 themed pieces (Flux concept to Hunyuan 3D, optimized GLB) plus flat road and hazard pieces; suburbs, red-rocket
+  and junkyard boards render with textures in Skirmish (`?theme=`, or the start-screen picker).
+- Figures: hold-pose variants (long gun, two-handed melee, heavy) load from `public/assets/models/manifest.json` `poses`.
+- Open: the heavy-hold weapon block sits in front of Sole Survivor's face in the gallery; Brute shows no hammer in the
+  melee2 gallery view; the "Ready to begin" prompt covers the near-edge figures; "Sound on" / "Vol" buttons overlap the
+  bottom-right key hint.
+- Open: `sounds.html` at the repo root (old synth page, a Vite input) shadows `public/sounds.html` (the audition page) in
+  dev and in dist; the new page is only reachable by serving `public/` directly.

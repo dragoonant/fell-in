@@ -8,6 +8,7 @@ export const meta = {
     { title: 'Poses', detail: 'hold-pose figure variants (Flux edit -> Hunyuan 3D) with grip and support sockets, then gallery check' },
     { title: 'UI', detail: 'original key art, scenario previews, portraits and markings (Flux) wired into the client' },
     { title: 'Check', detail: 'screenshots, audition page, typecheck/test/build, STATUS section' },
+    { title: 'Fix', detail: 'the visible problems the check listed, then re-shoot' },
   ],
 }
 
@@ -75,7 +76,7 @@ const terrainList = TERRAIN_BATCH.map(([s, t, sz, r]) => `${s} (${t}; ${sz.join(
 // (shape from tools/workflows/m4f-pose-pilot.js; the client already renders it).
 const POSE_RULES = `Which (unit, class) pairs need a pose GLB: read data/1e/scenarios/scenarios.json and data/1e/units/*.json, list every weapon each unit carries in any scenario force, classify with weaponClassOf in src/client/figures/equipped.ts, and keep the classes long, heavy and melee2 (pistol, melee1, thrown and natural attacks use the default figure). Skip pairs that already have a listed pose in public/assets/models/manifest.json; regenerate super-mutant@heavy (its launcher pointed sideways: the pose must shoulder the weapon so a line from the trigger hand through the support hand runs forward and slightly up). Expect about 10-15 GLBs.`
 
-const phaseOf = { probe: 'Probe', sound: 'Sound', terrain: 'Terrain', poses: 'Poses', ui: 'UI', check: 'Check' }
+const phaseOf = { probe: 'Probe', sound: 'Sound', terrain: 'Terrain', poses: 'Poses', ui: 'UI', check: 'Check', fix: 'Fix' }
 if (!phaseOf[STAGE]) throw new Error('unknown stage ' + STAGE)
 phase(phaseOf[STAGE])
 
@@ -170,4 +171,17 @@ You own ONLY: screenshots/m5-*.png, STATUS.md (a new "## Look and sound (M5)" se
 Run npm run typecheck, npm test, npm run build, npm run validate:data and npm run e2e in the foreground and report failures verbatim (first 10 lines each). Start the dev server in the background only if http://localhost:5191/fell-in/ is down (npx vite --port 5191). With Playwright at 1280x800 (temp script outside the repo, --wait-for-timeout 12000 for WebGL) capture: the start screen; one skirmish game per theme (?theme=suburbs|red-rocket|junkyard&seats=human,bot&seed=7, briefing closed); ?gallery close-ups of three pose variants; the briefing modal of ai-rr; public/sounds.html. Read every screenshot and list in issues anything that looks wrong (blank canvas, missing textures, clipping weapons, unreadable text). Write STATUS.md's section from what you verified, not from the plan. ${KEEP}`,
     { label: 'check:all', phase: 'Check', schema: RESULT, model: 'sonnet' })
   return { check: r }
+}
+
+if (STAGE === 'fix') {
+  const r = await agent(`${COMMON}
+You own ONLY: sounds.html (root; delete it), vite.config.ts (drop the sounds input only), public/sounds.html, src/client/ui/hud.css, src/client/ui/styles.css, src/client/ui/Prompt.tsx and SoundSettings.tsx (layout only), src/client/figures/{Figures,glbModels}.tsx/ts (pose loading only), tests/client/**, screenshots/m5-*.png.
+Fix exactly these, found by the check stage at 1280x800 (read screenshots/m5-theme-suburbs.png, m5-gallery-melee2.png and m5-sounds.png first):
+1. The old root sounds.html (a Vite input from M3, synth audition) shadows public/sounds.html in dev and dist. Remove the root page and its Vite input; if the old page auditioned anything the new one does not (synth recipes), add a small "synthesised fallback" section to public/sounds.html instead. /fell-in/sounds.html must serve the new page from "npm run build" output (check dist/).
+2. The "Sound on" and "Vol" buttons overlap the key-hint text at the bottom right of the game screen; the key hints and the camera presets must not overlap either. Reflow that corner (one row of hints above the buttons, or hints hidden while the sound controls are open).
+3. The decision prompt ("Ready to begin?") covers the near-edge deploy zone and figures. Keep it anchored at the bottom but make it a compact single-row bar (title + one line + button) that expands on hover or focus, so at 1280x800 it never covers more than about 90 px of table height above the bottom edge; keep every data-testid and visible text pick exactly as they are (tests/e2e and tests/client reference them).
+4. In ?gallery the Brute with the sledgehammer rendered with no weapon while its pose GLB was still loading. Until a pose GLB arrives, render the default figure with the weapon at its HOLDS transform (never hide the weapon); when the pose arrives, swap. Unit test the selection logic.
+Then run npm run typecheck && npm test && npm run build and re-shoot screenshots/m5-theme-suburbs.png, m5-gallery-melee2.png and m5-sounds.png with Playwright at 1280x800 (dev server on 5191, start it in the background if it is down; --wait-for-timeout 12000) and READ them to confirm each fix. ${KEEP}`,
+    { label: 'fix:visible', phase: 'Fix', schema: RESULT, model: 'sonnet' })
+  return { fix: r }
 }
