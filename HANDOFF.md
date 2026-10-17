@@ -4,26 +4,36 @@ Start here in a new session opened on this folder. Read `CLAUDE.md`, then this f
 Cross-project lessons (stack, reusable code, pipelines, token traps) are in `docs/KNOWLEDGE-BASE.md`;
 read only the section a task needs. The source map is `docs/spec/sources/WW-SOURCES.md`.
 
-## PAUSED 2026-10-12: M4b official AI, parked on branch `wip/m4b` (resume here)
+## Current state (2026-10-17)
+- M0-M4 shipped, plus M4b (official AI from the Campaign Handbook), M4c (briefings), M4d (every scenario re-entered
+  from its PDF, Brotherhood of Steel) and M4f (two-handed pose pilot). See STATUS.md.
+- **Owner decision 2026-10-17: skip the M4 playtest gate; the owner will play the fully developed game instead.
+  Keep moving through M5 (look and sound), the M4 gaps, M6 (campaign/settlement from the Campaign Handbook) and
+  M7 (factions).** Each stage still ends in a Pages deploy and screenshots.
+- **Owner decision 2026-10-17: the look and sound come from the local AI suite on this PC** (the ask-first rule for
+  GPU work is satisfied for this run; a new session still announces GPU work before starting it):
+  - Flux Studio, http://localhost:7880 (`POST /api/jobs`; FLUX.2 klein text-to-image and image edit, FLUX.1 dev/schnell).
+  - Audio Studio, http://localhost:7890 (`POST /api/jobs`, modes music / sfx / foley / voice; ACE-Step 1.5 music,
+    Stable Audio Open SFX, Qwen3-TTS and Chatterbox voice). Built in a sibling worktree of the `3D Model Generation`
+    project and not yet committed there; if it is down, start it from that project's `audio-studio/` folder.
+  - Hunyuan Studio, http://localhost:7860 (`node server.js` in `..D Model Generation`; image or text to 3D, Flux
+    concepts, one GPU job at a time). The raw pipeline scripts in `%USERPROFILE%\Hunyuan3D-2` still work
+    (docs/KNOWLEDGE-BASE.md section 3.2); `fellin_units.json`, `fellin_pose/` and `fellin_m4d/` hold the earlier runs.
+  - Notes on each studio's job parameters: `docs/spec/sources/LOCAL-STUDIOS.md` (written by the M5 probe stage).
+  - ElevenLabs stays as a fallback only; local generation costs no credits.
+- M5 runs from `tools/workflows/m5-look-sound.js`, one stage per run (`args.stage`): probe, sound, terrain, poses,
+  ui, check. Commit and push after each stage.
+- Next after M5: `tools/workflows/m6-campaign.js` (spec 19 rewritten from the Campaign Handbook p4-6, p18-24, then
+  engine, data, client), and the M4 gaps listed in STATUS.md (four placeholder AI cards, ai-tech Presence/peek,
+  Luck "Tough", BC-006, DMG-005, Walked Fire, mines, the "activate, move by drag" e2e).
+
+## History (2026-10-12): M4b from the Campaign Handbook
 - Owner supplied the official Campaign Handbook PDF in the main checkout's gitignored `docs/sources/`
   (`foww-campaign-handbook-digital-final_compress.pdf`; book page = PDF page - 2). It closes the CH gaps:
   AI procedure (p8-16), AI scenarios (p40-42), Events/Perks/Boosts/Quests (p4-6), Settlement (p18-24).
-  The "no free copy" notes in this file and spec 10/19 are out of date.
+  The "no free copy" notes in spec 10/19 are out of date.
 - Owner decisions 2026-10-12: official rules only, no house roguelike; finish M4b (official AI, solo/co-op)
-  then M6 campaign/settlement from CH.
-- Done in `wip/m4b` (work stopped mid-run, uncommitted state parked as-is, not yet re-tested):
-  design (spec 18 rewritten from CH, rulings Confirmed/Corrected, AI-001..029, 3 real AI cards from CH,
-  8 placeholders), engine (AI number-token turns, co-op sides/teams, object targets; additive frozen-contract
-  change logged in 00-architecture s10), client ("Wasteland AI (official cards)" opponent, 1-2 player toggle).
-- Not done: `src/ai/official/` decider was mid-implementation (may be partial, `createOfficialAiDecider` may
-  still throw); AI scenarios beyond AI-RR; Missile sled move (SCN-004); verify and fix stages.
-- Resume: `git checkout wip/m4b`, `npm run typecheck && npm test`, then rerun `tools/workflows/m4b-official-ai.js`
-  from the decider stage (pass `args.root` and `args.src`; skip design/engine/client which are done).
-
-## Current state (2026-10-12)
-- M0-M4 shipped; see STATUS.md. M4b (official AI cards, solo/co-op) is rebuilt from the Campaign Handbook, which is
-  in gitignored `docs/sources/`; it replaced the earlier fan-source M4b. **Next: owner playtest of the fixed scenarios; then plan B weapon poses (regenerated figures with two grips, pilot Sole Survivor + Super Mutant). ASK the owner before any Hunyuan/GPU work and wait for a go.** Then the owner playtest gate for M4
-  (versus bot and Wasteland AI), then fill the four placeholder AI cards from photos and the gaps in STATUS.md.
+  then M6 campaign/settlement from CH. M4b was finished and merged (commits 4175c95, 672125d); `wip/m4b` is history.
 
 ## History (2026-10-11)
 - **M0 bootstrap shipped.** Public repo `dragoonant/fell-in`, Pages https://dragoonant.github.io/fell-in/ (deploy

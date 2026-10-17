@@ -1,6 +1,6 @@
 # Status: what exists
 
-Milestone reached: **M4 AI** (versus bot + official AI card system; owner playtest gate) (this file only lists what is real; plans live in PLAN.md).
+Milestone reached: **M4f** (versus bot, official AI card system, scenarios from their PDFs, pose pilot; playtest gate waived 2026-10-17) (this file only lists what is real; plans live in PLAN.md).
 
 ## Repo and tooling
 - Vite 8 + React 19 + R3F 9 + drei + zustand, TypeScript 7, Vitest 5, Playwright. Pages base `/fell-in/`.
@@ -96,9 +96,8 @@ Milestone reached: **M4 AI** (versus bot + official AI card system; owner playte
 - Gap research: `docs/spec/sources/R1-archives.md`, `R2-photos.md`, `R3-campaign.md`. AI matrices for the
   starter units and campaign settlement numbers are still open (owner cards or blocked BGG/Reddit pages).
 
-## Tests (`npm test`: 172 tests; `npm run e2e`: 2)
-GEOM-001..005, LOS-001..003, RNG-001, SETUP-001, VIEW-001, DECIDER-001; Playwright boot test and the screenshot
-`screenshots/m0-table.png`.
+## Tests
+`npm test` (vitest, named by checklist ID; see each milestone section), `npm run e2e` (Playwright: boot, bot-vs-bot, human click path; "activate, move by drag" fails on main).
 
 ## Not yet
-Dice/attack/damage/turn flow (M2), playable 3D game (M3), AI (M4).
+M5 look and sound (figures in hold poses, themed terrain, local SFX/music/voice), M6 campaign/settlement, M7 factions.

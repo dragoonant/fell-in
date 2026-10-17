@@ -15,3 +15,5 @@ docs/sources/
 # never commit rules or card PDFs (repo is public)
 *.pdf
 .claude/worktrees/
+
+tools/local-gen/smoke/
