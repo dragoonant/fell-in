@@ -425,3 +425,10 @@ Notes that bind the implementation (all additive, none touching a frozen file):
 - Client: `src/client/ui/settlement/` reached from the start screen ("Campaign": new or continue), walks the
   sequence step by step, then "To battle" launches the normal game with the campaign's forces against the chosen
   opponent (bot, hot-seat or the Wasteland AI) and returns to the settlement on game over.
+
+## 8. Shipped versus stubbed (checked 2026-10-17)
+- Shipped: the sequence, reducer, decks, linked scenarios, toBattle/fromBattle, the localStorage store, the settlement screen and
+  the round trip back from a finished battle. Perks (66) and structures (63) carry full records.
+- Stubbed: card texts for boosts (34 of 38), events (7 of 13), quests (18 of 18) and explore cards (35 of 36) are placeholder
+  records that keep the name and the deck count; they have no effect until the cards are sourced (section 1.3, GAP-3).
+- Not built: the Homestead expansion (section 1.2) and any persistent injury or experience.

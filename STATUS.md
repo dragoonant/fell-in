@@ -123,3 +123,18 @@ M5 look and sound (figures in hold poses, themed terrain, local SFX/music/voice)
   bottom-right key hint.
 - Open: `sounds.html` at the repo root (old synth page, a Vite input) shadows `public/sounds.html` (the audition page) in
   dev and in dist; the new page is only reachable by serving `public/` directly.
+
+## Campaign and settlement (M6)
+- Checked 2026-10-17 at 1280x800 (Playwright, dev server and preview build): typecheck, 615 unit tests (57 files), `validate:data`
+  and build pass; e2e 13 of 13 (the earlier "activate, move by drag" failure no longer reproduces). Screenshots: `screenshots/m6-*.png`
+  (start-screen campaign entry, new settlement, quest step, roster, pool, game launched from To battle). No console errors.
+- Data: `data/1e/campaign/` holds 249 records (63 structures, 66 perks, 38 boosts, 13 events, 18 quests, 36 explore, 15 caps awards,
+  0 injuries) and 55 hooks. Placeholder records (name only, no card text): boosts 34, events 7, quests 18, explore 35. Perks and
+  structures are real.
+- Layer: `src/campaign/` (reducer, sequence, decks, linked scenarios, toBattle/fromBattle, localStorage store); tests in `tests/campaign/`
+  and `tests/e2e/campaign.spec.ts` (new campaign, Continue, battle to settlement round trip).
+- Client: start screen has a Campaign block at the bottom (faction chips Survivors, Super Mutants, Brotherhood of Steel; New campaign;
+  Continue when a save exists). Settlement screen shows the step list (after battle, build, draw, select, get ready), roster, pool,
+  settlement structures, a log and a Next battle panel (scenario, opponent, seed); To battle opens the normal game screen.
+- Open: the Campaign block sits below the fold of the start screen at 1280x800; the Next battle panel runs below the fold of the
+  settlement; Pick your force can be skipped with 0 picked and the battle still fields the whole roster.
