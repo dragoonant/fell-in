@@ -6,7 +6,7 @@ Figures are bare-handed (weapons are separate models attached to a hand socket; 
 ## Figures (one Gemini chat)
 Base prompt (first image):
 > Generate an image of a single miniature wargame figure: [DESCRIPTION]. Mildly stylized heroic proportions,
-> about four and a half heads tall, detailed, not cute. Full body, neutral standing pose, front three-quarter view,
+> about four and a half heads tall, detailed, serious finish. Full body, neutral standing pose, front three-quarter view,
 > both hands empty, right hand a loose empty fist as if gripping a handle, left arm relaxed. Standing on a plain
 > round black base. Plain white background, even soft lighting, no shadows, no text, no logos.
 

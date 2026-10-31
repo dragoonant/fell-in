@@ -109,6 +109,6 @@ Sources for rules and card data are mapped in `docs/spec/sources/WW-SOURCES.md`.
 - The Windows PC with the GPU does all asset work (Hunyuan3D, Claude in Chrome for Gemini, ElevenLabs). Never
   the Mac, never the built-in browser for Gemini.
 - Figure prompts state proportions in plain words ("mildly stylized heroic proportions, about four and a half
-  heads tall, detailed, not cute"). Never "MGSD", "SD", "chibi", "Gundam" or "mecha kit".
+  heads tall, detailed, serious painted-miniature finish"). No style labels. Banned prompt words (owner, 2026-10-31): see ~/.claude/CLAUDE.md 'Image prompts'.
 - Never paste into Gemini from the system clipboard; use the hidden file input (see the Gemini clipboard
   guard note in `docs/KNOWLEDGE-BASE.md` section 3).

@@ -216,7 +216,7 @@ actions, alternating Ready/Use turns, no facing, an AI card system (Objective + 
   prompts recorded in `art/unit-concepts/PROMPTS.md`.
 - **Proportions in plain words** (see 6.4). Prompt template (adapt; WHI Part D.2 in
   `WHI/docs/WARMACHINE-HANDOFF.md` lines 266-300): "Generate an image of a [ORIGINAL DESCRIPTION], mildly
-  stylized heroic proportions, about four and a half heads tall, detailed, not cute. Full body, neutral
+  stylized heroic proportions, about four and a half heads tall, detailed, serious painted-miniature finish. Full body, neutral
   standing pose, front three-quarter view, standing on a plain round black base. Plain white background, even
   soft lighting, no shadows, no text, no logos." Follow-ups: "Same style, proportions, framing, base and
   background: now a ...". Reject at once if two figures, cropped, too realistic, base not round (regenerate in
@@ -477,7 +477,7 @@ in all three.
 - Check-ins are <=10 lines with a screenshot per milestone (`e2e-out/*.png`). Don't narrate options you will
   not pursue; don't re-ask settled decisions (they are in PLAN.md "Decisions").
 - Owner plays on Pages and gives blunt specific feedback ("sounds like a silenced pistol", "prompts should
-  say what they're about", "less SD, more detailed"). Fix in small commits and push. Pushing to `main`
+  say what they're about", "less stylized, more detailed"). Fix in small commits and push. Pushing to `main`
   after each stage is pre-approved.
 - Owner gates used: naming/IP posture (M0), figure look (M3/M5; "art rework later is the most expensive
   kind"), playtest gate before art/audio (DOW), per-sound audition (`sounds.html`), figure veto list
@@ -487,7 +487,7 @@ in all three.
   2026-10-06: photos as local refs, Gemini on this PC, music <=12k credits, GPU from 00:00 then wire and
   push without check-in). Write standing approvals into memory/PLAN.
 - Things the owner disliked: bouncing chores back ("Please don't make me do the work for you"), stand-ins and
-  "unverified" stats after one blocked source, wrong proportions ("MGSD" -> 2-2.5 heads too SD; "Gundam kit"
+  "unverified" stats after one blocked source, wrong proportions (style labels in prompts -> 2-2.5 heads, too short; a model-kit label
   -> mecha), going through the Mac, sounds playing wrong/same, burning tokens (8M), UI prompts that do not say
   what they are for, panels too big (asked for slim collapsible rails late), a bot acting ahead of
   animations.
@@ -509,7 +509,7 @@ in all three.
 | **AI is the product** (DOW: "a clone without convincing table-mates is solitaire"; WHI: assassination-line search; MAL: AI beat random >=95% target, SM AI stayed weak ~33% for weeks) | DOW/WHI | YES; AI milestone gets verify loops ON, benchmark, owner playtest gate |
 | Title is a pun on the original ("Mallet 42k", "Whirr Machine", "Dead of Winner") | all | LIKELY: propose 3 punning titles + repo names in the first check-in and let the owner pick (Part A open decision 2) |
 | Lean mode / playable first / <=10-line check-ins / metered plan | all | YES |
-| **Figures**: original SD (MAL) -> real sculpts rendered as stylized (WHI 2026-10-05) -> full 3D per survivor (DOW). Gemini concept -> Hunyuan3D. Proportion words: "mildly stylized heroic proportions, about 4-5 heads tall, detailed, premium painted tabletop miniature, not cute"; BANNED words: MGSD, SD, super deformed, chibi, Gundam, mecha kit. Lock exact numbers with the owner at the first figure gate | WHI memory 2026-10-07 | LIKELY (re-ask ONE question: figures of the real Fallout WW sculpts vs original designs? WHI reversed itself on this once) |
+| **Figures**: original large-head figures (MAL) -> real sculpts rendered as stylized (WHI 2026-10-05) -> full 3D per survivor (DOW). Gemini concept -> Hunyuan3D. Proportion words: "mildly stylized heroic proportions, about 4-5 heads tall, detailed, premium painted tabletop miniature, serious finish"; style labels are banned (banned prompt words (owner, 2026-10-31): see ~/.claude/CLAUDE.md 'Image prompts'.). Lock exact numbers with the owner at the first figure gate | WHI memory 2026-10-07 | LIKELY (re-ask ONE question: figures of the real Fallout WW sculpts vs original designs? WHI reversed itself on this once) |
 | Windows PC with GPU does ALL asset work (Hunyuan3D, Claude in Chrome for Gemini, ElevenLabs); never the Mac, never the built-in browser for Gemini | MAL/WHI/DOW | YES (verify a Windows Chrome is connected before starting) |
 | Gemini: never paste via the system clipboard; use `file_upload` | WHI 2026-10-05 | YES, hard rule |
 | Secrets: ElevenLabs key only in an untracked token file -> env var; gitignore `*.token*`, `tokens.txt*`, `Tokens.txt`; never log/print/commit | all | YES; note the DOW key file is `tokens.txt.txt` (doubled extension) at the DOW root |
@@ -585,7 +585,7 @@ two-player starter that ships in the box), (6) multiplayer stays on hold, (7) mu
 ### Art/audio
 - Every ranged weapon one sound (see 3.3); generated sounds never wired; ship the flavour map first.
 - Loudness mismatched between factions: ship measure+trims with the first batch.
-- Style words in prompts ("MGSD", "Gundam") producing the wrong proportions twice: plain-words only.
+- Style labels in prompts producing the wrong proportions twice: plain measurements only. Banned prompt words (owner, 2026-10-31): see ~/.claude/CLAUDE.md 'Image prompts'.
 - Hunyuan style reference turning everything blue; floor-length capes breaking auto-cut base; blue refs.
 - Procedural figures thrown away and v1 GLBs redone (MAL): lock the look with the owner at M3, through the
   full pipeline (2 concepts per side).

@@ -37,7 +37,7 @@ Units with a concept PNG in art/unit-concepts: Flux image edit of a square head 
 
 Units without one: text-to-image 1:1 from the template
 
-> A head and shoulders character portrait of {desc}. Mildly stylized heroic proportions, detailed, not cute, painted, muted wasteland palette, plain dark background, no text, no logos
+> A head and shoulders character portrait of {desc}. Mildly stylized heroic proportions, detailed, serious finish, painted, muted wasteland palette, plain dark background, no text, no logos
 
 - **knight**: a disciplined armoured soldier in a battered steel-plated combat harness and a closed visor helmet with a plain unmarked front, grim and professional
 - **initiate**: a young recruit in a padded grey tunic with mismatched scavenged shoulder plates and a rolled cloth cap, nervous but determined, short hair
