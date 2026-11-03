@@ -13,7 +13,7 @@ game on GitHub Pages. Repo `dragoonant/fell-in`. Process lessons from the three 
 - Opponents, all four, in this order: our own bot AI (versus), hot-seat 2 players, the official AI card
   system (solo/co-op vs AI-driven forces), then campaign/settlement mode.
 - Figures: the real Modiphius sculpts as references, Gemini concepts then Hunyuan3D on the Windows PC,
-  "mildly stylized heroic proportions, about four and a half heads tall, detailed, not cute".
+  "mildly stylized heroic proportions, about four and a half heads tall, detailed, serious and realistic".
   Procedural placeholders until the owner's first playtest.
 
 ## Confirmed by the owner 2026-10-11
